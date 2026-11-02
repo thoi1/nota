@@ -55,3 +55,16 @@ self-test, full smoke suite including transport snapshot/interpolation assertion
 render-pool performance guards, and the large-folder scan check. No new dependency.
 The primary branch retains the prior Yamaha ASIO and window-lifecycle verification
 reports; the newly recorded comparison here uses WASAPI. macOS/Linux were not run locally.
+
+## Latest-base integration validation
+
+After the recorded measurements, the branch merged develop `535da00f` (armed-input
+metering and track ordering). Final PR commit `191f5ab06284ffd7a2a18fe89c13a96fb80dff88` passed the full standard
+Windows build, smoke suite, render-pool guards and scanner checks. The first integration
+run had one overload burst guard failure (6 late blocks within 50 ms, limit 4); a complete
+rerun with capture/benchmark tools stopped passed without changing code or thresholds.
+The measured revisions above remain exact; no benchmark numbers were relabeled.
+
+Older WASAPI, Yamaha ASIO, lifecycle and meter-cadence JSON outputs cited in the source
+bug reports are preserved under `historical-results/`. Runtime diagnostic sources and
+verification reports remain in the code PR; raw measurements live on pr-assets.

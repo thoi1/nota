@@ -9,3 +9,9 @@ PASS assertions in complete build log: 4929
 Source/diagnostic license headers: checked
 Patch whitespace check: passed
 Official themes and window-control files: unchanged
+
+Latest-base integration: 535da00f62daaadd4eaa68aa7bd425567a05a0a5
+Final validated PR commit: 191f5ab06284ffd7a2a18fe89c13a96fb80dff88
+Full Windows build/smoke/scanner rerun: exit 0
+[PASS] overloaded: at most 2 late blocks within 50 ms (<= 4: no bursts when the pool re-checks the load)
+Initial integrated run: one overload burst guard failure (6 late blocks in 50 ms, limit 4); complete quiet rerun passed without code/threshold changes.
