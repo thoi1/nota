@@ -8,3 +8,5 @@ Reproduce using specs/071-multiple-cc-lanes/validation/Capture/LaneCapture.cspro
 against the base and branch Nota.App binaries respectively.
 
 Folded CC gutter review correction: before 836f736c; after initializes AddControllerLane from _rowsArePads. CCProbe.CheckFoldedLanes, Studio Light, 1000x720, same two drum notes and CC1 curve, captured before pointer edit. Before test fails the beat-2 pointer assertion; after passes.
+
+Primary lane tab correction: before 20cbc8f3; after FitControllerLanes applies VelH minimum after available-space fitting. CCProbe.CheckPrimaryLaneTabs, Studio Light, 1000x720, same MIDI note and divider shrink. Old code hits toolbar ContentPresenter at controller-tab position; fixed code hits LaneTabs.
