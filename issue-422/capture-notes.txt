@@ -6,3 +6,5 @@ identical MIDI notes and CC1/CC11/CC64 point data. The after image adds three la
 and increases Velocity from 72 to 122 logical pixels.
 Reproduce using specs/071-multiple-cc-lanes/validation/Capture/LaneCapture.csproj
 against the base and branch Nota.App binaries respectively.
+
+Folded CC gutter review correction: before 836f736c; after initializes AddControllerLane from _rowsArePads. CCProbe.CheckFoldedLanes, Studio Light, 1000x720, same two drum notes and CC1 curve, captured before pointer edit. Before test fails the beat-2 pointer assertion; after passes.
