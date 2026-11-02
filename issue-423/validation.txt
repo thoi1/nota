@@ -1,0 +1,11 @@
+Measured after commit: 6ba07c46da54beedcdbdce5d7e0b3316eefc4c3d
+Windows build script: exit 0
+SMOKE TEST PASSED
+SCAN SCALE PASSED
+Scanner self-test: passed
+Render-pool guards: passed
+Transport-display/snapshot assertions: passed
+PASS assertions in complete build log: 4929
+Source/diagnostic license headers: checked
+Patch whitespace check: passed
+Official themes and window-control files: unchanged
