@@ -1,0 +1,8 @@
+Issue #422: multiple MIDI controller lanes and independent saved lane heights.
+Before: official develop 535da00f62daaadd4eaa68aa7bd425567a05a0a5.
+After: feat/multiple-midi-cc-lanes; submitted commit is linked by the pull request.
+Both: real Windows Avalonia rendering, 1100x850, 100% UI scale, Studio Dark,
+identical MIDI notes and CC1/CC11/CC64 point data. The after image adds three lanes
+and increases Velocity from 72 to 122 logical pixels.
+Reproduce using specs/071-multiple-cc-lanes/validation/Capture/LaneCapture.csproj
+against the base and branch Nota.App binaries respectively.
