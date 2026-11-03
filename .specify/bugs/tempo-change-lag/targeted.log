@@ -1,0 +1,13 @@
+engine v0.36.1
+  [PASS] tempo: transport VM defers all arrangement and Session caches before clock command drains
+  [PASS] tempo: interactive setter avoids full-source DSP (0.984 ms)
+  [PASS] tempo: cancelling obsolete jobs returns promptly (0.001 ms)
+  [PASS] tempo: newest request converges without needing audio command drain
+  [PASS] tempo: latest background cache equals synchronous reference (Arrangement)
+  [PASS] tempo: latest background cache equals synchronous reference (Arrangement)
+  [PASS] tempo: latest background cache equals synchronous reference (Session)
+  [PASS] tempo: rebuilding leaves source identity and warp anchors unchanged
+  [PASS] tempo: explicit load deferral survives tempo edits and old audio stays audible
+  [PASS] tempo: offline rendering completes a pending tempo edit before export
+  [PASS] tempo: export joins an active worker and prepares the export sample rate
+  [PASS] tempo: invalid deferred BPM is rejected without changing caches

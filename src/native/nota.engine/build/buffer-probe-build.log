@@ -1,0 +1,5 @@
+[0/2] Re-checking globbed directories...
+[1/4] Building CXX object CMakeFiles\nota-render-probe.dir\pluginhost\tests\RenderProbe.cpp.obj
+[2/4] Linking CXX static library "nota-render-probe_artefacts\Release\Nota Render Probe_SharedCode.lib"
+[3/4] Linking CXX shared module "nota-render-probe_artefacts\Release\VST3\Nota Render Probe.vst3\Contents\x86_64-win\Nota Render Probe.vst3"
+removing moduleinfo.json

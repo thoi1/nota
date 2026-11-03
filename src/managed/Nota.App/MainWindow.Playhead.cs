@@ -14,22 +14,32 @@ public partial class MainWindow
     private bool _playheadFramePending;
     private bool _playheadFramesClosed;
     private int _playheadFrameGeneration;
+    private readonly MeterRefreshCadence _meterCadence = new();
 
     private Window? VisiblePlayheadWindow()
         => IsVisible && WindowState != WindowState.Minimized ? this
-         : _detailWindow is { IsVisible: true, WindowState: not WindowState.Minimized } detail ? detail : null;
+         : _detailWindow is { IsVisible: true, WindowState: not WindowState.Minimized } detail ? detail
+         : _mixerWindow is { IsVisible: true, WindowState: not WindowState.Minimized } mixer ? mixer : null;
 
-    // The 30 Hz service tick wakes this loop. Only the cursor runs on display frames;
-    // recording materialization, meters and device polling retain their own cadence.
+    private bool VisibleLevelMeters()
+        => _masterMeter is { CanUpdate: true }
+        || (_mixer is { IsEffectivelyVisible: true } && TopLevel.GetTopLevel(_mixer)
+            is Window { IsVisible: true, WindowState: not WindowState.Minimized })
+        || (IsVisible && WindowState != WindowState.Minimized
+            && (Timeline.IsEffectivelyVisible || _session is { IsEffectivelyVisible: true }));
+
+    // One shared presentation loop: cursors every frame, primary meters at their chosen rate.
+    // Recording materialization, CPU/DSP sampling and device polling keep their service clock.
     private void EnsurePlayheadFrames()
     {
         var vm = _vm;
         Window? owner = !_playheadFramesClosed && vm is { SuspendEnginePolling: false }
-            && vm.Engine.IsRunning && vm.Engine.IsPlaying ? VisiblePlayheadWindow() : null;
+            && vm.Engine.IsRunning && (vm.Engine.IsPlaying || VisibleLevelMeters()) ? VisiblePlayheadWindow() : null;
         if (!ReferenceEquals(owner, _playheadFrameOwner))
         {
             _playheadFrameOwner = owner;
             _playheadFramePending = false;
+            _meterCadence.Reset();
             int generation = ++_playheadFrameGeneration;
             _playheadFrameCallback = owner is null ? null : _ => OnPlayheadFrame(generation);
         }
@@ -50,9 +60,11 @@ public partial class MainWindow
             EnsurePlayheadFrames();
             return;
         }
-        if (vm.Engine.TryGetTransportSnapshot(out var snapshot))
+        if (_meterCadence.IsDue((double)System.Diagnostics.Stopwatch.GetTimestamp()
+            / System.Diagnostics.Stopwatch.Frequency, vm.Settings.Current.MeterRefreshHz)) UpdateLevelMetersFrame();
+        if (vm.Engine.IsPlaying && vm.Engine.TryGetTransportSnapshot(out var snapshot))
         {
-            double displayBeats = TransportDisplayPosition.At(snapshot);
+            double displayBeats = TransportDisplayPosition.At(snapshot, vm.Engine);
             if (IsVisible && WindowState != WindowState.Minimized)
                 Timeline.SetPlayheadFrame(snapshot.PositionBeats, displayBeats, snapshot.IsPlaying);
             // Editor cursors use cheap overlays too, including in the floating detail window.
@@ -61,7 +73,22 @@ public partial class MainWindow
             if (_clipEditor is { IsEffectivelyVisible: true } && _editorRoll is not null && _editorTrackId > 0)
                 _editorRoll.SetPlayhead(displayBeats - _editorRoll.Origin, true);
         }
-        EnsurePlayheadFrames(); // stops once the engine reports stop; no idle animation loop
+        EnsurePlayheadFrames(); // meters can monitor live input while transport is stopped
+    }
+
+    private void UpdateLevelMetersFrame()
+    {
+        if (_vm is null) return;
+        if (IsVisible && WindowState != WindowState.Minimized)
+        {
+            if (_masterMeter is { CanUpdate: true }) _masterMeter.Push(_vm.Engine.MasterMeter());
+            if (Timeline.IsEffectivelyVisible) Timeline.UpdateLevelMeters();
+            if (_session is { IsEffectivelyVisible: true }) _session.UpdateLevelMeters();
+            if (DetailBody.Content is MixerView mx && mx.IsEffectivelyVisible) mx.UpdateLevelMeters();
+        }
+        if (_mixer is { IsEffectivelyVisible: true }
+            && (TopLevel.GetTopLevel(_mixer) is Window { IsVisible: true, WindowState: not WindowState.Minimized }))
+            _mixer.UpdateLevelMeters();
     }
 
     private void StopPlayheadFrames()

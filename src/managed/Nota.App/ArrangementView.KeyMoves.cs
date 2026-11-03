@@ -78,7 +78,7 @@ public partial class ArrangementView
         if (_engine is null) return null;
         var touched = moves.SelectMany(m => new[] { m.trackId, m.destTrackId }).Distinct().ToList();
         var before = touched.ToDictionary(t => t, ClipStarts);
-        if (!_engine.MoveClipBlock(moves)) return null;
+        if (!_engine.MoveClipBlock(moves)) { if (_engine.TempoEditError.Length > 0) TempoRejected(_engine.TempoEditError); return null; }
         var after = touched.ToDictionary(t => t, ClipStarts);
         return new ClipBlockMove(ArrangementMoves.Reindex(before, moves.Select(m => (m.trackId, m.clipIndex)).ToList(),
             _engine.LastPlacedClips(), after), before, after);

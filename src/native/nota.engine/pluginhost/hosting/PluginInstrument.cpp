@@ -17,6 +17,11 @@ PluginInstrument::PluginInstrument(std::unique_ptr<juce::AudioPluginInstance> p,
     : plugin_(std::move(p)), maxBlock_(maxBlock) {
     pending_.ensureSize(8192);
     if (plugin_) name_ = plugin_->getName().toStdString(); // cache for displayName()
+    // VST3 process calls may run on audio workers. All MIDI, channel storage and
+    // playhead state belong to this instance; the engine joins before the next
+    // block and never processes an instance concurrently. Lifecycle/editor work
+    // stays on the message thread. Other formats retain the serial fallback.
+    parallelRender_ = plugin_ && plugin_->getPluginDescription().pluginFormatName == "VST3";
     prepare(sr);
     if (plugin_) plugin_->addListener(this); // "Learn" (M9-B3)
     // Editor-window computer keyboard -> this plugin (drained on the audio thread).
@@ -67,7 +72,9 @@ void PluginInstrument::render(float* out, int32_t frames) {
     for (GuiNote g; guiNotes_.pop(g);)
         pending_.addEvent(
             g.on ? juce::MidiMessage::noteOn(1, g.pitch, g.velocity) : juce::MidiMessage::noteOff(1, g.pitch), 0);
-    storage_.clear();
+    // Capacity is kMaxBlock, but the processor only sees this callback's frames.
+    // Clear every active channel without touching the unused reserved tail.
+    storage_.clear(0, frames);
     float* ptrs[kMaxChans];
     juce::AudioBuffer<float> block(
         ptrs, pluginChannelPtrs(*plugin_, storage_, spare_.data(), frames, chanFloor_, ptrs), frames);

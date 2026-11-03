@@ -1,0 +1,12 @@
+PASS visible compact Tempo Track in actual MainWindow
+PASS actual double-click inserts snapped point
+PASS real point drag updates BPM/beat in one undo transaction
+PASS Shift-drag retains selected point and refines position/BPM
+PASS fine keys, Escape cancellation, numeric edits, Alt deletion and initial protection
+PASS real box selection, group editing and system clipboard copy/paste at playhead
+PASS actual point context menu chooses outgoing interpolation
+PASS compact/expanded/visibility/height persistence
+PASS actual Windows headless UI rendered compact and expanded screenshots
+PASS actual lane renders at minimum/maximum zoom without losing map points
+PASS Studio Light lane and actual Preferences shortcut pane screenshots
+PASS 10,000-point actual lane reload/render (31.9 ms including 30 ms dispatcher pump)

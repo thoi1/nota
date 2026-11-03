@@ -94,6 +94,7 @@ public sealed partial class NotaEngine : IAudioEngine
     public bool LoopRecordReplace { get { ThrowIfDisposed(); return NativeMethods.LoopRecordMode(_handle) == 1; } }
     public void StopTransport() { ThrowIfDisposed(); Check(NativeMethods.TransportStop(_handle)); }
     public void SetBpm(double bpm) { ThrowIfDisposed(); Check(NativeMethods.SetBpm(_handle, bpm)); }
+    public void SetBpmDeferred(double bpm) { ThrowIfDisposed(); Check(NativeMethods.SetBpmDeferred(_handle, bpm)); }
     public double Bpm { get { ThrowIfDisposed(); return NativeMethods.TransportBpm(_handle); } }
     public void SetTimeSignature(int num, int denom) { ThrowIfDisposed(); Check(NativeMethods.SetTimeSignature(_handle, num, denom)); }
     public void SetLoop(bool enabled, double startBeat, double endBeat) { ThrowIfDisposed(); Check(NativeMethods.SetLoop(_handle, enabled ? 1 : 0, startBeat, endBeat)); }
@@ -331,6 +332,7 @@ public sealed partial class NotaEngine : IAudioEngine
     {
         if (_handle != IntPtr.Zero)
         {
+            _transientAnalysis?.Dispose();
             NativeMethods.Destroy(_handle);
             _handle = IntPtr.Zero;
         }

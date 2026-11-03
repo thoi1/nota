@@ -1,0 +1,31 @@
+[0/2] Re-checking globbed directories...
+[1/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Track.cpp.obj
+[2/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Graph.cpp.obj
+[3/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\SessionPlayer.cpp.obj
+[4/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_presets.cpp.obj
+[5/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_session.cpp.obj
+[6/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_transients.cpp.obj
+[7/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_modulation.cpp.obj
+[8/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_core.cpp.obj
+[9/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_automation.cpp.obj
+[10/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_audition.cpp.obj
+[11/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_import.cpp.obj
+[12/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Presets.cpp.obj
+[13/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Modulation.cpp.obj
+[14/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_rack.cpp.obj
+[15/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Takes.cpp.obj
+[16/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_device.cpp.obj
+[17/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Recording.cpp.obj
+[18/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_track.cpp.obj
+C:\Dev\nota\src\native\nota.engine\src\abi\nota_engine_track.cpp(557): warning C4190: 'makeSel' has C-linkage specified, but returns 'std::vector<std::pair<int,int>,std::allocator<std::pair<int,int>>>' which is incompatible with C
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231\include\vector(459): note: see declaration of 'std::vector<std::pair<int,int>,std::allocator<std::pair<int,int>>>'
+[19/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Tempo.cpp.obj
+[20/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Session.cpp.obj
+[21/29] Building CXX object CMakeFiles\nota_engine.dir\src\abi\nota_engine_audio.cpp.obj
+[22/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Automation.cpp.obj
+[23/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Rack.cpp.obj
+[24/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Render.cpp.obj
+[25/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Devices.cpp.obj
+[26/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine_Tracks.cpp.obj
+[27/29] Building CXX object CMakeFiles\nota_engine.dir\src\engine\Engine.cpp.obj
+[28/29] Linking CXX shared library nota_engine.dll

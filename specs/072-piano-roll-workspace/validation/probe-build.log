@@ -1,0 +1,9 @@
+C:\Dev\nota\specs\072-piano-roll-workspace\validation\Program.cs(232,105): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\072-piano-roll-workspace\validation\WorkspaceProbe.csproj]
+
+Build succeeded.
+
+C:\Dev\nota\specs\072-piano-roll-workspace\validation\Program.cs(232,105): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\072-piano-roll-workspace\validation\WorkspaceProbe.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.73

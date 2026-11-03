@@ -26,10 +26,13 @@ internal sealed class DetailWindow : NotaWindow
     public event Action? DockRequested;
 
     private readonly MainWindow _owner;
+    private readonly DockPanel _devices;
+    public bool DevicesVisible { get => _devices.IsVisible; set => _devices.IsVisible = value; }
 
     public DetailWindow(MainWindow owner)
     {
         _owner = owner;
+        _owner.TrackEditorToolContext(this);
         MainWindow.ReleaseTextFocusOnOutsidePress(this);
 
         // Route transport keys (Space/Return) in the tunnel phase so a focused control here
@@ -54,9 +57,22 @@ internal sealed class DetailWindow : NotaWindow
         grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));   // device chain (bottom)
 
         Grid.SetRow(ClipHost, 0);
-        Grid.SetRow(ChainHost, 1);
+        var close = new Button { Classes = { "icon" }, Width = 24, Height = 24,
+            HorizontalAlignment = HorizontalAlignment.Right, Content = new Glyph(GlyphKind.Close, 12) };
+        ToolTip.SetTip(close, Loc.T("Close devices panel"));
+        close.Click += (_, _) => DevicesVisible = false;
+        var header = new DockPanel { Margin = new Thickness(6, 0) };
+        DockPanel.SetDock(close, Dock.Right);
+        header.Children.Add(close);
+        header.Children.Add(new TextBlock { Text = Loc.T("Devices"), FontSize = 12,
+            Foreground = NotaPalette.TextTertiary, VerticalAlignment = VerticalAlignment.Center });
+        _devices = new DockPanel { Background = NotaPalette.BgApp };
+        DockPanel.SetDock(header, Dock.Top);
+        _devices.Children.Add(header);
+        _devices.Children.Add(ChainHost);
+        Grid.SetRow(_devices, 1);
         grid.Children.Add(ClipHost);
-        grid.Children.Add(ChainHost);
+        grid.Children.Add(_devices);
         SetBody(grid);
     }
 

@@ -1,0 +1,46 @@
+engine v0.36.1
+  [PASS] grid warp mapping: 4/4 bar and beat grid uses quarter-note ticks
+  [PASS] grid warp mapping: 6/8 uses eighth-note pulses and a three-quarter-note bar
+  [PASS] grid warp mapping: non-constant tempo uses the authoritative beat/seconds clock
+  [PASS] grid warp mapping: reversed source coordinates round-trip without changing musical time
+  [PASS] grid warp mapping: tempo derives from absolute interval seconds
+  [PASS] grid warp mapping: zero-time, out-of-range BPM, and crossing anchors are rejected
+  [PASS] grid warp: valid tempo/anchor/reference transaction commits ()
+  [PASS] grid warp: committing grid timing preserves original audio-warp source and beat coordinates
+  [PASS] grid warp: committed anchors have stable IDs and explicit tempo links
+  [PASS] grid warp: absolute anchor intervals derive the expected step BPM events
+  [PASS] grid warp: enabling the reference preserves source samples and never builds a stretch cache
+  [PASS] grid warp: tempo points, anchors, and reference undo and redo as one action
+  [PASS] grid warp: source audio playback samples are unchanged by tempo mapping
+  [PASS] source timing: derived original tempo cache never dirties the authoring manifest
+  [PASS] grid warp: project save/reload restores tempo events, anchors, and the clip reference
+  [PASS] source timing: content-addressed original BPM and source beats survive disk reload
+  [PASS] grid warp: persisted Reset baseline restores its region in one undo/redo action
+  [PASS] grid warp Tempo Track fixture installs an unrelated fixed anchor ()
+  [PASS] grid warp Tempo Track move updates its anchor and tempo intervals, preserving unrelated anchors ()
+  [PASS] grid warp Tempo Track move is one undo/redo action
+  [PASS] grid warp Tempo Track rejects a conflicting BPM edit on a linked point
+  [PASS] grid warp Tempo Track delete removes the linked anchor and preserves unrelated anchors ()
+  [PASS] grid warp Tempo Track delete is one undo/redo action
+  [PASS] Audio follows grid stretches the clip, unlinks its Grid Warp anchors, and preserves tempo events and source samples
+  [PASS] Audio follows grid edit unlinks Grid Warp in one undo/redo action
+  [PASS] grid warp: trimmed nonzero-origin source maps 70.588235/77.922078 BPM without changing audio markers or placement
+  [PASS] grid warp: Reset rejects an external fixed-time conflict without creating undo
+  [PASS] grid warp: Reset preserves unrelated tempo events outside its region
+  [FAIL] grid warp: deleted anchor IDs are never reused for a different anchor
+  [PASS] grid warp: reversed original playback stays sample-identical across tempo boundaries
+  [PASS] grid warp: original-speed fitting rejects non-neutral pitch atomically
+  [PASS] grid warp: unsupported ramp seams reject instead of changing unrelated curve shape
+  [PASS] grid warp: out-of-range BPM is rejected without partial state or undo
+  [PASS] grid warp: crossing absolute-time anchors are rejected atomically
+  [PASS] source beats: constant follows original pulse (max error 0.0 ms)
+  [PASS] source beats: accelerando follows original pulse (max error 0.0 ms)
+  [PASS] source beats: ritardando follows original pulse (max error 10.7 ms)
+  [PASS] source beats: rubato follows original pulse (max error 0.0 ms)
+  [PASS] source beats: subdivisions follows original pulse (max error 0.0 ms)
+  [PASS] source beats: missing follows original pulse (max error 0.0 ms)
+  [PASS] source beats: a missing attack is an interpolated proposal, not a transient
+  [PASS] source beats: a manual source/beat constraint stays exact
+  [PASS] source beats: silence, invalid limits and cancellation reject safely
+  [PASS] source beats: starting BPM resolves half/double ambiguity instead of using project tempo
+  [PASS] source beats: real SuperFlux source extraction is identical before/after auto-warp and project BPM edits

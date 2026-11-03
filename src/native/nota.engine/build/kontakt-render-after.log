@@ -1,0 +1,26 @@
+C:\Dev\nota\tests\Nota.SmokeTest\HistoryTests.cs(311,39): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(9812,11): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(4306,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(5856,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6564,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6564,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6564,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(11191,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(14485,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+engine v0.36.1
+  [PASS] real VST3 fixture scanned into isolated temporary catalog
+  [PASS] VST3 instruments: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 inserts/sidechains: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 bypass, insert removal, instrument replacement and track undo preserve serial output
+  [PASS] real VST3 insert adapters use helpers (93.8 ms CPU)
+  [PASS] VST3 offline helpers participate (234.4 ms worker CPU)
+  [PASS] four VST3 tracks: offline median 0.755 ms vs serial 2.928 ms
+  [PASS] VST3 parallel processing keeps total render CPU work bounded
+HOSTED_OFFLINE {"serial":{"MedianMs":2.9275,"P95Ms":2.9533,"CallerMs":293.064,"WorkerMs":0,"DeadlinePercent":109.89900000000002,"Late":100,"Blocks":100},"parallel":{"MedianMs":0.7548,"P95Ms":0.9133,"CallerMs":77.00609999999999,"WorkerMs":234.375,"DeadlinePercent":28.877287499999998,"Late":0,"Blocks":100}}
+  [PASS] VST3 overloaded device helpers participate (515.6 ms worker CPU)
+  [PASS] four VST3 tracks: device median 1.663 ms vs serial 5.831 ms
+  [PASS] four indivisible VST3 jobs: 0/100 device deadlines missed after warm-up (<= 1)
+HOSTED_DEVICE {"serial":{"MedianMs":5.8308,"P95Ms":5.8701,"CallerMs":584.2120000000004,"WorkerMs":0,"DeadlinePercent":219.0795000000002,"Late":100,"Blocks":100},"parallel":{"MedianMs":1.6628,"P95Ms":1.8551,"CallerMs":164.2205,"WorkerMs":515.625,"DeadlinePercent":61.5826875,"Late":0,"Blocks":100}}
+  [PASS] light VST3 device workload leaves helpers parked (0.0 ms CPU)
+  [PASS] hosted instrument rack retains serial fallback and audible output

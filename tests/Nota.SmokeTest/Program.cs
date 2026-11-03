@@ -30,6 +30,64 @@ static float MonoRms(float[] buf)
 }
 
 Console.WriteLine($"engine v{NotaEngine.Version}");
+if (args.Length >= 2 && args[0] == "--profile-project")
+{
+    HostedPluginProfile.RunProject(args[1], args.Length > 2 ? int.Parse(args[2]) : 128,
+        args.Length > 3 ? int.Parse(args[3]) : 48000, args.Length > 4 ? args[4] : null);
+    return 0;
+}
+if (args.Length >= 2 && args[0] == "--profile-hosted")
+{
+    HostedPluginProfile.Run(args[1], args.Length > 2 ? int.Parse(args[2]) : 128,
+        args.Length > 3 ? int.Parse(args[3]) : 48000);
+    return 0;
+}
+if (args.Contains("--hosted-render-pool"))
+{
+    foreach (var (ok, label) in HostedRenderPoolTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+if (args.Contains("--tempo-map"))
+{
+    foreach (var (ok, label) in TempoMapTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+if (args.Contains("--tempo-change"))
+{
+    foreach (var (ok, label) in TempoChangeTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+if (args.Contains("--source-beats"))
+{
+    foreach (var (ok, label) in SourceBeatTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+if (args.Contains("--grid-warp"))
+{
+    foreach (var (ok, label) in GridWarpTests.Run()) Check(ok, label);
+    foreach (var (ok, label) in SourceBeatTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+Console.WriteLine("-- interactive project tempo --");
+foreach (var (ok, label) in TempoMapTests.Run()) Check(ok, label);
+foreach (var (ok, label) in TempoChangeTests.Run()) Check(ok, label);
+foreach (var (ok, label) in GridWarpTests.Run()) Check(ok, label);
+foreach (var (ok, label) in SourceBeatTests.Run()) Check(ok, label);
+
+if (args.Contains("--transients"))
+{
+    foreach (var (ok, label) in TransientAnalysisTests.Run()) Check(ok, label);
+    foreach (var (ok, label) in TransientMappingTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+Console.WriteLine("-- native SuperFlux and shared transient analysis --");
+foreach (var (ok, label) in TransientAnalysisTests.Run()) Check(ok, label);
+foreach (var (ok, label) in TransientMappingTests.Run()) Check(ok, label);
 
 // --- architecture boundary checks (Phase 0.7) --------------------------------
 // Enforce the DDD dependency direction at test time: the compiler drops unused
@@ -128,6 +186,22 @@ if (args.Length >= 1 && args[0] == "--audiocheck")
     eng.Stop();
     Console.WriteLine(f == 0 ? "AUDIOCHECK PASSED" : $"AUDIOCHECK FAILED ({f})");
     return f == 0 ? 0 : 1;
+}
+
+// Arrangement drawing math and native undo/redo alone: `--arrangement-tools`.
+if (args.Length >= 1 && args[0] == "--shared-editor-tools")
+{
+    foreach (var (ok, label) in SharedEditorToolTests.Run()) Check(ok, label);
+    foreach (var (ok, label) in ArrangementToolTests.Run()) Check(ok, label);
+    Console.WriteLine(failures == 0 ? "SHARED EDITOR TOOLS PASSED" : $"SHARED EDITOR TOOLS FAILED ({failures})");
+    return failures == 0 ? 0 : 1;
+}
+
+if (args.Length >= 1 && args[0] == "--arrangement-tools")
+{
+    foreach (var (ok, label) in ArrangementToolTests.Run()) Check(ok, label);
+    Console.WriteLine(failures == 0 ? "ARRANGEMENT TOOLS PASSED" : $"ARRANGEMENT TOOLS FAILED ({failures})");
+    return failures == 0 ? 0 : 1;
 }
 
 // Design and localization checks alone, without the engine tests: `--localization`.
@@ -278,6 +352,18 @@ if (args.Length >= 1 && args[0] == "--bundle")
 }
 
 // Deterministic display math and the transport-snapshot ABI, without the full DSP suite.
+if (args.Length >= 1 && args[0] == "--midi-lane-heights")
+{
+    foreach (var (ok, label) in MidiLaneHeightTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
+if (args.Length >= 1 && args[0] == "--meter-refresh")
+{
+    foreach (var (ok, label) in MeterRefreshTests.Run()) Check(ok, label);
+    return failures == 0 ? 0 : 1;
+}
+
 if (args.Length >= 1 && args[0] == "--transport-display")
 {
     foreach (var (ok, label) in TransportDisplayTests.Run()) Check(ok, label);
@@ -15327,6 +15413,8 @@ Console.WriteLine("-- tap tempo --");
 foreach (var (ok, label) in TapTempoTests.Run()) Check(ok, label);
 
 Console.WriteLine("-- transport display --");
+foreach (var (ok, label) in MeterRefreshTests.Run()) Check(ok, label);
+foreach (var (ok, label) in MidiLaneHeightTests.Run()) Check(ok, label);
 foreach (var (ok, label) in TransportDisplayTests.Run()) Check(ok, label);
 
 Console.WriteLine("-- velocity wheel --");
@@ -15464,6 +15552,10 @@ foreach (var (ok, label) in ModelStoreTests.Run()) Check(ok, label);
 // --- self-update: release parsing, download + verify, install helpers ---
 Console.WriteLine("-- self-update --");
 foreach (var (ok, label) in AppUpdaterTests.Run()) Check(ok, label);
+
+Console.WriteLine("-- Arrangement editing tools --");
+foreach (var (ok, label) in ArrangementToolTests.Run()) Check(ok, label);
+foreach (var (ok, label) in SharedEditorToolTests.Run()) Check(ok, label);
 
 Console.WriteLine(failures == 0 ? "SMOKE TEST PASSED" : $"SMOKE TEST FAILED ({failures})");
 return failures == 0 ? 0 : 1;

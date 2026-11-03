@@ -1,0 +1,60 @@
+-- CPM: Adding package nlohmann_json@3.12.0 (3.12.0)
+-- Using the multi-header code from C:/Dev/nota/src/native/nota.engine/build/_deps/nlohmann_json-src/include/
+-- CPM: Adding package dr_libs@ ()
+-- Populating dr_libs
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/dr_libs-subbuild
+ninja: no work to do.
+-- CPM: Adding package miniaudio@0.11.25 (0.11.25)
+-- Populating miniaudio
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/miniaudio-subbuild
+ninja: no work to do.
+-- CPM: Adding package signalsmith_linear@ ()
+-- Populating signalsmith_linear
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/signalsmith_linear-subbuild
+ninja: no work to do.
+-- CPM: Adding package signalsmith_stretch@ ()
+-- Populating signalsmith_stretch
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/signalsmith_stretch-subbuild
+ninja: no work to do.
+-- CPM: Adding package hiir@1.50 (1.50)
+-- Populating hiir
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/hiir-subbuild
+ninja: no work to do.
+-- CPM: Adding package flac@1.5.0 (1.5.0)
+-- CPM: Adding package rtmidi@ ()
+-- Populating rtmidi
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/rtmidi-subbuild
+ninja: no work to do.
+-- CPM: Adding package lame@3.100 (3.100)
+-- Populating lame
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/lame-subbuild
+ninja: no work to do.
+-- CPM: Adding package JUCE@8.0.14 (8.0.14)
+-- Configuring juceaide
+-- Building juceaide
+-- Exporting juceaide
+-- Testing juceaide
+-- Finished setting up juceaide
+-- CPM: Adding package asiosdk@15 (15)
+-- Populating asiosdk
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build/_deps/asiosdk-subbuild
+ninja: no work to do.
+-- Configuring done (3.2s)
+-- Generating done (0.2s)
+-- Build files have been written to: C:/Dev/nota/src/native/nota.engine/build

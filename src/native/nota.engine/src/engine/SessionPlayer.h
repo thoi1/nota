@@ -36,6 +36,11 @@ class SessionPlayer {
     // Audio-thread-only.
     double localBeats = 0.0; // absolute position within the loop clock
     float gain = 1.0f;       // launch-velocity gain of the playing slot
+    // Natural audio's source position is elapsed seconds, independent of musical
+    // tempo. This is a playback cursor, not a second musical clock.
+    uint64_t launchSerial = 0, audioLaunchSerial = 0;
+    int32_t audioSlot = -1;
+    double audioSeconds = 0.0, audioExpectedBeat = -1.0, audioCycle = -1.0;
 
     void requestLaunch(int32_t slot, double quant = -1.0, bool legato = false, float g = 1.0f);
     void requestStop() {

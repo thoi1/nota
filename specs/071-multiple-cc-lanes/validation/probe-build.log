@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Dev\nota\specs\071-multiple-cc-lanes\validation\Program.cs(91,110): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\071-multiple-cc-lanes\validation\CCProbe.csproj]
+  CCProbe -> C:\Dev\nota\specs\071-multiple-cc-lanes\validation\bin\Debug\net10.0\CCProbe.dll
+
+Build succeeded.
+
+C:\Dev\nota\specs\071-multiple-cc-lanes\validation\Program.cs(91,110): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\071-multiple-cc-lanes\validation\CCProbe.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.84

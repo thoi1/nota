@@ -46,6 +46,31 @@ dotnet run --project src/managed/Nota.App
 
 ## Performance gate
 
+The smoke test's `--perf` selector includes an isolated real-VST3 render-pool check.
+The default native build produces `nota-render-probe_VST3`, a deterministic test plugin
+kept under `build/nota-render-probe_artefacts/Release/VST3`; it is never installed or
+packaged. Run its tests alone with
+`dotnet run --project tests/Nota.SmokeTest -c Release -- --hosted-render-pool`.
+They compare serial/parallel audio and callback timing, verify worker participation,
+sidechains, automation, lifecycle edits and the hosted-rack fallback without needing a
+commercial plugin or sample library. `NOTA_RENDER_NATIVE_DIR` selects another native
+build directory, and `NOTA_RENDER_REPORT` writes device-path measurements as JSON.
+`NOTA_BUILD_RENDER_PROBE=OFF` disables this validation-only build target; a smoke run
+that includes the hosted checks requires it to be built.
+
+For an installed licensed plug-in, opt-in diagnostics can measure a controlled held note
+with `--profile-hosted <absolute-vst3-bundle-path> [frames] [sample-rate]`. To profile saved
+states and MIDI without modifying the bundle, use
+`--profile-project <absolute-nota-bundle-path> [frames] [sample-rate] [mode]`.
+Modes are `one-swam`, `four-swam`, `complete-project`, and `four-swam-all-workers` (offline
+scheduling comparison); omitted mode runs each. These selectors render into memory through
+the device-path hook, use a temporary catalog, pump plug-in initialization messages and
+report callback times, missed deadlines, worker CPU and RMS. The all-workers comparison
+uses the offline scheduling branch. They do not open the audio device or benchmark another
+DAW; a zero RMS result is inconclusive for audible playback. Project profiling reads the
+installed catalog and loads the project's commercial plug-in states; it is never part of
+the normal smoke suite. For example, pass `512 48000` for a 10.667 ms buffer deadline.
+
 `scripts/perf-gate.sh` checks that an engine change does not make Nota slower. It builds
 the engine at two commits, renders the same scenarios with both and compares the CPU
 instructions each render does, counted by Valgrind across every engine thread:

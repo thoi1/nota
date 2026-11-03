@@ -1,0 +1,13 @@
+{
+  "theme": "dark",
+  "shots": [
+    {
+      "scene": "transients",
+      "id": "editor",
+      "args": {
+        "width": 1360
+      }
+    }
+  ],
+  "out": "C:/Dev/nota/src/native/nota.engine/build/superflux-verification/ui-fr/images"
+}

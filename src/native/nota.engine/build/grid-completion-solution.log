@@ -1,0 +1,69 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Nota.Domain -> C:\Dev\nota\src\managed\Nota.Domain\bin\Release\net10.0\Nota.Domain.dll
+  Nota.Application -> C:\Dev\nota\src\managed\Nota.Application\bin\Release\net10.0\Nota.Application.dll
+  Nota.Presentation -> C:\Dev\nota\src\managed\Nota.Presentation\bin\Release\net10.0\Nota.Presentation.dll
+  Nota.Infrastructure -> C:\Dev\nota\src\managed\Nota.Infrastructure\bin\Release\net10.0\Nota.Infrastructure.dll
+  Nota.Mcp -> C:\Dev\nota\src\managed\Nota.Mcp\bin\Release\net10.0\Nota.Mcp.dll
+  Nota.Remote -> C:\Dev\nota\src\managed\Nota.Remote\bin\Release\net10.0\Nota.Remote.dll
+  Nota.SmokeTest -> C:\Dev\nota\tests\Nota.SmokeTest\bin\Release\net10.0\Nota.SmokeTest.dll
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(340,27): warning CS0108: 'MosaicCurveView.SetValue' hides inherited member 'AvaloniaObject.SetValue(AvaloniaProperty, object?, BindingPriority)'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,31): warning CS0108: 'MosaicZoneMap.KeyDown' hides inherited member 'InputElement.KeyDown'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,40): warning CS0108: 'MosaicZoneMap.KeyUp' hides inherited member 'InputElement.KeyUp'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MixerView.cs(488,27): warning CS0108: 'MixerView.Tag(string, double, double, double, string)' hides inherited member 'Control.Tag'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MainWindow.Detail.cs(1227,27): warning CS0108: 'MainWindow.Height(RowDefinition)' hides inherited member 'Layoutable.Height'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(294,13): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(1354,48): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\GrainInstrumentCard.cs(317,76): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(215,114): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(220,30): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(322,101): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(228,36): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(291,75): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ChordMidiBody.cs(411,80): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(355,78): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(399,41): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(437,81): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(107,16): warning CS8321: The local function 'DecayS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(108,16): warning CS8321: The local function 'PeakS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(120,23): warning CS8321: The local function 'Db' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\VintageDeviceBody.cs(245,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\PendulumInstrumentCard.cs(480,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\ValveDeviceBody.cs(255,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\SamplerInstrumentCard.cs(316,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\ArrangementView.LaneControl.cs(470,26): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\MosaicInstrumentCard.cs(306,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+  Nota.App -> C:\Dev\nota\src\managed\Nota.App\bin\Release\net10.0\Nota.App.dll
+
+Build succeeded.
+
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(340,27): warning CS0108: 'MosaicCurveView.SetValue' hides inherited member 'AvaloniaObject.SetValue(AvaloniaProperty, object?, BindingPriority)'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,31): warning CS0108: 'MosaicZoneMap.KeyDown' hides inherited member 'InputElement.KeyDown'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,40): warning CS0108: 'MosaicZoneMap.KeyUp' hides inherited member 'InputElement.KeyUp'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MixerView.cs(488,27): warning CS0108: 'MixerView.Tag(string, double, double, double, string)' hides inherited member 'Control.Tag'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MainWindow.Detail.cs(1227,27): warning CS0108: 'MainWindow.Height(RowDefinition)' hides inherited member 'Layoutable.Height'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(294,13): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(1354,48): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\GrainInstrumentCard.cs(317,76): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(215,114): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(220,30): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(322,101): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(228,36): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(291,75): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ChordMidiBody.cs(411,80): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(355,78): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(399,41): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(437,81): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(107,16): warning CS8321: The local function 'DecayS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(108,16): warning CS8321: The local function 'PeakS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(120,23): warning CS8321: The local function 'Db' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\VintageDeviceBody.cs(245,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\PendulumInstrumentCard.cs(480,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\ValveDeviceBody.cs(255,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\SamplerInstrumentCard.cs(316,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\ArrangementView.LaneControl.cs(470,26): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\MosaicInstrumentCard.cs(306,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+    26 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.71

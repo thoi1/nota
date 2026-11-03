@@ -1,0 +1,8 @@
+{
+    "cmake.sourceDirectory": "C:/Dev/nota/tests/perf",
+    "chat.tools.terminal.autoApprove": {
+        "New-Item": true,
+        "Out-Null": true,
+        "Test-Path": true
+    }
+}

@@ -1,0 +1,36 @@
+  Nota.Domain -> C:\Dev\nota\src\managed\Nota.Domain\bin\Release\net10.0\Nota.Domain.dll
+  Nota.Application -> C:\Dev\nota\src\managed\Nota.Application\bin\Release\net10.0\Nota.Application.dll
+  Nota.Remote -> C:\Dev\nota\src\managed\Nota.Remote\bin\Release\net10.0\Nota.Remote.dll
+  Nota.Presentation -> C:\Dev\nota\src\managed\Nota.Presentation\bin\Release\net10.0\Nota.Presentation.dll
+C:\Dev\nota\src\managed\Nota.Mcp\Tools\RackTools.cs(216,26): warning CS0108: 'RackTools.MidiParam' hides inherited member 'EngineTools.MidiParam(int, int, int, float)'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.Mcp\Nota.Mcp.csproj]
+  Nota.Mcp -> C:\Dev\nota\src\managed\Nota.Mcp\bin\Release\net10.0\Nota.Mcp.dll
+  Nota.Infrastructure -> C:\Dev\nota\src\managed\Nota.Infrastructure\bin\Release\net10.0\Nota.Infrastructure.dll
+C:\Dev\nota\tests\Nota.SmokeTest\HistoryTests.cs(311,39): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(9777,11): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(4271,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(5821,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(11156,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(14450,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+  Nota.SmokeTest -> C:\Dev\nota\tests\Nota.SmokeTest\bin\Release\net10.0\Nota.SmokeTest.dll
+
+Build succeeded.
+
+C:\Dev\nota\src\managed\Nota.Mcp\Tools\RackTools.cs(216,26): warning CS0108: 'RackTools.MidiParam' hides inherited member 'EngineTools.MidiParam(int, int, int, float)'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.Mcp\Nota.Mcp.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\HistoryTests.cs(311,39): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(9777,11): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(4271,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(5821,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6529,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(11156,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(14450,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+    11 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:21.20

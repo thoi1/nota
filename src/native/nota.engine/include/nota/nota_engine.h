@@ -530,7 +530,47 @@ NOTA_API double     nota_transport_count_in_beats(const NotaEngine* engine);
 NOTA_API NotaResult nota_transport_set_loop_record_mode(NotaEngine* engine, int32_t mode);
 NOTA_API int32_t    nota_transport_loop_record_mode(const NotaEngine* engine);
 NOTA_API NotaResult nota_transport_set_bpm(NotaEngine* engine, double bpm);
+/* Interactive tempo edit: retain old warp caches and prepare replacements with
+ * nota_engine_warp_build_poll. Offline rendering completes pending tempo caches itself. */
+NOTA_API NotaResult nota_transport_set_bpm_deferred(NotaEngine* engine, double bpm);
 NOTA_API double     nota_transport_bpm(const NotaEngine* engine);
+typedef struct NotaTempoPoint {
+    int64_t tick;
+    double bpm;
+    int32_t curve; /* outgoing: 0 Step, 1 Linear, 2 Smooth */
+    int32_t reserved; /* positive linked anchor ID; zero unlinked (legacy field name) */
+} NotaTempoPoint;
+typedef struct NotaTempoAnchor {
+    int64_t tick;
+    double seconds;
+    int32_t locked;
+    int32_t track_id;
+    int32_t clip_index;
+    int32_t reserved; /* stable positive anchor ID; zero legacy/unassigned */
+    double source_frame;
+    int64_t reference_id;
+} NotaTempoAnchor;
+/* Authoring-thread map operations. NULL output/capacity zero returns total count.
+ * Ticks are 960 per quarter note. Set validates before one immutable undo transaction. */
+NOTA_API int32_t nota_tempo_points(const NotaEngine*, NotaTempoPoint* output, int32_t capacity);
+NOTA_API int32_t nota_tempo_anchors(const NotaEngine*, NotaTempoAnchor* output, int32_t capacity);
+NOTA_API NotaResult nota_tempo_set(NotaEngine*, const NotaTempoPoint*, int32_t count,
+    double min_bpm, double max_bpm, const NotaTempoAnchor*, int32_t anchor_count, int32_t checkpoint);
+NOTA_API NotaResult nota_grid_warp_commit(NotaEngine*, int32_t track, int32_t clip,
+    const NotaTempoPoint*, int32_t point_count, double min_bpm, double max_bpm,
+    const NotaTempoAnchor*, int32_t anchor_count);
+NOTA_API double nota_tempo_min_bpm(const NotaEngine*);
+NOTA_API double nota_tempo_max_bpm(const NotaEngine*);
+NOTA_API double nota_tempo_seconds_at_beat(const NotaEngine*, double beat);
+NOTA_API double nota_tempo_beat_at_seconds(const NotaEngine*, double seconds);
+NOTA_API double nota_tempo_bpm_at_beat(const NotaEngine*, double beat);
+NOTA_API const char* nota_tempo_error(const NotaEngine*);
+NOTA_API int64_t nota_tempo_revision(const NotaEngine*);
+NOTA_API int32_t nota_clip_grid_follows_audio(const NotaEngine*, int32_t track, int32_t clip);
+NOTA_API NotaResult nota_clip_tempo_mode(NotaEngine*, int32_t track, int32_t clip, int32_t grid_follows, int32_t lock_anchors);
+/* Persistence baseline only: restore relationship without refitting the saved map. */
+NOTA_API NotaResult nota_clip_tempo_reference_restore(NotaEngine*, int32_t track, int32_t clip, int32_t grid_follows, int64_t reference_id);
+NOTA_API int64_t nota_clip_tempo_reference_id(const NotaEngine*, int32_t track, int32_t clip);
 NOTA_API NotaResult nota_transport_set_time_signature(NotaEngine* engine, int32_t num, int32_t denom);
 NOTA_API NotaResult nota_transport_set_loop(NotaEngine* engine, int32_t enabled,
                                             double start_beat, double end_beat);
@@ -1153,6 +1193,40 @@ NOTA_API int32_t nota_sample_get_info(const NotaEngine* engine, int64_t sample_i
 /* Copies up to `cap` interleaved floats into `out`; returns the total count
  * (frames*channels). Pass out=NULL to query the size. */
 NOTA_API int64_t nota_sample_read(const NotaEngine* engine, int64_t sample_id, float* out, int64_t cap);
+
+/* Offline SuperFlux analysis (version 1). NEVER call from the real-time audio thread.
+ * Create on the engine authoring thread from a completed mono/stereo source (8-192 kHz).
+ * The handle retains immutable audio independently of engine lifetime; first step prepares DSP.
+ * One worker drives step/progress/read. Cancel alone may run concurrently. Destroy only
+ * after all other calls have exited. No partial results are published. */
+typedef struct NotaTransientAnalysis NotaTransientAnalysis;
+typedef struct NotaTransientSettings {
+    double sensitivity;             /* finite [0,1], default .5 (delta 1.1) */
+    double minimum_spacing_seconds; /* finite [.005,1], default .030 */
+    int32_t refine_attacks;          /* 0/1; default 1 */
+    int32_t reserved;                /* must be zero */
+} NotaTransientSettings;
+typedef struct NotaTransient {
+    int64_t sample_position;        /* source-relative, not clip/arrangement relative */
+    double seconds;
+    float strength;
+    float confidence;               /* [0,1], heuristic local evidence */
+    int64_t uncertainty_samples;    /* >=1; unrefined timings retain spectral-window uncertainty */
+    int32_t refined;
+    int32_t analysis_version;
+} NotaTransient;
+NOTA_API NotaTransientAnalysis* nota_transient_analysis_create(const NotaEngine* engine,
+    int64_t sample_id, const NotaTransientSettings* settings);
+/* 1 running, 0 complete, -1 failed/invalid argument, -2 cancelled. */
+NOTA_API int32_t nota_transient_analysis_step(NotaTransientAnalysis* analysis, int32_t max_frames);
+NOTA_API void nota_transient_analysis_cancel(NotaTransientAnalysis* analysis);
+NOTA_API double nota_transient_analysis_progress(const NotaTransientAnalysis* analysis);
+NOTA_API double nota_transient_analysis_sample_rate(const NotaTransientAnalysis* analysis);
+/* Count/read are available only once complete. Read returns records copied from [offset,...). */
+NOTA_API int64_t nota_transient_analysis_count(const NotaTransientAnalysis* analysis);
+NOTA_API int32_t nota_transient_analysis_read(const NotaTransientAnalysis* analysis,
+    int64_t offset, NotaTransient* out, int32_t capacity);
+NOTA_API void nota_transient_analysis_destroy(NotaTransientAnalysis* analysis);
 /* Built-in Sampler settings; returns 1 if the instrument is a Sampler, else 0. */
 NOTA_API int32_t nota_track_sampler_info(const NotaEngine* engine, int32_t track_id, NotaSamplerInfo* out);
 /* Nota Grain (kind 10) sample info: sample_id / root_note into `out`. 1 = ok. */
@@ -1375,7 +1449,9 @@ NOTA_API NotaResult nota_clip_pan_env_set(NotaEngine* engine, int32_t track_id, 
 NOTA_API int32_t    nota_midi_clip_env_get(const NotaEngine* engine, int32_t track_id, int32_t clip_index, int32_t kind, NotaAutomationPoint* out, int32_t cap);
 NOTA_API NotaResult nota_midi_clip_env_set(NotaEngine* engine, int32_t track_id, int32_t clip_index, int32_t kind, const NotaAutomationPoint* pts, int32_t count);
 /* Warp markers (source-frame ↔ beat anchors). set replaces the list (>=2, any
- * order); get fills out_src/out_beat (may be NULL) and returns the total count. */
+ * order); after sorting by source, sources and beats must be finite and strictly
+ * increasing, beats nonnegative. Invalid lists leave graph/history unchanged.
+ * get fills out_src/out_beat (may be NULL) and returns the total count. */
 NOTA_API NotaResult nota_clip_set_warp_markers(NotaEngine* engine, int32_t track_id, int32_t clip_index, const double* src_frames, const double* beats, int32_t count);
 NOTA_API int32_t     nota_clip_get_warp_markers(const NotaEngine* engine, int32_t track_id, int32_t clip_index, double* out_src, double* out_beat, int32_t max_count);
 NOTA_API int32_t    nota_clip_split(NotaEngine* engine, int32_t track_id, int32_t clip_index, double at_beat);   /* -> new clip index, or -1 */
@@ -1514,6 +1590,7 @@ NOTA_API void       nota_track_unfreeze(NotaEngine* engine, int32_t track_id);
  * an audio track at at_beat as a new clip, overwriting what it covers (one undo step);
  * returns the clip index or -1. name_utf8 may be NULL. */
 NOTA_API int64_t    nota_track_bounce_begin(NotaEngine* engine, int32_t track_id, double length_beats);
+NOTA_API int64_t    nota_track_bounce_range_begin(NotaEngine* engine, int32_t track_id, double start_beat, double end_beat);
 NOTA_API int64_t    nota_track_freeze_take(NotaEngine* engine, float* out, int64_t cap_frames);
 NOTA_API int32_t    nota_track_paste_audio_frames(NotaEngine* engine, int32_t track_id, const float* interleaved,
                                                   int64_t frames, double at_beat, const char* name_utf8);
@@ -2624,6 +2701,16 @@ typedef enum NotaGamepadAxis {
  * matters, so the UI samples this on its own tick. */
 NOTA_API int32_t     nota_gamepad_axis_values(NotaEngine* engine, int32_t pad, int32_t* out, int32_t max);
 
+
+
+/* Authoring-only original source geometry: [start frame, end frame, absolute origin seconds, source frames/sec]. */
+NOTA_API int32_t nota_grid_reference_info(const NotaEngine* engine, int32_t track, int32_t clip, double* four_values);
+NOTA_API NotaResult nota_grid_reference_restore(NotaEngine* engine, int32_t track, int32_t clip, const double* four_values);
+
+/* Grid Warp reset baseline: bounded authoring serialization, no undo on restore. */
+NOTA_API int32_t nota_grid_baseline_get(const NotaEngine* engine,int32_t track,int32_t clip,uint8_t* out,int32_t capacity);
+NOTA_API NotaResult nota_grid_baseline_restore(NotaEngine* engine,int32_t track,int32_t clip,const uint8_t* data,int32_t size);
+NOTA_API NotaResult nota_grid_warp_reset(NotaEngine* engine,int32_t track,int32_t clip);
 
 #ifdef __cplusplus
 } /* extern "C" */

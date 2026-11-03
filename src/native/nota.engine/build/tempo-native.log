@@ -1,0 +1,4 @@
+[0/2] Re-checking globbed directories...
+[1/4] Building CXX object CMakeFiles\nota-tempo-selftest.dir\src\engine\TempoMap.cpp.obj
+[2/4] Building CXX object CMakeFiles\nota-tempo-selftest.dir\src\engine\tests\TempoMapTest.cpp.obj
+[3/4] Linking CXX executable nota-tempo-selftest.exe

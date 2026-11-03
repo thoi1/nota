@@ -1,0 +1,25 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Nota.Domain -> C:\Dev\nota\src\managed\Nota.Domain\bin\Release\net10.0\Nota.Domain.dll
+  Nota.Application -> C:\Dev\nota\src\managed\Nota.Application\bin\Release\net10.0\Nota.Application.dll
+  Nota.Presentation -> C:\Dev\nota\src\managed\Nota.Presentation\bin\Release\net10.0\Nota.Presentation.dll
+  Nota.Infrastructure -> C:\Dev\nota\src\managed\Nota.Infrastructure\bin\Release\net10.0\Nota.Infrastructure.dll
+  Nota.Remote -> C:\Dev\nota\src\managed\Nota.Remote\bin\Release\net10.0\Nota.Remote.dll
+  Nota.Mcp -> C:\Dev\nota\src\managed\Nota.Mcp\bin\Release\net10.0\Nota.Mcp.dll
+  Nota.App -> C:\Dev\nota\src\managed\Nota.App\bin\Release\net10.0\Nota.App.dll
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(112,62): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(114,51): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(123,51): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(133,50): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+  TempoTrackUi -> C:\Dev\nota\specs\077-collapsible-tempo-track\ui\bin\Release\net10.0\TempoTrackUi.dll
+
+Build succeeded.
+
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(112,62): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(114,51): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(123,51): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+C:\Dev\nota\specs\077-collapsible-tempo-track\ui\Program.cs(133,50): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\077-collapsible-tempo-track\ui\TempoTrackUi.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.29

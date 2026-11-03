@@ -8,6 +8,7 @@
 // Free of Avalonia and the engine so the smoke test can link it.
 
 using System;
+using Nota.Application;
 
 namespace Nota.App;
 
@@ -18,35 +19,11 @@ internal static class ClipTempo
     /// <summary>Source frame at a warp beat, piecewise linear through markers sorted by source;
     /// past either end it extends the end segment's slope.</summary>
     public static double SrcAt(ReadOnlySpan<double> src, ReadOnlySpan<double> beat, double b)
-    {
-        int n = Math.Min(src.Length, beat.Length);
-        if (n < 2) return n == 1 ? src[0] : 0;
-        int i = Segment(beat, n, b);
-        double db = beat[i + 1] - beat[i];
-        return db <= 0 ? src[i] : src[i] + (src[i + 1] - src[i]) * (b - beat[i]) / db;
-    }
+        => WarpPositionMap.SrcAt(src, beat, b);
 
     /// <summary>Warp beat at a source frame (the inverse of <see cref="SrcAt"/>).</summary>
     public static double BeatAt(ReadOnlySpan<double> src, ReadOnlySpan<double> beat, double s)
-    {
-        int n = Math.Min(src.Length, beat.Length);
-        if (n < 2) return n == 1 ? beat[0] : 0;
-        int i = Segment(src, n, s);
-        double ds = src[i + 1] - src[i];
-        return ds <= 0 ? beat[i] : beat[i] + (beat[i + 1] - beat[i]) * (s - src[i]) / ds;
-    }
-
-    // Index i of the segment [xs[i], xs[i+1]] holding x (clamped to the first / last segment).
-    private static int Segment(ReadOnlySpan<double> xs, int n, double x)
-    {
-        int lo = 0, hi = n - 2;
-        while (lo < hi)
-        {
-            int mid = (lo + hi + 1) >> 1;
-            if (xs[mid] <= x) lo = mid; else hi = mid - 1;
-        }
-        return lo;
-    }
+        => WarpPositionMap.BeatAt(src, beat, s);
 
     /// <summary>Tempo of the played window [playStart, playEnd] (playEnd 0 = to the last marker),
     /// or 0 when it can't be told.</summary>

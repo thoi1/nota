@@ -1,0 +1,1 @@
+C:/Dev/nota/src/native/nota.engine/build/superflux-verification/ui-fr/data\plugins\VST3

@@ -25,9 +25,17 @@ const AudioTake* findTake(const Track& t, int32_t takeId) {
     return nullptr;
 }
 
+double takeBeatAtFrame(const AudioTake& k,double frame) {
+    return k.tempoMap && k.sample ? k.tempoMap->beatAtSeconds(k.tempoMap->secondsAtBeat(k.originBeat)
+        +frame/k.sample->sourceSampleRate) : k.originBeat+frame*k.beatsPerFrame;
+}
+double takeFrameAtBeat(const AudioTake& k,double beat) {
+    return k.tempoMap && k.sample ? (k.tempoMap->secondsAtBeat(beat)-k.tempoMap->secondsAtBeat(k.originBeat))*k.sample->sourceSampleRate
+        : (beat-k.originBeat)/k.beatsPerFrame;
+}
 // A section still where its take put it starts where the take plays its first frame.
 bool atTakePosition(const AudioClip& c, const AudioTake& k) {
-    return std::abs(c.startBeat - (k.originBeat + c.sourceOffsetFrames * k.beatsPerFrame)) < 1e-6;
+    return std::abs(c.startBeat - takeBeatAtFrame(k,c.sourceOffsetFrames)) < 1e-6;
 }
 
 } // namespace
@@ -41,7 +49,7 @@ void Engine::placeTakesForTempo() {
     if (!authoring_) return;
     auto stale = [&](const Track& t) {
         for (const auto& k : t.takes)
-            if (k.sample && k.beatsPerFrame != beatsPerSourceFrame(k.sample->sourceSampleRate)) return true;
+            if (k.sample && (k.tempoMap != authoring_->tempoMap || k.beatsPerFrame != beatsPerSourceFrame(k.sample->sourceSampleRate))) return true;
         return false;
     };
     // Runs after every undo/redo: no new graph unless a take is actually off its tempo.
@@ -62,10 +70,14 @@ void Engine::placeTakesForTempo() {
         for (auto& c : nt->clips) {
             const AudioTake* k = c.takeId != 0 && !c.warpEnabled ? findTake(*nt, c.takeId) : nullptr;
             if (k && k->sample && atTakePosition(c, *k))
-                c.startBeat = k->originBeat + c.sourceOffsetFrames * beatsPerSourceFrame(k->sample->sourceSampleRate);
+                {
+                    const double seconds=(authoring_->tempoMap ? authoring_->tempoMap->secondsAtBeat(k->originBeat) : k->originBeat*60/authoringBpm_)
+                        +c.sourceOffsetFrames/k->sample->sourceSampleRate;
+                    c.startBeat=authoring_->tempoMap ? authoring_->tempoMap->beatAtSeconds(seconds) : seconds*authoringBpm_/60;
+                }
         }
         for (auto& k : nt->takes)
-            if (k.sample) k.beatsPerFrame = beatsPerSourceFrame(k.sample->sourceSampleRate);
+            if (k.sample) { k.beatsPerFrame = beatsPerSourceFrame(k.sample->sourceSampleRate); k.tempoMap=authoring_->tempoMap; }
         g->tracks.push_back(std::move(nt));
         any = true;
     }
@@ -87,8 +99,8 @@ bool Engine::takeInfo(int32_t trackId, int32_t index, NotaTakeInfo* out) const {
     out->number = k.number;
     out->group = k.group;
     out->origin_beat = k.originBeat;
-    out->start_beat = k.originBeat + k.sourceOffsetFrames * bpf;
-    out->length_beats = static_cast<double>(k.lengthFrames) * bpf;
+    out->start_beat = takeBeatAtFrame(k,k.sourceOffsetFrames);
+    out->length_beats = takeBeatAtFrame(k,k.sourceOffsetFrames+k.lengthFrames)-out->start_beat;
     out->source_offset_frames = k.sourceOffsetFrames;
     out->length_frames = k.lengthFrames;
     out->sample_id = k.sample ? k.sample->id : 0;
@@ -123,12 +135,12 @@ bool Engine::compTake(int32_t trackId, int32_t takeId, double startBeat, double 
     // Whole frames of the take, clamped to what the pass recorded: sections from one
     // recording then meet frame to frame, so a comp has no gaps or overlaps at its seams.
     const double lo = k->sourceOffsetFrames, hi = k->sourceOffsetFrames + static_cast<double>(k->lengthFrames);
-    const double f0 = std::clamp(std::round((std::min(startBeat, endBeat) - k->originBeat) / bpf), lo, hi);
-    const double f1 = std::clamp(std::round((std::max(startBeat, endBeat) - k->originBeat) / bpf), lo, hi);
+    const double f0 = std::clamp(std::round(takeFrameAtBeat(*k,std::min(startBeat,endBeat))), lo, hi);
+    const double f1 = std::clamp(std::round(takeFrameAtBeat(*k,std::max(startBeat,endBeat))), lo, hi);
     if (f1 - f0 < 1.0) return false;
 
     auto nt = cloneTrack(*old);
-    const double ns = k->originBeat + f0 * bpf, ne = k->originBeat + f1 * bpf;
+    const double ns=takeBeatAtFrame(*k,f0), ne=takeBeatAtFrame(*k,f1);
     overwriteAudioClipsInRange(nt->clips, ns, ne);
     AudioClip clip;
     clip.sample = k->sample;
@@ -192,7 +204,7 @@ bool Engine::flattenTakes(int32_t trackId) {
             const double off = std::round(c.sourceOffsetFrames);
             const int64_t len = c.effectiveLength();
             if (off < 0.0 || len <= 0 || static_cast<int64_t>(off) + len > frames) return false;
-            return bpf > 0.0 && std::abs(c.startBeat - (origin + off * bpf)) < 1e-6;
+            return bpf > 0.0 && std::abs(c.startBeat - takeBeatAtFrame(*first,off)) < 1e-6;
         };
 
         std::vector<const AudioClip*> merged; // into nt->clips, which `kept` leaves them in
@@ -244,7 +256,7 @@ bool Engine::flattenTakes(int32_t trackId) {
             sb->samples = std::move(buf);
             AudioClip clip;
             clip.sample = std::move(sb);
-            clip.startBeat = origin + static_cast<double>(lo) * bpf;
+            clip.startBeat = takeBeatAtFrame(*first,static_cast<double>(lo));
             clip.sourceOffsetFrames = static_cast<double>(lo);
             clip.lengthFrames = hi - lo;
             nt->clips.push_back(std::move(clip));
@@ -279,6 +291,7 @@ int32_t Engine::restoreTake(int32_t trackId, const std::string& path, int32_t nu
     k.sourceOffsetFrames = std::clamp(sourceOffsetFrames, 0.0, static_cast<double>(k.sample->frames));
     k.lengthFrames = std::clamp<int64_t>(lengthFrames, 0, k.sample->frames - static_cast<int64_t>(k.sourceOffsetFrames));
     k.beatsPerFrame = beatsPerSourceFrame(k.sample->sourceSampleRate);
+    k.tempoMap=authoring_->tempoMap;
     nt->takes.push_back(std::move(k));
     republishWithTrackRaw(trackId, nt);
     return nextTakeId_;

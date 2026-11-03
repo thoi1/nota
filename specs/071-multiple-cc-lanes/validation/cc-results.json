@@ -1,0 +1,14 @@
+[
+  "plus adds three independent lane views",
+  "new lanes choose different controllers",
+  "switch-type sustain shares the existing block editor",
+  "minus removes only a view and preserves all CC points",
+  "readding a lane preserves controller data",
+  "existing commit boundary edits only its target controller",
+  "reload cancels stale controller gestures and keeps lane layout",
+  "many lanes scroll in a bounded area",
+  "note grid remains available",
+  "short editors retain a visible note viewport with many CC lanes",
+  "all lane gutters follow the note-grid column",
+  "view, theme and zoom operations never write controller data"
+]

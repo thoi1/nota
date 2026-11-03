@@ -1,0 +1,12 @@
+{
+  "asioDriver": "{CB7F9FFD-A33B-48B2-8BC0-437D94F37142}",
+  "asioDriverName": "Yamaha Steinberg USB ASIO",
+  "asioInputPair": 0,
+  "asioOutputPair": 0,
+  "audioSystem": "asio",
+  "bufferFrames": 0,
+  "inputDeviceUid": "",
+  "outputDeviceUid": "",
+  "sampleRate": 0.0,
+  "wasapiExclusive": false
+}

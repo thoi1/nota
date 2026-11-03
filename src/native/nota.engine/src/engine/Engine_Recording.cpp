@@ -451,13 +451,13 @@ void Engine::activateLoopPunch(double atBeat) {
     const double fpb = transport_.samplesPerBeat() * (devSR > 0.0 ? audioRecordSampleRate_ / devSR : 1.0);
     const double loopLen = loopEnd_ - loopStart_;
     if (loopLen <= 0.0 || fpb <= 0.0) return;
-    captureLoopFrames_ = static_cast<size_t>(std::llround(loopLen * fpb));
+    captureLoopFrames_ = static_cast<size_t>(std::llround((secondsAtBeat(loopEnd_)-secondsAtBeat(loopStart_))*audioRecordSampleRate_));
     if (captureLoopFrames_ == 0) return;
     double local = atBeat - loopStart_;
     local -= std::floor(local / loopLen) * loopLen; // wrap into [0, loopLen)
     if (local < 0.0) local = 0.0;
     captureLoopStartBeat_ = loopStart_;
-    captureOrigin_ = static_cast<size_t>(std::llround(local * fpb)) % captureLoopFrames_;
+    captureOrigin_ = static_cast<size_t>(std::llround((secondsAtBeat(loopStart_+local)-secondsAtBeat(loopStart_))*audioRecordSampleRate_)) % captureLoopFrames_;
     captureWritePos_ = captureOrigin_;
     captureWrapped_ = false;
     audioCaptureBuf_.assign(captureLoopFrames_ * 2, 0.0f); // fresh loop-region buffer, zeroed
@@ -487,7 +487,8 @@ double Engine::audioRecordLengthBeats() const {
     const double sampleSR = audioRecordSampleRate_ > 0 ? audioRecordSampleRate_ : devSR;
     if (spb <= 0.0 || sampleSR <= 0.0) return 0.0;
     const double frames = static_cast<double>(audioCaptureBuf_.size() / 2);
-    return frames * devSR / sampleSR / spb;
+    const double origin=captureLoop_ ? captureLoopStartBeat_ : audioRecordStartBeat_;
+    return beatAtSeconds(secondsAtBeat(origin)+frames/sampleSR)-origin;
 }
 
 void Engine::drainInputQueue() {
@@ -663,7 +664,7 @@ void Engine::stopAudioRecording() {
             const double sr = transport_.sampleRate();
             const double spb = transport_.samplesPerBeat();
             const double deviceFrames = sample->frames * (sr > 0 ? sr / sample->sourceSampleRate : 1.0);
-            s.lengthBeats = spb > 0 ? deviceFrames / spb : 4.0;
+            s.lengthBeats=beatAtSeconds(secondsAtBeat(audioRecordStartBeat_)+sample->frames/sample->sourceSampleRate)-audioRecordStartBeat_;
             if (s.lengthBeats <= 0.0) s.lengthBeats = 4.0;
             // Fixed-length capture keeps its length; an open-ended take is cut to whole quanta.
             s.lengthBeats = sessionRecordLen_ > 0.0 ? sessionRecordLen_ : roundedTakeBeats(s.lengthBeats);
@@ -687,13 +688,13 @@ void Engine::stopAudioRecording() {
         if (loopWrapped) { // at least one full pass → the whole loop
             clip.startBeat = loopStartBeat;
             ns = loopStartBeat;
-            ne = loopStartBeat + static_cast<double>(loopFrames) * beatsPerFrame;
+            ne=beatAtSeconds(secondsAtBeat(loopStartBeat)+static_cast<double>(loopFrames)/sampleSR);
         } else if (loopReached > loopOrigin) { // partial pass → just what was recorded
             clip.sourceOffsetFrames = static_cast<double>(loopOrigin);
             clip.lengthFrames = static_cast<int64_t>(loopReached - loopOrigin);
-            clip.startBeat = loopStartBeat + static_cast<double>(loopOrigin) * beatsPerFrame;
+            clip.startBeat=beatAtSeconds(secondsAtBeat(loopStartBeat)+static_cast<double>(loopOrigin)/sampleSR);
             ns = clip.startBeat;
-            ne = clip.startBeat + static_cast<double>(loopReached - loopOrigin) * beatsPerFrame;
+            ne=beatAtSeconds(secondsAtBeat(loopStartBeat)+static_cast<double>(loopReached)/sampleSR);
         } else {
             return; // loop armed but nothing captured
         }
@@ -701,7 +702,9 @@ void Engine::stopAudioRecording() {
         // Linear take: move it earlier by the device latency so it lines up with what was
         // playing when it was performed. (Loop and session takes keep their grid as before.)
         double trimDevice = 0.0;
-        clip.startBeat = latencyCompensatedStart(audioRecordStartBeat_, audioRecordLatencyFrames_, spb, &trimDevice);
+        const double startSeconds=secondsAtBeat(audioRecordStartBeat_)-(devSR>0 ? audioRecordLatencyFrames_/devSR : 0);
+        trimDevice=startSeconds<0 ? -startSeconds*devSR : 0;
+        clip.startBeat=beatAtSeconds(std::max(0.0,startSeconds));
         double kept = static_cast<double>(sample->frames);
         if (trimDevice > 0.0 && devSR > 0.0) {
             const double trim = std::min(kept, trimDevice * sampleSR / devSR);
@@ -710,7 +713,7 @@ void Engine::stopAudioRecording() {
             clip.lengthFrames = static_cast<int64_t>(kept);
         }
         ns = clip.startBeat;
-        ne = clip.startBeat + kept * beatsPerFrame;
+        ne=beatAtSeconds(secondsAtBeat(clip.startBeat)+kept/sampleSR);
     }
     if (ne <= ns) return;
     overwriteAudioClipsInRange(nt->clips, ns, ne);
@@ -745,10 +748,11 @@ void Engine::materialiseLoopTakes(Track& nt, std::vector<LoopPass>& passes, size
         k.sourceOffsetFrames = static_cast<double>(p.from);
         k.lengthFrames = static_cast<int64_t>(p.to - p.from);
         k.beatsPerFrame = bpf;
+        k.tempoMap=authoring_ ? authoring_->tempoMap : nullptr;
         takes.push_back(std::move(k));
     }
 
-    overwriteAudioClipsInRange(nt.clips, loopStartBeat, loopStartBeat + static_cast<double>(loopFrames) * bpf);
+    overwriteAudioClipsInRange(nt.clips, loopStartBeat, beatAtSeconds(secondsAtBeat(loopStartBeat)+static_cast<double>(loopFrames)/sampleRate));
     std::vector<std::pair<size_t, size_t>> open{{0, loopFrames}}; // loop frames no newer pass covers yet
     for (size_t i = passes.size(); i-- > 0 && !open.empty();) {
         const size_t from = passes[i].from, to = passes[i].to;
@@ -761,7 +765,7 @@ void Engine::materialiseLoopTakes(Track& nt, std::vector<LoopPass>& passes, size
             }
             AudioClip clip;
             clip.sample = takes[i].sample;
-            clip.startBeat = loopStartBeat + static_cast<double>(s) * bpf;
+            clip.startBeat=beatAtSeconds(secondsAtBeat(loopStartBeat)+static_cast<double>(s)/sampleRate);
             clip.sourceOffsetFrames = static_cast<double>(s);
             clip.lengthFrames = static_cast<int64_t>(e - s);
             clip.takeId = takes[i].id;

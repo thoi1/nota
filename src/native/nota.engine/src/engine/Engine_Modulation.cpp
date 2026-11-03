@@ -97,10 +97,9 @@ void Engine::modulatorSet(int32_t trackId, int32_t modId, int32_t field, float v
 float Engine::modulatorValue(int32_t trackId, int32_t modId) const {
     auto t = findTrackAuthoring(trackId);
     if (!t) return 0.0f;
-    const double spb = transport_.samplesPerBeat();
     const double sr = transport_.sampleRate() > 0 ? transport_.sampleRate() : 44100.0;
     const double samples = static_cast<double>(transport_.playheadSamples());
-    const double beat = spb > 0 ? samples / spb : 0.0;
+    const double beat = transport_.uiPositionBeats();
     for (auto& m : t->modulators)
         if (m.id == modId) return m.eval(beat, samples / sr);
     return 0.0f;

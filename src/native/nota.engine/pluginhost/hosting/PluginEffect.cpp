@@ -17,6 +17,9 @@ namespace hosting {
 PluginEffect::PluginEffect(std::unique_ptr<juce::AudioPluginInstance> p, double sr, int maxBlock)
     : plugin_(std::move(p)) {
     if (plugin_) name_ = plugin_->getName().toStdString();
+    // Per-instance VST3 buffers/playhead/sidechain data permit an exclusive worker
+    // process call. Initialization, state and editors remain on the message thread.
+    parallelRender_ = plugin_ && plugin_->getPluginDescription().pluginFormatName == "VST3";
     empty_.ensureSize(256);
     setSampleRate(sr, maxBlock);
     if (plugin_) plugin_->addListener(this); // "Learn" (M9-B3)
@@ -75,7 +78,8 @@ int32_t PluginEffect::latencySamples() const {
 void PluginEffect::process(float* buf, int32_t frames) {
     if (frames <= 0 || frames > maxBlock_ || plugin_ == nullptr) return;
     const int nc = juce::jmin(storage_.getNumChannels(), kMaxChans);
-    storage_.clear();
+    // Initialize active inputs/sidechains, not the whole maximum-block allocation.
+    storage_.clear(0, frames);
     float* l = storage_.getWritePointer(0);
     float* r = stereoIn_ ? storage_.getWritePointer(1) : spare_.data(); // mono main: drop R
     simd_audio::deinterleaveStereo(l, r, buf, frames);

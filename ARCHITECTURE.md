@@ -94,9 +94,30 @@ sample-accurate MIDI. Its implementation is split by concern across
 `Transport`, `SessionPlayer`, `Automation`, `Modulation`, `MidiClip`,
 `MidiController`, `NoteExpression`, `CommandQueue`, `SnapshotHistory`, `Audition`)
 live as `.h`/`.cpp` pairs in `src/engine/`. Rendering dispatches Pass 1 leaf
-tracks in parallel over the lock-free `AudioThreadPool` (per-worker scratch
+tracks in parallel over the lock-free `AudioThreadPool` (per-track scratch
 buffers) and sums leaves/groups/returns with the SIMD mixer; per-device silence
 is propagated down every chain (see the auto-sleep convention below).
+
+Parallel eligibility is an explicit `supportsParallelRender()` contract: built-ins and
+the audited VST3 instrument/effect adapters can run as independent leaf jobs. Each processor
+instance has one owner for the whole block; MIDI, buffers, playhead and sidechain state are
+per-instance, and fork/join completes before ordered summation and the next block. Unknown
+hosted formats, Audio Units, hosted-containing racks and shared recording writers retain
+the serial fallback. Plug-in creation, preparation, state and editor lifecycle remain on
+the message thread. There is no JUCE dependency in the core scheduler.
+
+Hosted channel buffers retain maximum-block capacity, but each callback clears only its
+active frame range on every channel. Inputs and sidechains therefore start initialized
+without repeatedly writing the unused reserved tail, including when callback sizes change.
+
+Live callbacks keep workers parked while the caller keeps up. Under sustained overload,
+helper sizing accounts for both total DSP work and the largest indivisible track job;
+it targets half the buffer period once active, leaving room for voice attacks and scheduler
+jitter, and wakes only the useful bounded helper count. Offline rendering uses the available
+helpers. The pool defaults to hardware threads minus
+one (at most 16 helpers; performance cores on macOS), supports 0–64 helpers plus the caller,
+and can be reconfigured only while the audio device is stopped. More helpers cannot split
+one expensive track's device chain. Real plug-ins may also create their own internal workers.
 
 Device I/O sits behind `AudioBackend` so the platform layer stays swappable:
 | Platform | Audio | MIDI |
@@ -125,7 +146,26 @@ a driver that won't start falls back to WASAPI. Backends report device latency
 Warped clips are **not** stretched on the audio thread. When a clip is warped, its played
 window is rendered **once, offline** into a device-rate buffer stretched to the target
 musical length (Signalsmith Stretch); the audio thread then just copies from that cache.
-Changing tempo rebuilds the caches. See `Warp.h`, `WarpStream.cpp`, `Engine_Tracks.cpp`.
+Interactive project-tempo changes queue the transport command immediately and retain the
+previous caches. After edits settle, the UI polls the existing warp worker to prepare and
+publish replacements for the latest requested authoring tempo. Polling cancels obsolete
+jobs without waiting for them. The synchronous BPM API and offline rendering still finish
+cache preparation on the calling thread. See `Warp.h`, `WarpStream.cpp`, `Engine_Tracks.cpp`.
+
+Project tempo automation lives in an immutable `TempoMap` owned by the Graph. Authoring
+prepares bounded beat/seconds knots from Step/Linear/Smooth points; Transport adopts the
+Graph's raw map at block boundaries and slices rendering at prepared timing boundaries.
+Callback conversions search/interpolate these knots, with no integration or owning atomic.
+UI/export queries retain a separate atomic snapshot of that same map. Mapped warp caches
+include the map and clip origin in their identity and bake output-time markers off-thread.
+Grid follows audio derives this map from explicit source/beat pairs and reads natural
+reference audio; protected absolute pairs validate atomically before any publication.
+Durable source-reference IDs survive clip reindexing and splitting. Grid source windows
+and absolute origins are separate from audio warp markers; stable anchor IDs explicitly link
+Step tempo events. Graph-owned reference-region baselines restore through one validated Reset.
+Original-source pulse inference reuses captured SuperFlux results on bounded analysis workers;
+source-beat observations live in derived bundle caches, outside project tempo and undo state. Recording takes and
+frozen buffers retain their capture mapping; export uses mapped endpoint intervals.
 
 Resize semantics differ by clip type: a warped clip **trims** its played window, while an
 unwarped clip's source region moves — which is what lets a short one-shot be dragged out

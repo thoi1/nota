@@ -1260,6 +1260,33 @@ public sealed partial class PreferencesWindow : NotaWindow
         return new Border { Classes = { "segmented" }, HorizontalAlignment = HorizontalAlignment.Left, Child = strip };
     }
 
+    private static Control MeterRefreshPicker()
+    {
+        var settings = App.Services.GetRequiredService<ISettingsService>();
+        var combo = Combo(220);
+        combo.Name = "MeterRefreshRate";
+        combo.ItemsSource = new[] { Loc.T("30 Hz — default"), Loc.T("60 Hz — smoother meters") };
+        bool loading = false;
+        void ShowSaved()
+        {
+            loading = true;
+            combo.SelectedIndex = settings.Current.MeterRefreshHz == 60 ? 1 : 0;
+            loading = false;
+        }
+        ShowSaved();
+        combo.SelectionChanged += (_, _) =>
+        {
+            if (loading || combo.SelectedIndex < 0) return;
+            int hz = combo.SelectedIndex == 1 ? 60 : 30;
+            if (settings.Current.MeterRefreshHz == hz) return;
+            settings.Current.MeterRefreshHz = hz;
+            settings.Save();
+        };
+        combo.AttachedToVisualTree += (_, _) => { ShowSaved(); settings.Changed += ShowSaved; };
+        combo.DetachedFromVisualTree += (_, _) => settings.Changed -= ShowSaved;
+        return combo;
+    }
+
     private Control AppearancePane()
     {
         var settings = App.Services.GetService<ISettingsService>();
@@ -1360,6 +1387,7 @@ public sealed partial class PreferencesWindow : NotaWindow
                 Row("", Caption(Loc.T("Which side of the arrangement the track list sits on. Right starts the timeline at the left edge, next to the browser. Also in the View menu."))),
                 Row(Loc.T("Interface scale"), ScalePicker()),
                 Row("", Caption(Loc.T("Makes the whole interface larger or smaller. Timeline, piano roll and audio editor zoom work on top of it."))),
+                Row(Loc.T("Meter refresh rate"), MeterRefreshPicker()),
                 Row(Loc.T("Language"), LanguagePicker()),
                 Row("", Caption(Loc.T("The language of menus, panels and messages. It changes when Nota restarts. Project files and the names you type are never translated.")))),
             Section(Loc.T("Piano roll"), 10, labelAll,
@@ -1419,8 +1447,26 @@ public sealed partial class PreferencesWindow : NotaWindow
             ("⌘⇧R", Loc.T("Loop recording: Overdub (every pass adds) / Replace (keep the latest pass)")),
             (Loc.T("Click the position read-out"), Loc.T("Switch it between bars and time · every ruler follows")),
         }),
+        (Loc.T("Tempo track"), new[]
+        {
+            (Loc.T("Drag an audio clip onto the tempo lane"), Loc.T("Extract original source tempo · preview and correct beats, then Apply")),
+            (Loc.T("Double-click empty tempo lane"), Loc.T("Add a snapped tempo point")),
+            (Loc.T("Drag a tempo point"), Loc.T("Move beat and BPM · Shift for fine adjustment · Esc cancels · one Undo per gesture")),
+            (Loc.T("Shift-click · drag empty tempo lane"), Loc.T("Select multiple points · box-select points")),
+            (Loc.T("Alt-click tempo point · Delete"), Loc.T("Delete selected tempo points · keep the initial point")),
+            ("← →   ↑ ↓", Loc.T("Nudge one tempo tick / one BPM · Shift for 0.01 BPM")),
+            ("⌘A   ⌘C   ⌘X   ⌘V", Loc.T("Select all / copy / cut / paste tempo points while the lane has focus")),
+            (Loc.T("Right-click tempo lane"), Loc.T("Choose Step, Linear or Smooth · unlock absolute timing anchors")),
+        }),
         (Loc.T("Arrangement & editing"), new[]
         {
+            ("1", Loc.T("Select the pointer tool in the focused Arrangement or piano roll")),
+            ("2", Loc.T("Select the Pencil tool")),
+            ("3", Loc.T("Select the Eraser tool")),
+            ("4", Loc.T("Select Waveform Draw · press again to cycle Sine, Triangle, Sawtooth, Square, Freehand")),
+            ("5", Loc.T("Select Nota Warp · click an audio clip to analyse transients and edit warp anchors")),
+            (Loc.T("Piano-roll Pencil: click / drag empty grid"), Loc.T("Create a note using the last length and velocity · drag to set duration · Esc cancels")),
+            (Loc.T("Waveform Draw: drag a CC lane"), Loc.T("Draw the shared waveform on that controller only · one Undo per stroke · Esc cancels")),
             ("⌘Z   ⌘⇧Z", Loc.T("Undo / redo")),
             ("⌘A", Loc.T("Select all clips")),
             ("⌘⇧A", Loc.T("Toggle automation mode")),
@@ -1439,6 +1485,9 @@ public sealed partial class PreferencesWindow : NotaWindow
             ("0", Loc.T("Deactivate / activate the selected clip(s)")),
             ("←   →", Loc.T("Nudge the selected clips by the grid step · stops at the song start")),
             ("⌥←   ⌥→", Loc.T("Nudge the selected clips by a 64th note")),
+            (Loc.T("Pencil: drag an empty instrument lane"), Loc.T("Draw a MIDI clip on the grid · stop at neighboring clips")),
+            (Loc.T("Eraser: click a clip or automation point"), Loc.T("Delete that clip or point · undo restores it")),
+            (Loc.T("Pencil / waveform: drag an automation lane"), Loc.T("Draw an envelope · arrow beside the tools sets shape, amplitude, cycle and phase · Esc cancels")),
             ("⌥↑   ⌥↓", Loc.T("Move the selected clips to the next track that takes them, at the same beats")),
             (Loc.T("Drag below the last track"), Loc.T("Move the clips to a new track like their own · one per source track")),
             ("Delete", Loc.T("Delete the selected clip / range")),
@@ -1531,6 +1580,7 @@ public sealed partial class PreferencesWindow : NotaWindow
             (Loc.T("Click the controller tab"), Loc.T("Show a MIDI controller under the notes · click it again to pick another CC, the pitch wheel or channel pressure")),
             (Loc.T("Drag in the Sustain lane"), Loc.T("Draw a pedal block on the grid · ⌘ off the grid · drag an edge to resize, the body to move · double-click or Delete removes it")),
             (Loc.T("Drag in a controller lane"), Loc.T("Draw the controller's curve · ⌥ draws a straight line · drag a point to move it · double-click adds or deletes a point")),
+            (Loc.T("Drag a lane divider"), Loc.T("Resize that velocity or controller lane · height is remembered")),
             (Loc.T("Click a clip in the clip strip"), Loc.T("Make it the active clip (several clips open) · its lock keeps it as a read-only reference")),
             ("⌘⌥ + wheel", Loc.T("Zoom rows (vertical zoom)")),
             (Loc.T("Click a key"), Loc.T("Play it on the track's instrument · ⇧-drag glides through the keys · ⌘-click selects every note of that pitch")),
@@ -1541,9 +1591,14 @@ public sealed partial class PreferencesWindow : NotaWindow
         }),
         (Loc.T("Audio clip editor"), new[]
         {
+            (Loc.T("Drag a musical grid line or anchor"), Loc.T("Grid follows audio: align the grid to a source attack without stretching the recording")),
+            (Loc.T("Double-click a musical grid line"), Loc.T("Grid follows audio: add a fixed anchor in the ruler or waveform")),
+            ("⇧", Loc.T("Grid follows audio: bypass transient snapping while dragging")),
+            (Loc.T("⌥-click a musical anchor"), Loc.T("Grid follows audio: remove an interior fixed anchor")),
             (Loc.T("Click · drag the ruler"), Loc.T("Move the playhead there · drag to scrub · snapped to the grid on a warped clip, ⌥ off it")),
             (Loc.T("Drag the playhead line"), Loc.T("Scrub the playhead")),
-            (Loc.T("Double-click the wave"), Loc.T("Add a warp marker · on a marker, delete it")),
+            (Loc.T("Double-click the wave"), Loc.T("Add an anchor at the nearest transient · on an anchor, delete it")),
+            ("⌥", Loc.T("Bypass grid and transient snapping while placing or dragging a warp anchor")),
             (Loc.T("Drag a warp marker"), Loc.T("Align the audio to the grid · the wave stretches as you drag")),
             ("Esc", Loc.T("While dragging a warp marker or a segment tempo: put it back")),
             (Loc.T("Drag · double-click Tempo"), Loc.T("Set the tempo the clip was recorded at · ÷2 / ×2 halve or double it")),
@@ -1575,7 +1630,7 @@ public sealed partial class PreferencesWindow : NotaWindow
         }),
         (Loc.T("Mouse"), new[]
         {
-            (Loc.T("Double-click clip"), Loc.T("Open in the clip editor · on one of several selected MIDI clips, open them all together")),
+            (Loc.T("Double-click clip"), Loc.T("MIDI: fill the workspace with the piano roll · audio: open the clip editor · selected MIDI clips open together")),
             (Loc.T("Double-click a browser instrument"), Loc.T("Swap it onto the selected instrument track · clips and effects stay · no track selected starts one")),
             ("⌥ + double-click a browser instrument", Loc.T("Always start a new track with it")),
             (Loc.T("Right-click the metronome"), Loc.T("Count-in before Play / Record: off · 1 · 2 · 4 bars")),

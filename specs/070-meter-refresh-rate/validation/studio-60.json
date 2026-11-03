@@ -1,0 +1,146 @@
+{
+  "platform": "Microsoft Windows NT 10.0.26300.0",
+  "hz": 60,
+  "theme": "studio-dark",
+  "backend": "Wasapi",
+  "requestedAsioDriver": "",
+  "sampleRate": 48000,
+  "bufferFrames": 480,
+  "measuredSeconds": 10,
+  "animationCallbacks": {
+    "count": 2363,
+    "updatesPerSecond": 236.30213450857713,
+    "medianGapMs": 4.159600000000864,
+    "p95GapMs": 4.483500000000049,
+    "maxGapMs": 23.31880000000001
+  },
+  "serviceTicks": {
+    "count": 291,
+    "updatesPerSecond": 29.123786285036612,
+    "medianGapMs": 33.33220000000006,
+    "p95GapMs": 34.2509,
+    "maxGapMs": 245.6292000000003
+  },
+  "meters": [
+    {
+      "name": "transport master",
+      "effectivelyVisible": true,
+      "rebuiltControls": 0,
+      "stateChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "drawListChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "minNormalizedLevel": 0.09856397976570568,
+      "maxNormalizedLevel": 0.3106413789791302
+    },
+    {
+      "name": "arrangement track",
+      "effectivelyVisible": true,
+      "rebuiltControls": 0,
+      "stateChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "drawListChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "minNormalizedLevel": 0.09856397976570568,
+      "maxNormalizedLevel": 0.3106413789791302
+    },
+    {
+      "name": "arrangement master",
+      "effectivelyVisible": true,
+      "rebuiltControls": 0,
+      "stateChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "drawListChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "minNormalizedLevel": 0.09856397976570568,
+      "maxNormalizedLevel": 0.3106413789791302
+    },
+    {
+      "name": "mixer track",
+      "effectivelyVisible": true,
+      "rebuiltControls": 0,
+      "stateChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "drawListChanges": {
+        "count": 610,
+        "updatesPerSecond": 61.10568908213312,
+        "medianGapMs": 16.662399999999252,
+        "p95GapMs": 17.051000000000386,
+        "maxGapMs": 31.38130000000001
+      },
+      "minNormalizedLevel": 0.09856397976570568,
+      "maxNormalizedLevel": 0.3106413789791302
+    },
+    {
+      "name": "mixer master",
+      "effectivelyVisible": true,
+      "rebuiltControls": 0,
+      "stateChanges": {
+        "count": 597,
+        "updatesPerSecond": 59.80129834638969,
+        "medianGapMs": 16.66569999999956,
+        "p95GapMs": 17.055200000000696,
+        "maxGapMs": 31.38130000000001
+      },
+      "drawListChanges": {
+        "count": 610,
+        "updatesPerSecond": 61.10568908213312,
+        "medianGapMs": 16.662399999999252,
+        "p95GapMs": 17.051000000000386,
+        "maxGapMs": 31.38130000000001
+      },
+      "minNormalizedLevel": 0.09856397976570568,
+      "maxNormalizedLevel": 0.3106413789791302
+    }
+  ],
+  "dropouts": 0,
+  "cursorChanges": 2363,
+  "processCpuMs": 4562.5,
+  "allocatedBytes": 107003984,
+  "fiveMeterRecordingMicroseconds": 36.1613,
+  "checks": [
+    "real Appearance picker has exactly two choices and applies live",
+    "hidden mixer receives no level updates",
+    "floating mixer owns frames with main minimized",
+    "minimized main receives no level updates",
+    "export suspension stops presentation loop",
+    "resuming restarts floating presentation",
+    "all minimized windows stop the shared loop",
+    "visible live-input meters keep refreshing while stopped"
+  ]
+}

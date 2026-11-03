@@ -43,12 +43,13 @@ public sealed partial class ArrangementView
         public AutoEditor(ArrangementView o, IAutoRows rows) { _o = o; _rows = rows; _owner = rows.Owner; }
 
         /// <summary>A point drag, curve bend or range selection is live.</summary>
-        internal bool IsActive => _autoDrag is not null || _bendLeft is not null || _rangeTrack is not null;
+        internal bool IsActive => _autoDrag is not null || _bendLeft is not null || _rangeTrack is not null || _o.IsToolDrawing(_owner);
 
         /// <summary>Drop a live gesture (capture lost / cancel). False when nothing was live.</summary>
         internal bool Cancel()
         {
             if (!IsActive) return false;
+            if (_o.IsToolDrawing(_owner)) _o.CancelToolStroke();
             _autoDrag = null; _autoDragTrack = null; _bendLeft = _bendRight = null; _bendTrack = null;
             _rangeTrack = null;
             _autoLiveStarted = false;   // the next drag checkpoints undo again
@@ -70,7 +71,7 @@ public sealed partial class ArrangementView
         private TrackVM? _hoverTrack;
         private TrackVM? _rangeTrack;            // Shift-drag time-range selection in progress (Phase 2)
         private double _rangeAnchor;
-        internal bool IsEditingPoint => _autoDrag != null || _bendLeft != null;   // M9-C/D: don't clobber a hand-edit
+        internal bool IsEditingPoint => _autoDrag != null || _bendLeft != null || _o.IsToolDrawing(_owner);   // M9-C/D: don't clobber a hand-edit
 
         // Target-selector pill: width fits its label so nothing clips.
         private const double PillH = 16;
@@ -104,9 +105,13 @@ public sealed partial class ArrangementView
             int i = _rows.RowAtY(pos.Y);
             if (i < 0) return;
             var t = _rows.TrackAt(i);
+            if (!_rows.Editable(i)) return;
 
             double pillW = PillWidth(t.AutoLabel);
             if (PillRect(i, pillW).Contains(pos)) { _o.ShowAutoTargetMenu(_owner, t); return; }
+            if (_o.ToolAutoPressed(_owner, t.AutoPoints, _o.AutoRange(t), _rows.Top(i) + 8,
+                _rows.Top(i) + _rows.Height(i) - 8, e, () => _o.CommitAuto(t))) return;
+            if (!pt.Properties.IsLeftButtonPressed && !pt.Properties.IsRightButtonPressed) return;
 
             double curBeat = Math.Max(0, _o.SnapMaybe(_o._scrollBeats + pos.X / _o._pixelsPerBeat, e.KeyModifiers));
 
@@ -258,6 +263,8 @@ public sealed partial class ArrangementView
 
         internal void AutoPointerMoved(PointerEventArgs e)
         {
+            if (_o.ToolAutoMoved(_owner, e)) return;
+            _owner.Cursor = _o.ToolCursor;
             if (_rangeTrack is not null)
             {
                 double beat = Math.Max(0, _o.Snap(_o._scrollBeats + e.GetPosition(_owner).X / _o._pixelsPerBeat));
@@ -291,6 +298,7 @@ public sealed partial class ArrangementView
 
         internal void AutoPointerReleased(PointerReleasedEventArgs e)
         {
+            if (_o.ToolAutoReleased(_owner, e)) return;
             if (_rangeTrack is not null)
             {
                 // A zero-width drag (Shift-click, no move) is a deselect, not a selection.

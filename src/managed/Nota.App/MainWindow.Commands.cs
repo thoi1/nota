@@ -47,6 +47,11 @@ public partial class MainWindow
         B("file.exit", Close);   // the close button's path: unsaved changes still ask first (#316)
 
         // ---- Edit
+        B("tool.select", () => ApplyEditorTool(ArrangementTool.Select));
+        B("tool.pencil", () => ApplyEditorTool(ArrangementTool.Pencil));
+        B("tool.eraser", () => ApplyEditorTool(ArrangementTool.Eraser));
+        B("tool.waveform", () => ApplyEditorTool(ArrangementTool.WaveformDraw));
+        B("tool.warp", () => ApplyEditorTool(ArrangementTool.NotaWarp));
         B("edit.undo", () => OnMenuUndo(this, e), _ => Need(_vm?.Engine.CanUndo == true, Loc.T("Nothing to undo")));
         B("edit.redo", () => OnMenuRedo(this, e));
         B("edit.duplicate", () => OnMenuDuplicate(this, e));
@@ -61,7 +66,7 @@ public partial class MainWindow
         B("edit.pasteBounced", () => OnMenuPasteBounced(this, e));
         B("edit.copyToOtherView", () => OnMenuCopyToOtherView(this, e));
         B("edit.delete", () => OnMenuDeleteSel(this, e));
-        B("edit.selectAll", () => Timeline.SelectAllClips());
+        B("edit.selectAll", () => { if (Timeline.TempoHasFocus) Timeline.SelectAllTempo(); else Timeline.SelectAllClips(); });
         B("edit.toggleClipActive", () => { if (Timeline.ToggleSelectedClipsActive()) { _session?.Refresh(); if (_vm is not null) _vm.StatusText = Loc.T("Toggled clip(s)"); } },
             c => Need(c.SelectedClips > 0, Loc.T("Select a clip first")));
 
@@ -81,6 +86,7 @@ public partial class MainWindow
         B("view.popOutDetail", () => OnToggleDetailWindow(this, e));
         B("view.toggleOverview", () => OnMenuToggleOverview(this, e));
         B("view.toggleSections", () => OnMenuToggleSections(this, e));
+        B("view.toggleTempo", () => OnMenuToggleTempo(this, e));
         B("edit.resetSectionName", () => { string status = Timeline.ResetSectionNameAtPlayhead(); if (_vm is not null) _vm.StatusText = status; });
         B("view.follow", () => OnMenuToggleFollow(this, e));
         B("view.showPlayhead", ShowPlayhead);

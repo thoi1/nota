@@ -30,6 +30,7 @@ class PluginEffect : public nota::Device, private juce::AudioProcessorListener {
     ~PluginEffect() override;
 
     const char* displayName() const override { return name_.empty() ? "Plugin" : name_.c_str(); }
+    bool supportsParallelRender() const override { return parallelRender_; }
 
     void setSampleRate(double sr, int32_t maxBlock) override;
     int32_t latencySamples() const override;
@@ -95,6 +96,7 @@ class PluginEffect : public nota::Device, private juce::AudioProcessorListener {
     int chanFloor_ = 0;        // pluginChannelPtrs floor (see minProcessChannels)
     juce::MidiBuffer empty_;
     int maxBlock_ = 0;
+    bool parallelRender_ = false; // immutable format decision, made on the message thread
     bool stereoIn_ = true, stereoOut_ = true; // main buses have a channel 1 (see setSampleRate)
     EditorHost editor_;                       // declared last: destroyed before plugin_
 };

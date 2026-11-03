@@ -64,6 +64,7 @@ public partial class MainWindow
     // Undo/redo swaps the whole graph snapshot, so refresh every view that reads it.
     private void RefreshAfterUndoRedo()
     {
+        RequestTempoWarpBuild();
         Timeline.Refresh();
         _session?.Refresh();
         // Reflect device-chain edits (a removed device coming back, #109) on the track the
@@ -160,6 +161,7 @@ public partial class MainWindow
 
     private void OnMenuCopy(object? sender, EventArgs e)
     {
+        if (Timeline.TempoHasFocus) { Timeline.CopyTempo(); return; }
         if (_vm is null) return;
         if (SessionFocused && _session!.CopySelection()) return;
         if (_trackHeadersFocused && Timeline.CopySelectedTracks()) { _vm.StatusText = Loc.T("Copied track(s)"); return; }
@@ -169,6 +171,7 @@ public partial class MainWindow
     }
     private void OnMenuCut(object? sender, EventArgs e)
     {
+        if (Timeline.TempoHasFocus) { _ = CutTempoAsync(); return; }
         if (_vm is null) return;
         if (SessionFocused && _session!.CutSelection()) return;
         if (_trackHeadersFocused && Timeline.CutSelectedTracks()) { _vm.StatusText = Loc.T("Cut track(s)"); return; }
@@ -176,8 +179,14 @@ public partial class MainWindow
         if (Timeline.CutTimeSelection()) { _session?.Refresh(); _vm.StatusText = Loc.T("Cut range"); return; }
         if (Timeline.CutSelectedClip()) { _session?.Refresh(); _vm.StatusText = Loc.T("Cut clip"); }
     }
+    private async System.Threading.Tasks.Task CutTempoAsync()
+    {
+        await Timeline.CopyTempoAsync();
+        if (!_playheadFramesClosed) Timeline.DeleteTempo();
+    }
     private void OnMenuPaste(object? sender, EventArgs e)
     {
+        if (Timeline.TempoHasFocus) { Timeline.PasteTempo(); return; }
         if (_vm is null) return;
         if (SessionFocused && _session!.PasteSelection()) return;
         if (_trackHeadersFocused && Timeline.PasteTracks()) { _vm.StatusText = Loc.T("Pasted track(s)"); return; }
@@ -198,6 +207,7 @@ public partial class MainWindow
     }
     private void OnMenuDeleteSel(object? sender, EventArgs e)
     {
+        if (Timeline.TempoHasFocus) { Timeline.DeleteTempo(); return; }
         if (_vm is null) return;
         if (SessionFocused && _session!.DeleteSelection()) return;
         if (_trackHeadersFocused && Timeline.DeleteSelectedTracks()) { _vm.StatusText = Loc.T("Deleted track(s)"); return; }
@@ -209,7 +219,12 @@ public partial class MainWindow
         if (_detailMaximized) { SetDetailMaximized(false); Browser.IsVisible = true; return; }
         Browser.IsVisible = !Browser.IsVisible;
     }
-    private void OnMenuToggleClip(object? sender, EventArgs e) => DetailPanel.IsVisible = !DetailPanel.IsVisible;
+    private void OnMenuToggleClip(object? sender, EventArgs e)
+    {
+        SetDetailMaximized(false);
+        if (_detailWindow is { } window) window.DevicesVisible = !window.DevicesVisible;
+        else DetailPanel.IsVisible = !DetailPanel.IsVisible;
+    }
     private void OnMenuToggleOverview(object? sender, EventArgs e)
     {
         Timeline.ShowOverview = !Timeline.ShowOverview;
@@ -222,6 +237,11 @@ public partial class MainWindow
         _vm.Settings.Current.ArrangementShowSections = Timeline.ShowSections;
         _vm.Settings.Save();
         _vm.StatusText = Timeline.ShowSections ? Loc.T("Sections lane shown") : Loc.T("Sections lane hidden");
+    }
+    private void OnMenuToggleTempo(object? sender, EventArgs e)
+    {
+        Timeline.ShowTempo = !Timeline.ShowTempo;
+        if (_vm is not null) _vm.StatusText = Timeline.ShowTempo ? Loc.T("Tempo track shown") : Loc.T("Tempo track hidden");
     }
     // Follow: mirrors the transport bar's Follow button — one state, two surfaces.
     private void OnMenuToggleFollow(object? sender, EventArgs e)

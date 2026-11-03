@@ -28,6 +28,7 @@ public sealed partial class ArrangementView
 
         private static readonly Cursor HandCursor = new(StandardCursorType.Hand);
         private static readonly Cursor EdgeCursor = new(StandardCursorType.SizeWestEast);
+        private double _warpHoverX = double.NaN;
         private const double EdgeGrab = 5;      // px either side of a loop edge that grabs it
         private const double ArrowZone = 14;    // px at the end of the ruler the off-screen arrow owns
 
@@ -77,6 +78,7 @@ public sealed partial class ArrangementView
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             double x = e.GetPosition(this).X;
+            if (_o.EditingTool == Nota.Application.Editing.ArrangementTool.NotaWarp) { _warpHoverX = x; InvalidateVisual(); }
             if (_gesture == Gesture.None)
             {
                 // Hover: a sideways arrow over a loop edge says it can be dragged.
@@ -117,6 +119,8 @@ public sealed partial class ArrangementView
         }
         protected override void OnPointerExited(PointerEventArgs e)
         {
+            _warpHoverX = double.NaN;
+            if (_o.EditingTool == Nota.Application.Editing.ArrangementTool.NotaWarp) InvalidateVisual();
             if (_hotEdge != 0) { _hotEdge = 0; InvalidateVisual(); }
         }
         private int _hotEdge;   // the loop edge under the pointer, drawn brighter
@@ -143,6 +147,7 @@ public sealed partial class ArrangementView
         {
             double w = Bounds.Width, h = Bounds.Height;
             ctx.FillRectangle(ChromeBg, new Rect(0, 0, w, h));
+            if (_o.EditingTool == Nota.Application.Editing.ArrangementTool.NotaWarp) WarpRuler.Background(ctx, w, h);
 
             // Loop brace across the ruler (drawn under bars/labels/playhead). A switched-off
             // loop keeps its region, drawn in grey, so a double-click can bring it back.
@@ -171,6 +176,8 @@ public sealed partial class ArrangementView
             if (RulerDisplay.ShowTime && bpm > 0) RenderTime(ctx, w, h, bpm);
             else RenderBars(ctx, w, h);
             RenderPlayheadAndReadout(ctx, w, h);
+            if (_o.EditingTool == Nota.Application.Editing.ArrangementTool.NotaWarp)
+                WarpRuler.Overlay(ctx, w, h, _warpHoverX, _o._pixelsPerBeat, _o._scrollBeats, _o.SnapGridState.Draw.Beats(_o._beatsPerBar), _o._beatsPerBar);
         }
 
         private void RenderBars(DrawingContext ctx, double w, double h)
@@ -207,11 +214,11 @@ public sealed partial class ArrangementView
                 int chars = st >= 1 ? 5 : st >= 0.1 ? 7 : st >= 0.01 ? 8 : 9;
                 if (st * pxPerSec >= chars * charW + 14) { stepS = st; break; }
             }
-            double t0 = RulerLabels.Seconds(_o._scrollBeats, bpm);
+            double t0 = _o._engine?.SecondsAtBeat(_o._scrollBeats) ?? RulerLabels.Seconds(_o._scrollBeats, bpm);
             for (long k = Math.Max(0, (long)Math.Floor(t0 / stepS)); ; k++)
             {
                 double t = k * stepS;
-                double x = _o.BeatToX(RulerLabels.BeatsAt(t, bpm));
+                double x = _o.BeatToX(_o._engine?.BeatAtSeconds(t) ?? RulerLabels.BeatsAt(t, bpm));
                 if (x > w) break;
                 if (x < 0) continue;
                 ctx.DrawLine(BarPen, new Point(x, h - 7), new Point(x, h));
@@ -300,7 +307,9 @@ public sealed partial class ArrangementView
         bool IAutoRows.Editable(int i) => true;
         (int lo, int hi) IAutoRows.VisibleRange => (0, _o._returns.Count - 1);
 
-        public bool IsEditingPoint => _auto.IsEditingPoint || _mDrag is not null;
+        public bool IsEditingPoint => _auto.IsEditingPoint || _mDrag is not null || _o.IsToolDrawing(this);
+
+        internal void ResetToolCursor() { _seamHover = false; Cursor = _o.ToolCursor; }
 
         private AutoPt? _mDrag;   // master-automation point being dragged
 
@@ -330,7 +339,7 @@ public sealed partial class ArrangementView
         {
             if (on == _seamHover) return;
             _seamHover = on;
-            Cursor = on ? SeamCursor : Cursor.Default;
+            Cursor = on ? SeamCursor : _o.ToolCursor;
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -348,6 +357,9 @@ public sealed partial class ArrangementView
             if (!_o._automationMode) return;
             var pos = e.GetPosition(this);
             if (pos.Y < MasterRowTop) { _auto.AutoPointerPressed(e); return; }   // a return row
+            if (_o.ToolAutoPressed(this, _o._masterAuto, (MasterAutoMin, MasterAutoMax),
+                MasterRowTop + MasterInset, MasterRowTop + MasterRowH - MasterInset, e, _o.CommitMasterAuto)) return;
+            if (!pt.Properties.IsLeftButtonPressed && !pt.Properties.IsRightButtonPressed) return;
             bool right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
             double beat = Math.Max(0, _o.Snap(_o._scrollBeats + pos.X / _o._pixelsPerBeat));
 
@@ -374,6 +386,7 @@ public sealed partial class ArrangementView
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (_o.ToolAutoMoved(this, e)) return;
             if (_o.IsFooterResizing) { _o.UpdateFooterResize(e.GetPosition(_o).Y); return; }
             if (_mDrag is null && _auto is { IsActive: false })
             {
@@ -390,6 +403,7 @@ public sealed partial class ArrangementView
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            if (_o.ToolAutoReleased(this, e)) return;
             if (_o.IsFooterResizing) { e.Pointer.Capture(null); _o.EndFooterResize(); return; }
             if (_mDrag is null) { if (_o._automationMode) _auto.AutoPointerReleased(e); return; }
             _mDrag = null;
@@ -408,13 +422,14 @@ public sealed partial class ArrangementView
         }
 
         /// <summary>A return-lane edit, a master-volume point drag or a row resize is live.</summary>
-        public bool IsGesturing => _auto.IsActive || _mDrag is not null || _o.IsFooterResizing;
+        public bool IsGesturing => _auto.IsActive || _mDrag is not null || _o.IsFooterResizing || _o.IsToolDrawing(this);
 
         // Esc / lost window focus: drop a live edit with no model change and reload the lanes
         // from the engine (a resize keeps the height it reached — heights are view state).
         internal bool CancelGesture()
         {
             if (!IsGesturing) return false;
+            if (_o.IsToolDrawing(this)) _o.CancelToolStroke();
             _auto.Cancel();
             _mDrag = null;
             _o.EndFooterResize();

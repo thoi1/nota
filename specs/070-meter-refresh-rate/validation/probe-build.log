@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Dev\nota\specs\070-meter-refresh-rate\validation\Program.cs(128,39): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\070-meter-refresh-rate\validation\MeterProbe.csproj]
+  MeterProbe -> C:\Dev\nota\specs\070-meter-refresh-rate\validation\bin\Debug\net10.0\MeterProbe.dll
+
+Build succeeded.
+
+C:\Dev\nota\specs\070-meter-refresh-rate\validation\Program.cs(128,39): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\070-meter-refresh-rate\validation\MeterProbe.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.12

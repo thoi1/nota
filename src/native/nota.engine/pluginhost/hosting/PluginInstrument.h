@@ -32,6 +32,7 @@ class PluginInstrument : public nota::Instrument, private juce::AudioProcessorLi
 
     const char* displayName() const override { return name_.empty() ? "Plugin" : name_.c_str(); }
     bool handlesSustain() const override { return true; } // the plug-in gets CC64 itself
+    bool supportsParallelRender() const override { return parallelRender_; }
 
     void setSampleRate(double sr) override;
 
@@ -93,6 +94,7 @@ class PluginInstrument : public nota::Instrument, private juce::AudioProcessorLi
     int chanFloor_ = 0;        // pluginChannelPtrs floor (see minProcessChannels)
     juce::MidiBuffer pending_;
     int maxBlock_;
+    bool parallelRender_ = false; // immutable format decision, made on the message thread
     bool stereoOut_ = true;                                  // main output bus has a channel 1 (see prepare)
     std::string name_;                                       // cached plugin name for displayName()
     std::atomic<int32_t> lastTouched_{-1};                   // "Learn" (M9-B3)

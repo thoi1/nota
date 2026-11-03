@@ -69,7 +69,7 @@ public partial class MainWindow
             if (finished) return;
             if (!Alive()) { cts.Cancel(); return; }   // track deleted / undone, or another project opened
             if (tick.SampleRate > 0)
-                pending.LengthBeats = tick.TotalFrames / tick.SampleRate * (double)_vm.Transport.Bpm / 60.0;
+                pending.LengthBeats = Engine.BeatAtSeconds(Engine.SecondsAtBeat(pending.StartBeat) + tick.TotalFrames / tick.SampleRate) - pending.StartBeat;
             pending.Peaks = tick.Peaks;
             pending.PeakCount = tick.Count;
             pending.Label = Loc.F("{0} · Processing… {1:0} %", name, tick.Fraction * 100);
@@ -93,6 +93,8 @@ public partial class MainWindow
 
             var settings = App.Services.GetRequiredService<ISettingsService>().Current;
             double warpBpm = WarpTempoFor(info, bpm, settings.SamplesWarpLoops);
+            if (Engine.TryGetAudioClipInfo(t, clip, out var originalSource))
+                Engine.TransientAnalysis.RememberOriginalBpm(originalSource.SampleId, info?.Bpm > 0 ? info.Bpm : bpm);
             // Only material that plays in a key moves to it: a hit (an 808 included) would be
             // varispeeded — shorter, brighter, another sound — so one-shots keep their pitch.
             int semis = settings.SamplesMatchKey && _vm.Transport.Key is { } projectKey
@@ -234,7 +236,7 @@ public partial class MainWindow
     private async Task PollWarpBuildAsync(Func<bool>? alive = null, Action<long>? progress = null)
     {
         long remaining;
-        while ((remaining = Engine.WarpBuildPoll()) > 0 && (alive?.Invoke() ?? true))
+        while ((alive?.Invoke() ?? true) && (remaining = Engine.WarpBuildPoll()) > 0)
         {
             progress?.Invoke(remaining);
             await Task.Delay(WarpPollMs);

@@ -118,6 +118,8 @@ public static class ProjectMigrations
         // v28 -> v29: audio tracks gain Takes and audio clips TakeId (take lanes, specs/067).
         // Absent in v28 documents = no takes, every clip a plain clip — no-op.
         new Migration(28, _ => { }),
+        // v29 -> v30: optional authoritative tempo map. Missing = saved scalar BPM.
+        new Migration(29, _ => { }),
     };
 
     /// <summary>Migrates <paramref name="root"/> up to <see cref="ProjectService.CurrentFormatVersion"/>

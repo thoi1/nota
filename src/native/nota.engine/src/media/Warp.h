@@ -14,6 +14,7 @@
 #include <vector>
 
 namespace nota {
+class TempoMap;
 
 // Warp modes. RePitch changes pitch with speed (resample); the
 // rest are pitch-preserving stretches tuned for different material.
@@ -38,6 +39,9 @@ struct WarpMarker {
 // current inputs differ from its cache's holds a STALE cache: it keeps playing it (clipped
 // to the new played length) until the rebuild lands, rather than going silent.
 struct WarpInputs {
+    std::shared_ptr<const TempoMap> tempoMap;
+    double projectBeat = 0;
+    bool reversed = false;
     const SampleBuffer* sample = nullptr;
     std::vector<WarpMarker> markers;
     double warpBeats = 0.0;

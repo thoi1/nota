@@ -216,15 +216,20 @@ public sealed class MixerView : UserControl
     }
 
     /// <summary>Pushes fresh meter readings to every strip (called at the UI clock).</summary>
-    public void UpdateMeters()
+    public void UpdateLevelMeters()
     {
-        // A track added or removed while the mixer is open gets (or loses) its strip.
-        if (_builtTrackCount >= 0 && _engine.TrackCount != _builtTrackCount) Refresh();
         foreach (var (id, meter) in _meters)
         {
+            if (!meter.CanUpdate) continue;
             if (id < 0) meter.Push(_engine.MasterMeter());
             else if (_engine.TryGetTrackMeter(id, out var m)) meter.Push(m);
         }
+    }
+
+    public void UpdateMeters()
+    {
+        // Structural/fader sync stays on the service clock, not the meter presentation clock.
+        if (_builtTrackCount >= 0 && _engine.TrackCount != _builtTrackCount) Refresh();
         // Follow master volume changes made elsewhere (MST, Master row, Remote, project load).
         if (GetMasterVolume is { } get && _masterFader is { Dragging: false } f && _masterDb is { } db)
         {

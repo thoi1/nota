@@ -1,0 +1,49 @@
+engine v0.36.1
+  [PASS] tempo map: legacy constant BPM before command drain
+  [PASS] tempo map: native map transaction accepted
+  [PASS] tempo map: multiple steps use accumulated time
+  [PASS] tempo map: graph undo/redo restores the complete map
+  [PASS] tempo map: transport crosses a step at 44100 Hz
+  [PASS] tempo map: loop across step has no accumulated drift at 44100 Hz
+  [PASS] tempo map: transport crosses a step at 48000 Hz
+  [PASS] tempo map: loop across step has no accumulated drift at 48000 Hz
+  [PASS] tempo map: transport crosses a step at 96000 Hz
+  [PASS] tempo map: loop across step has no accumulated drift at 96000 Hz
+  [PASS] tempo map: linear accelerando analytical duration
+  [PASS] tempo map: two-hour forward/inverse round trips
+  [PASS] tempo map: smooth ritardando stays positive and monotone
+  [PASS] tempo map: protected absolute anchor rejects atomically without undo
+  [PASS] tempo map: invalid initial/nonfinite points rejected
+  [PASS] tempo map: restoring UI BPM never overwrites automation
+  [PASS] tempo map: top transport BPM gesture latches insertion beat and preserves other points in one undo
+  [PASS] tempo map: project capture/apply retains points and anchors
+  [PASS] tempo map: existing controller scheduling self-test stays compatible
+  [PASS] tempo map: actual MIDI onset at nonzero clip origin through Step (sample 176401, expected 176400)
+  [PASS] tempo map: recorded controller event crosses its mapped sample through Step
+  [PASS] tempo map: nonzero-origin bounce uses mapped interval duration
+  [PASS] tempo map: actual MIDI onset at nonzero clip origin through Linear (sample 80817, expected 80816)
+  [PASS] tempo map: recorded controller event crosses its mapped sample through Linear
+  [PASS] tempo map: nonzero-origin bounce uses mapped interval duration
+  [PASS] tempo map: actual MIDI onset at nonzero clip origin through Smooth (sample 47978, expected 47977)
+  [PASS] tempo map: recorded controller event crosses its mapped sample through Smooth
+  [PASS] tempo map: nonzero-origin bounce uses mapped interval duration
+  [PASS] tempo map: Grid follows audio fits explicit source anchors into the shared map
+  [PASS] tempo map: a reference warp-anchor edit updates tempo in one undo transaction
+  [PASS] tempo map: explicit timing-anchor protection
+  [PASS] tempo map: locked warp anchor rejects without partial map publication
+  [PASS] tempo map: unlocked grid edits preserve the source samples
+  [PASS] tempo map: grid relationship and anchor track indices are captured
+  [PASS] tempo map: Audio follows grid retains the same clock and defers stretching
+  [PASS] tempo map: source relationships survive earlier clip deletion and reindexing
+  [PASS] tempo map: reindexed reference refreshes from its durable identity
+  [PASS] tempo map: actual bundle save/reload restores reference IDs and anchors
+  [PASS] tempo map: reference split preserves shared source identity
+  [PASS] tempo map: detaching a reference fragment retains its sibling anchors
+  [PASS] tempo map: variable-tempo freeze equals live samples (max difference 1.29E-13)
+  [PASS] tempo map: serialized freeze retains its captured tempo clock
+  [PASS] tempo map: actual nonzero-origin 48 kHz export ignores stale scalar request BPM
+  [PASS] tempo map: simulated Arrangement and Session input record/replay with a smooth map
+  [PASS] tempo map: natural Session audio preserves source seconds through a ramp (max difference 8.77E-12)
+  [PASS] tempo map: forward warped sine retains pitch and mapped bounds (440/440 Hz, frames 35762..111597, expected 35763..111598)
+  [PASS] tempo map: reverse warped sine retains pitch and mapped bounds (440/440 Hz, frames 35762..111597, expected 35763..111598)
+  [PASS] tempo map: 10,000-point native transaction takes 0.18 ms

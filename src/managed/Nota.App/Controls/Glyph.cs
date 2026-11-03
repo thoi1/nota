@@ -39,6 +39,14 @@ internal enum GlyphKind
     Lock, LockOpen,                // a reference (read-only) clip in the multi-clip editor, and the unlocked toggle
     DockIn,                        // PopOut's opposite: bring a floating window back into the main one
     Expand, Shrink,                // a panel filling the window, and back to its split
+    Pointer,                      // mouse pointer for Arrangement selection
+    Eraser,                       // slanted eraser with a baseline
+    WaveDraw,                     // smooth automation waveform
+    WarpGrid,                     // horizontal grid with displaced beat lines
+    WaveTriangle,                 // triangle waveform in the shared editing toolbar
+    WaveSawtooth,                 // sawtooth waveform
+    WaveSquare,                   // square waveform
+    WaveFreehand,                 // freehand curve
 }
 
 internal sealed class Glyph : Control
@@ -513,6 +521,14 @@ internal sealed class Glyph : Control
         [GlyphKind.Follow] = ("M2.333 11.867 H13.667 M6.333 8.333 V11.867", "M4.333 3.333 H8.333 V6 L6.333 8.333 L4.333 6 Z"),
         // A horseshoe magnet with banded poles (snap to grid).
         [GlyphKind.Snap] = (null, "M2.667 11.333 V8.333 A5.333 5.333 0 0 1 13.333 8.333 V11.333 H10.333 V8.333 A2.333 2.333 0 0 0 5.667 8.333 V11.333 ZM2.667 12.667 H5.667 V14.333 H2.667 ZM10.333 12.667 H13.333 V14.333 H10.333 Z"),
+        [GlyphKind.Pointer] = ("M3 2 L12 9 L8 10 L6 14 Z", null),
+        [GlyphKind.Eraser] = ("M2 9 L8 3 Q9 2 10 3 L14 7 L8 13 H6 Z M5 6 L11 12 M8 13 H14", null),
+        [GlyphKind.WaveDraw] = ("M1 8 C3 8 3 3 5 3 S7 13 9 13 S11 3 13 3 S14 8 15 8", null),
+        [GlyphKind.WaveTriangle] = ("M1 10 L4.5 3 L11.5 13 L15 6", null),
+        [GlyphKind.WaveSawtooth] = ("M1 12 L7.5 3 V13 L15 4", null),
+        [GlyphKind.WaveSquare] = ("M1 11 V4 H8 V12 H15 V5", null),
+        [GlyphKind.WaveFreehand] = ("M1 11 C3 3 5 14 7 7 S10 3 11 8 S13 13 15 5", null),
+        [GlyphKind.WarpGrid] = ("M2 3 V13 M14 3 V13 M2 5 H14 M2 11 H14 M5 3 L7 8 L5 13 M10 3 L9 8 L10 13", null),
         // A breakpoint envelope with two handles.
         [GlyphKind.Automation] = ("M2 11.667 H6 L9.667 5 H14", "M4.733 11.667 A1.267 1.267 0 1 0 7.267 11.667 A1.267 1.267 0 1 0 4.733 11.667 ZM8.4 5 A1.267 1.267 0 1 0 10.933 5 A1.267 1.267 0 1 0 8.4 5 Z"),
         // The Apple mark.

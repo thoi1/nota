@@ -11,12 +11,14 @@
 
 using System;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Nota.Application;
+using Nota.Application.Editing;
 using static Nota.App.ClipEditorKit;
 using Nota.Application.Localization;
 
@@ -66,7 +68,7 @@ public sealed class ClipEditorView : UserControl
         var right = new StackPanel
         {
             Orientation = Orientation.Horizontal, Spacing = 12,
-            Children = { AuditionControl(), FitControl(roll), SnapControl(roll), HeaderDivider(), ScaleControls(), HeaderDivider(), _toolsToggle },
+            Children = { AuditionControl(), FitControl(roll), SnapToggleControl(), SnapControl(roll), HeaderDivider(), ScaleControls(), HeaderDivider(), _toolsToggle },
         };
         var header = Header(roll.TrackBrush, HeaderName(clipName), "MIDI", tabs, null, right, out _nameText, out _colorBar, _props, _props.Flow);
         DockPanel.SetDock(header, Dock.Top);
@@ -144,6 +146,46 @@ public sealed class ClipEditorView : UserControl
     {
         var (button, chip) = SnapChip.Create(EditorKind.PianoRoll, () => roll.SnapGridState);
         roll.GridChanged += chip.Refresh;
+        return button;
+    }
+
+    private static Control SnapToggleControl()
+    {
+        var grids = EditorGrids.Shared;
+        var button = new ToggleButton
+        {
+            Content = new Glyph(GlyphKind.Snap, 15),
+            Width = 30,
+            Padding = new Thickness(0),
+            Classes = { "chip" },
+        };
+        AutomationProperties.SetName(button, Loc.T("Snap to grid"));
+
+        void Sync()
+        {
+            button.IsChecked = grids.Get(EditorKind.PianoRoll).SnapOn;
+            string help = button.IsChecked == true
+                ? Loc.T("Snap on")
+                : Loc.T("Snap off — items move freely (⌘4)");
+            AutomationProperties.SetHelpText(button, help);
+            ToolTip.SetTip(button, help);
+        }
+
+        void OnGridChanged(EditorKind kind)
+        {
+            if (kind == EditorKind.PianoRoll) Sync();
+        }
+
+        button.Click += (_, _) => grids.Set(
+            EditorKind.PianoRoll,
+            grids.Get(EditorKind.PianoRoll) with { SnapOn = button.IsChecked == true });
+        button.AttachedToVisualTree += (_, _) =>
+        {
+            grids.Changed += OnGridChanged;
+            Sync();
+        };
+        button.DetachedFromVisualTree += (_, _) => grids.Changed -= OnGridChanged;
+        Sync();
         return button;
     }
 

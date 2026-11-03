@@ -23,6 +23,65 @@ Entry categories: `Added`, `Changed`, `Fixed`, `Removed`.
 ## [Unreleased]
 
 ### Added
+- **Piano Roll snap toggle**: a dedicated Snap button beside the grid chip turns note
+  snapping on or off in one click and stays synchronized with the shared grid setting,
+  grid menu and ⌘4. The grid step and Quantize value remain independent.
+- **Tempo track**: a collapsible, resizable lane above Arrangement tracks edits project
+  tempo with Step, Linear and Smooth curves. Add, drag, select, copy/paste or type point
+  values, with one undo per gesture. Tempo, warp, playback and export share the same map;
+  Grid follows audio maps musical grid lines to source attacks with fixed timing anchors,
+  creating editable Tempo Track automation without changing source audio or timing.
+  Audio follows grid keeps the grid fixed and uses the existing nondestructive warp markers.
+  Projects retain the map, anchor relationships and lane layout.
+- **Grid Warp**: the Sample Editor has mutually exclusive None, Audio follows grid and Grid
+  follows audio tool toggles. Drag musical beat lines onto detected transients to create
+  piecewise-constant tempo events; anchors, tempo edits, undo/redo and project persistence
+  stay linked. Threshold (0–100%, default 50%) and minimum-spacing (5–250 ms, default 30 ms)
+  sliders re-analyse in the background without moving committed anchors.
+  Snap all beats and audio-clip drop onto Tempo estimate original-source beats with editable
+  proposals, Apply/Cancel and BPM controls. Add anchor/numeric edits, stable anchor identities,
+  source-independent grid geometry and a persisted Reset baseline keep audio warp data intact.
+  Original source BPM/beat caches survive project reload without dirtying preview state.
+- **Transient-guided audio warp**: Nota Warp opens an audio clip's editor and analyses its
+  attacks in the background. Thin guides appear in the editor and Arrangement; show/snap
+  switches, detection-threshold and minimum-spacing sliders control analysis. Double-click
+  near an attack to anchor it on the grid, or snap only the selected anchor's source. Audio
+  follows grid uses the existing nondestructive stretch and undo/save paths; no automatic
+  all-hit quantise. Complete anchor lists are retained beyond 128 markers when editing and
+  saving.
+- **Native transient analysis foundation**: a lightweight SuperFlux detector and shared
+  background analysis service for engine clients, with source-relative attack positions,
+  confidence and uncertainty, cancellation, progress and bounded caching. Uses the existing
+  FFT infrastructure; no Essentia dependency. Beat inference and variable tempo-map controls
+  remain separate integration work.
+- **Shared Arrangement / Piano Roll tools**: both editors use the same native five-tool
+  toolbar. Bare top-row **1–5** choose Select, Pencil, Eraser, Waveform Draw and Nota Warp
+  in the focused editor; holding a key does not repeat. Press **4** again to cycle Sine,
+  Triangle, Sawtooth, Square and Freehand. Both dynamic waveform icons and dropdowns share
+  the last shape and settings, while each editor remembers its own tool. Piano Roll Pencil
+  draws notes; Eraser removes notes/CC points; Waveform Draw edits only the chosen CC lane,
+  with snapping, clip bounds, cancellation and one Undo per gesture. Warp tints either
+  ruler and shows **WARP**, with no timing edits until a shared tempo-map engine exists.
+- **Arrangement editing tools**: Select, Pencil, Eraser, Waveform Draw and Nota Warp share
+  one top-toolbar group. Pencil draws snapped MIDI clips in empty instrument-track gaps;
+  Eraser removes clips or automation points. Pencil and Waveform Draw edit track, return
+  and master automation with one undo step per gesture. The waveform menu offers Sine,
+  Triangle, Sawtooth, Square and Freehand, plus amplitude, cycle length and phase presets.
+  Nota Warp is selection-only: ruler tempo-grid editing awaits a shared tempo-map engine;
+  it does not alter audio or tempo. Arrangement MIDI CC lanes are not available.
+- **Resizable piano-roll lanes**: drag the divider above Velocity or an individual CC
+  lane to set its height. Heights are remembered when the editor or Nota reopens; a
+  short window scrolls extra lanes while retaining room for notes. Resizing changes no MIDI.
+- **Close Devices in the detached editor**: its lower Devices header has a close button
+  that hides the whole instrument, Sends and insertion area. View → Show devices reopens
+  it; instruments and effects continue processing while hidden.
+- **Meter refresh rate**: Settings → Appearance offers **30 Hz** (default) and **60 Hz**
+  for smoother transport, track, Session and Mixer audio level meters. The choice applies
+  immediately and is remembered. Audio timing and CPU/DSP sampling stay independent;
+  hidden meters do not refresh.
+- **Multiple MIDI controller lanes**: use **+** under the piano roll to add CC lanes,
+  each with its own controller picker. **−** hides a lane without deleting its data.
+  Lanes share the note editor's zoom and scroll; extra lanes scroll in a bounded area.
 - **Logic Grey colour theme**: choose it under Settings → Appearance → Dark for neutral
   studio greys, subtle raised-control shading and a gold playhead. The choice applies
   immediately and is remembered; Studio Dark remains the default, and musical/status
@@ -122,6 +181,12 @@ Entry categories: `Added`, `Changed`, `Fixed`, `Removed`.
   the same way.
 
 ### Changed
+- **MIDI clips open in the full editing workspace**: double-click an Arrangement MIDI
+  clip to fill the main window with its piano roll, keeping the menu and transport.
+  **Back to Arrangement** restores the preceding panel layout, including a detached
+  editor and manually hidden Devices. Audio clips keep their existing behavior.
+- **Deeper piano-roll zoom**: maximum horizontal zoom is eight times greater, keeping
+  the existing zoom-out range and pointer anchoring.
 - **Aurora envelope boxes have knobs and drag** — the A, D, S and R boxes under each Env
   graph now each carry a small knob, and the box itself is a drag value: drag it up or down
   (Shift for fine steps), or double-click anywhere on it to type an exact value. The graph
@@ -152,6 +217,24 @@ Entry categories: `Added`, `Changed`, `Fixed`, `Removed`.
   returns, then the master.
 
 ### Fixed
+- **Multi-instrument playback headroom**: once render helpers are needed, Nota sizes
+  their work to leave more of the audio buffer available for voice attacks and scheduling
+  jitter. Large hosted tracks can use more useful cores; light workloads keep helpers asleep.
+- **Hosted plug-in buffer overhead**: instrument and effect adapters clear only the
+  active callback frames instead of their entire maximum-block allocation. Small buffers
+  and multi-output instruments retain more DSP headroom without changing audio routing.
+- **Multiple VST3 instruments**: independent hosted instrument and effect tracks can use
+  the render workers instead of overloading the audio thread while other cores sit idle.
+  Worker sizing accounts for large individual track jobs; light workloads keep helpers
+  asleep. Audio Units and racks containing hosted plugins retain their serial fallback.
+- **Grid Warp interaction**: add anchors immediately on clips placed later in the song,
+  drag or double-click beat lines in the ruler, and snap the selected musical anchor to
+  a transient. Grid editing shows the original source waveform before its first commit.
+- **Project tempo responsiveness**: dragging the transport BPM no longer freezes while
+  warped clips are stretched. Replacements prepare in the background after rapid edits
+  settle; clips retain their previous audio while preparing. Exports wait for the final tempo.
+- **Velocity stems line up with note onsets**: their centers and drag targets now use
+  the note grid's exact timeline position at every zoom and scroll offset.
 - **Piano-roll playback cursor**: arrangement MIDI clips now follow the same smooth
   display-frame position as the arrangement. Cursor movement redraws lightweight
   overlays instead of repainting all notes and ruler labels.

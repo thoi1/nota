@@ -1,0 +1,43 @@
+﻿2026-11-01T18:36:48.713Z INFO --- session start · Nota · Microsoft Windows NT 10.0.26300.0 ---
+2026-11-01T18:36:48.715Z INFO App started · v0.58.1
+2026-11-01T18:36:48.756Z INFO Interface language · en
+2026-11-01T18:36:50.145Z INFO Engine started · 48000 Hz
+2026-11-01T18:36:51.373Z ERROR Unobserved task exception
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot access a disposed object.
+Object name: 'NotaEngine'.)
+ ---> System.ObjectDisposedException: Cannot access a disposed object.
+Object name: 'NotaEngine'.
+   at Nota.Infrastructure.NotaEngine.ThrowIfDisposed() in C:\Dev\nota\src\managed\Nota.Infrastructure\Interop\NotaEngine.cs:line 342
+   at Nota.Infrastructure.NotaEngine.get_Sections() in C:\Dev\nota\src\managed\Nota.Infrastructure\Interop\NotaEngine.cs:line 195
+   at Nota.App.ArrangementView.ReloadSections() in C:\Dev\nota\src\managed\Nota.App\ArrangementView.Sections.cs:line 93
+   at Nota.App.ArrangementView.Refresh(Boolean rebuildHeaders) in C:\Dev\nota\src\managed\Nota.App\ArrangementView.cs:line 1031
+   at Nota.App.MainWindow.SyncRemoteButton() in C:\Dev\nota\src\managed\Nota.App\MainWindow.Remote.cs:line 71
+   at Avalonia.Threading.DispatcherOperation.InvokeCore()
+   at Avalonia.Threading.DispatcherOperation.<>c.<Execute>b__56_0(Object s)
+   at Avalonia.Threading.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at Avalonia.Threading.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+   at Avalonia.Threading.DispatcherOperation.Execute()
+   at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)
+   at Avalonia.Threading.Dispatcher.ExecuteJobsCore(Boolean fromExplicitBackgroundProcessingCallback)
+   at Avalonia.Threading.Dispatcher.Signaled()
+   at Avalonia.Win32.Win32DispatcherImpl.DispatchWorkItem()
+   at Avalonia.Win32.Win32Platform.WndProc(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam)
+   at Avalonia.Win32.Interop.UnmanagedMethods.DispatchMessage(MSG& lpmsg)
+   at Avalonia.Win32.Win32DispatcherImpl.RunLoop(CancellationToken cancellationToken)
+   at Avalonia.Threading.DispatcherFrame.Run(IControlledDispatcherImpl impl)
+   at Avalonia.Threading.Dispatcher.PushFrame(DispatcherFrame frame)
+   at Avalonia.Threading.Dispatcher.MainLoop(CancellationToken cancellationToken)
+   at Program.Run(String root) in C:\Dev\nota\specs\071-multiple-cc-lanes\validation\Program.cs:line 94
+   at Program.Main(String[] args) in C:\Dev\nota\specs\071-multiple-cc-lanes\validation\Program.cs:line 25
+   --- End of inner exception stack trace ---
+2026-11-01T18:39:40.723Z INFO --- session start · Nota · Microsoft Windows NT 10.0.26300.0 ---
+2026-11-01T18:39:40.725Z INFO App started · v0.58.1
+2026-11-01T18:39:40.765Z INFO Interface language · en
+2026-11-01T18:39:42.017Z INFO Engine started · 48000 Hz
+2026-11-01T18:56:45.993Z INFO --- session start · Nota · Microsoft Windows NT 10.0.26300.0 ---
+2026-11-01T18:56:45.995Z INFO App started · v0.58.1
+2026-11-01T18:56:46.038Z INFO Interface language · en
+2026-11-01T18:56:47.448Z INFO Engine started · 48000 Hz

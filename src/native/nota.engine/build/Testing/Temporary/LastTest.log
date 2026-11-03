@@ -1,0 +1,47 @@
+Start testing: Nov 03 22:52 India Standard Time
+----------------------------------------------------------
+1/2 Testing: nota-tempo-selftest
+1/2 Test: nota-tempo-selftest
+Command: "C:/Dev/nota/src/native/nota.engine/build/nota-tempo-selftest.exe"
+Directory: C:/Dev/nota/src/native/nota.engine/build
+"nota-tempo-selftest" start time: Nov 03 22:52 India Standard Time
+Output:
+----------------------------------------------------------
+PASS constant two-hour map
+PASS multiple step changes
+PASS linear analytical integral
+PASS smooth monotonic forward/inverse across two hours
+PASS linear prepared error below one eighth sample at 192 kHz
+PASS 10000 points
+PASS invalid maps rejected
+PASS plugin PPQ/seconds/BPM snapshot uses prepared clock slope
+PASS map adoption preserves musical position
+PASS mapped loop sample boundary
+PASS loop presentation uses elapsed-time wrapping across a ramp
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"nota-tempo-selftest" end time: Nov 03 22:52 India Standard Time
+"nota-tempo-selftest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: nota-transient-selftest
+2/2 Test: nota-transient-selftest
+Command: "C:/Dev/nota/src/native/nota.engine/build/nota-transient-selftest.exe"
+Directory: C:/Dev/nota/src/native/nota.engine/build
+"nota-transient-selftest" start time: Nov 03 22:52 India Standard Time
+Output:
+----------------------------------------------------------
+SuperFlux vs NumPy/SciPy reference: max ODF error 8.541934e-06 (38 frames)
+SuperFlux scratch: 39988 bytes for both 0.186s and 60s sources (excludes audio, output, fixed FFT internals)
+SuperFlux native reference and incremental finalisation PASS
+<end of output>
+Test time =   0.17 sec
+----------------------------------------------------------
+Test Passed.
+"nota-transient-selftest" end time: Nov 03 22:52 India Standard Time
+"nota-transient-selftest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 03 22:52 India Standard Time

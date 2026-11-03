@@ -1,0 +1,47 @@
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(340,27): warning CS0108: 'MosaicCurveView.SetValue' hides inherited member 'AvaloniaObject.SetValue(AvaloniaProperty, object?, BindingPriority)'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,31): warning CS0108: 'MosaicZoneMap.KeyDown' hides inherited member 'InputElement.KeyDown'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Mosaic\MosaicViews.cs(49,40): warning CS0108: 'MosaicZoneMap.KeyUp' hides inherited member 'InputElement.KeyUp'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MixerView.cs(488,27): warning CS0108: 'MixerView.Tag(string, double, double, double, string)' hides inherited member 'Control.Tag'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\MainWindow.Detail.cs(1225,27): warning CS0108: 'MainWindow.Height(RowDefinition)' hides inherited member 'Layoutable.Height'. Use the new keyword if hiding was intended. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(294,13): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\BrowserView.cs(1354,48): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\ArrangementView.LaneControl.cs(470,26): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(215,114): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(220,30): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\EqDeviceBody.cs(322,101): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(107,16): warning CS8321: The local function 'DecayS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(108,16): warning CS8321: The local function 'PeakS' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\LensDeviceBody.cs(120,23): warning CS8321: The local function 'Db' is declared but never used [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\GrainInstrumentCard.cs(317,76): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\ValveDeviceBody.cs(255,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Bodies\VintageDeviceBody.cs(245,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ChordMidiBody.cs(411,80): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(228,36): warning CS0618: 'TextBox.Watermark' is obsolete: 'Use PlaceholderText instead.' [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\PluginCard.cs(291,75): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\PendulumInstrumentCard.cs(480,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\SamplerInstrumentCard.cs(316,36): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(355,78): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(399,41): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Midi\ScaleMidiBody.cs(437,81): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+C:\Dev\nota\src\managed\Nota.App\DeviceCards\Instruments\MosaicInstrumentCard.cs(306,40): warning CS8604: Possible null reference argument for parameter 'target' in 'int? WheelInput.Step(PointerWheelEventArgs e, object target, int part = 0)'. [C:\Dev\nota\src\managed\Nota.App\Nota.App.csproj]
+PASS actual transport drag: 25 BPM changes; slowest input 17.921 ms
+PASS MainWindow debounce/poller completed latest tempo (297 ms)
+Unhandled exception. System.ObjectDisposedException: Cannot access a disposed object.
+Object name: 'NotaEngine'.
+   at Nota.Infrastructure.NotaEngine.ThrowIfDisposed() in C:\Dev\nota\src\managed\Nota.Infrastructure\Interop\NotaEngine.cs:line 344
+   at Nota.Infrastructure.NotaEngine.get_TrackCount() in C:\Dev\nota\src\managed\Nota.Infrastructure\Interop\NotaEngine.Tracks.cs:line 30
+   at Nota.App.ArrangementView.Refresh(Boolean rebuildHeaders) in C:\Dev\nota\src\managed\Nota.App\ArrangementView.cs:line 1049
+   at Nota.App.MainWindow.<RequestTempoRefresh>b__74_0() in C:\Dev\nota\src\managed\Nota.App\MainWindow.axaml.cs:line 659
+   at Avalonia.Threading.DispatcherOperation.InvokeCore()
+   at Avalonia.Threading.DispatcherOperation.<>c.<Execute>b__56_0(Object s)
+   at Avalonia.Threading.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at Avalonia.Threading.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+   at Avalonia.Threading.DispatcherOperation.Execute()
+   at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)
+   at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority, CancellationToken cancellationToken)
+   at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority)
+   at Program.<<Main>$>g__Pump|0_0(Int32 milliseconds) in C:\Dev\nota\.specify\bugs\tempo-change-lag\ui\Program.cs:line 82
+   at Program.<Main>$(String[] args) in C:\Dev\nota\.specify\bugs\tempo-change-lag\ui\Program.cs:line 75

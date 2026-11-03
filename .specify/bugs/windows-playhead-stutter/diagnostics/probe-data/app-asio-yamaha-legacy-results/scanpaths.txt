@@ -1,0 +1,1 @@
+C:\Dev\nota\.specify\bugs\windows-playhead-stutter\diagnostics\probe-data\app-asio-yamaha-legacy-results\plugins\VST3

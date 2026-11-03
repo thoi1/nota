@@ -9,6 +9,15 @@ distribution. For the dependency register (versions, purpose, clearance status) 
 
 ---
 
+## SuperFlux
+
+Native C++ adaptation of the SuperFlux reference algorithm by Sebastian Böck and
+Gerhard Widmer, *Maximum Filter Vibrato Suppression for Onset Detection*, DAFx 2013.
+Reference: <https://github.com/CPJKU/SuperFlux> at
+`0a85f898af69188324b649a4c640052a5443078e`. Used under **BSD-2-Clause**;
+the complete copyright, conditions and disclaimer are reproduced in
+[SuperFlux.txt](SuperFlux.txt).
+
 ## JUCE
 Copyright © Raw Material Software Limited.
 Licensed under the **GNU AGPLv3** (see [`AGPL-3.0-only.txt`](AGPL-3.0-only.txt)). JUCE is

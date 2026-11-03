@@ -88,6 +88,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitEditorTools();
         InitBottomPanels();    // BodyGrid rows for the docked Mixer + Detail panels (specs/054)
         InitMenuShortcuts();   // Ctrl instead of Win on Windows / Linux, and bound there
         UpdateWindowTitle();   // "Nota — Untitled" until a project is opened/saved
@@ -206,6 +207,7 @@ public partial class MainWindow : Window
         Timeline.FreezeMenuItems = BuildTrackFreezeMenu;   // track context menu: Freeze / Live Freeze
         Timeline.FreezeTracksMenuItems = BuildTracksFreezeMenu;   // multi-track menu: Freeze / Unfreeze all
         Timeline.RefreshStarting = PruneFreezeLinks;       // drop links to deleted / undone tracks
+        Timeline.TempoMapChanged += RequestTempoWarpBuild;
         _trackInspector = new TrackInspectorView(vm.Engine, Timeline, TrackFreezeEntries, () => vm.SuspendEnginePolling);   // browser's Track inspector tab (specs/060)
         Browser.SetTrackInspector(_trackInspector);
         Timeline.MidiClipActivated += OpenClipEditor;
@@ -216,6 +218,11 @@ public partial class MainWindow : Window
         Timeline.SampleToInstrument += (item, t) => { DropBrowserItem(item, t); Timeline.Select(t, -1); };   // audio clip → Grain / Drum Rack / Sampler… (that track becomes the selection)
         Timeline.DevicesPeekRequested += t => { if (_deviceChain?.TrackId != t) ShowDevices(t); };
         Timeline.PasteBouncedRequested += (track, beat) => _ = PasteBouncedAsync(track, beat);
+        Timeline.OriginalTempoExtractionRequested += (track, clip) =>
+        {
+            OpenAudioClipEditor(track, clip);
+            if (_audioEditor is { } editor) _ = editor.ExtractOriginalTempoAsync();
+        };
         Timeline.ConvertClipRequested += OnConvertClip;   // audio clip → MIDI (Convert / Slice)
         Timeline.SeparateStemsRequested += OnSeparateStems;   // audio clip → stem tracks (AI model)
         Timeline.CanTranscribe = () => Ai.CanTranscribe;
@@ -253,6 +260,8 @@ public partial class MainWindow : Window
         // (half a BPM per pixel), the hundredths come from double-click-to-type.
         var bpmField = new DragNumber((double)vm.Transport.Bpm, 20, 300, 0.5, "0.00", fontSize: 14, dragSnap: 1);
         bpmField.ValueChanged += v => vm.Transport.Bpm = (decimal)Math.Round(v, 2);
+        bpmField.GestureBegin += vm.Transport.BeginBpmGesture;
+        bpmField.GestureEnd += vm.Transport.EndBpmGesture;
         BpmHost.Children.Add(bpmField);
 
         // Time signature: numerator drags 1–16; denominator snaps to a power of two.
@@ -273,15 +282,28 @@ public partial class MainWindow : Window
             if (e.PropertyName == nameof(vm.Transport.Bpm))
             {
                 bpmField.Value = (double)vm.Transport.Bpm;
-                RequestTempoRefresh();   // un-warped audio clips change beat length with the tempo
+                Timeline.UpdateTempoReadout((double)vm.Transport.Bpm);
+                if (!vm.Transport.FollowingEngineTempo)
+                {
+                    RequestTempoRefresh();
+                    RequestTempoWarpBuild();
+                }
             }
             // Opening a project restores the master gain on the view model; move the fader
             // with it so the handle and the dB readout beside it never disagree. Skipped
             // mid-drag, where the fader is the one driving.
             else if (e.PropertyName == nameof(vm.Transport.MasterVolume) && !masterVol.Dragging)
                 masterVol.Value = vm.Transport.MasterVolume;
-            else if (e.PropertyName == nameof(vm.Transport.TimeSigNumerator)) tsNum.Value = vm.Transport.TimeSigNumerator;
-            else if (e.PropertyName == nameof(vm.Transport.TimeSigDenominator)) tsDen.Value = vm.Transport.TimeSigDenominator;
+            else if (e.PropertyName == nameof(vm.Transport.TimeSigNumerator))
+            {
+                tsNum.Value = vm.Transport.TimeSigNumerator;
+                _audioEditor?.SetTimeSignature(vm.Transport.TimeSigNumerator, vm.Transport.TimeSigDenominator);
+            }
+            else if (e.PropertyName == nameof(vm.Transport.TimeSigDenominator))
+            {
+                tsDen.Value = vm.Transport.TimeSigDenominator;
+                _audioEditor?.SetTimeSignature(vm.Transport.TimeSigNumerator, vm.Transport.TimeSigDenominator);
+            }
             else if (e.PropertyName == nameof(vm.Transport.KeyCode)) ShowProjectKey();
             // Every ruler reads in the read-out's unit, bars or time (#275).
             else if (e.PropertyName == nameof(vm.Transport.ShowTimeDisplay)) RulerDisplay.Set(vm.Transport.ShowTimeDisplay);
@@ -300,10 +322,11 @@ public partial class MainWindow : Window
             // Nothing of the window can be seen: keep servicing MIDI and scenes, skip the
             // meters, playheads and live knobs — they'd redraw ~30×/s for nobody (#55).
             if (WindowState == WindowState.Minimized
-                && _detailWindow is not { IsVisible: true, WindowState: not WindowState.Minimized }) return;
+                && _detailWindow is not { IsVisible: true, WindowState: not WindowState.Minimized }
+                && _mixerWindow is not { IsVisible: true, WindowState: not WindowState.Minimized }) return;
+            bool cursorFrames = _playheadFrameOwner is not null && vm.Engine.IsPlaying;
             LearnOverlay.Refresh();  // keep highlights over rebuilt cards while armed
-            Timeline.SetPlayhead(beats, preserveDisplay: _playheadFrameOwner is not null);
-            _masterMeter?.Push(vm.Engine.MasterMeter());
+            Timeline.SetPlayhead(beats, preserveDisplay: cursorFrames);
             Timeline.UpdateMeters();                                   // per-track headers (M6-2)
             Timeline.RefreshAutomationLive();                          // show writes live (M9-C)
             SyncReenableAutomation();                                  // "a control is overriding its lane"
@@ -314,7 +337,7 @@ public partial class MainWindow : Window
             // Detail contents update wherever they're shown — docked panel or the floating
             // Devices/Clip window — so key off IsEffectivelyVisible, not the docked panel.
             if (_deviceChain is { IsEffectivelyVisible: true }) _deviceChain.RefreshSynthLive(); // synth graphs follow automation
-            if (_audioEditor is { IsEffectivelyVisible: true } && _playheadFrameOwner is null)
+            if (_audioEditor is { IsEffectivelyVisible: true } && !cursorFrames)
                 _audioEditor.OnPlayhead(beats, vm.Engine.IsPlaying);       // live clip playback cursor
             // Piano-roll playback cursor: map the global beat to clip-local time for the
             // open arrangement MIDI clip, shown stopped too, where play will start (#50); a
@@ -324,7 +347,7 @@ public partial class MainWindow : Window
                 if (_editorTrackId > 0)
                 {
                     // Editor beats count from the open clips' origin (the clip's start for one).
-                    if (_playheadFrameOwner is null
+                    if (!cursorFrames
                         && Engine.TryGetClipInfo(_editorTrackId, _editorClipIndex, out var pci) && pci.IsMidi)
                         _editorRoll.SetPlayhead(beats - _editorRoll.Origin, true);
                 }
@@ -653,7 +676,11 @@ public partial class MainWindow : Window
     {
         if (_tempoRefreshPosted) return;
         _tempoRefreshPosted = true;
-        Dispatcher.UIThread.Post(() => { _tempoRefreshPosted = false; Timeline.Refresh(rebuildHeaders: false); }, DispatcherPriority.Background);
+        Dispatcher.UIThread.Post(() =>
+        {
+            _tempoRefreshPosted = false;
+            if (!_playheadFramesClosed) Timeline.Refresh(rebuildHeaders: false);
+        }, DispatcherPriority.Background);
     }
 
     private void OnAddInstrumentClicked(object? sender, RoutedEventArgs e) => AddTrack(NewTrackKind.Instrument);
@@ -712,6 +739,9 @@ public partial class MainWindow : Window
         SetDetailMaximized(false);   // a view picked is a view to see
         bool session = view == MainView.Session, modular = view == MainView.Modular;
         Timeline.IsVisible = view == MainView.Arrangement;
+        Timeline.CancelActiveGesture();
+        ArrangementTools.IsVisible = view == MainView.Arrangement;
+        RequestTransportFit();
         _session.IsVisible = session;
         _modular.IsVisible = modular;
         ArrangeBtn.IsChecked = view == MainView.Arrangement;

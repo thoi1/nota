@@ -21,6 +21,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Nota.Application;
+using Nota.Application.Editing;
 using Nota.Application.Localization;
 
 namespace Nota.App;
@@ -40,13 +41,20 @@ public sealed partial class PianoRollView
     private int _laneCtl = -1;   // −1 until the lane is first shown
     private readonly Dictionary<int, AutomationPoint[]> _ctlCache = new();
     private int[]? _ctlInClip;
+    private int _controllerCacheGeneration;
 
     private static readonly int[] CommonControllers =
         { MidiController.Sustain, MidiController.ModWheel, MidiController.PitchWheel, MidiController.ChannelPressure, 11, 2 };
 
     // Every reload (undo, recording, another clip) and active-clip change re-reads the engine.
-    private void DropControllerCache()
+    private void DropControllerCache(bool cancelGestures = true)
     {
+        if (cancelGestures)
+        {
+            ++_controllerCacheGeneration;
+            _ctlLane.ResetGesture();
+            foreach (var item in _controllerLanes) item.Lane.ResetGesture();
+        }
         _ctlCache.Clear();
         _ctlInClip = null;
     }
@@ -71,8 +79,8 @@ public sealed partial class PianoRollView
     {
         if (SetController is null) return;
         SetController(ctl, pts.ToArray());
-        DropControllerCache();
-        _ctlLane.InvalidateVisual();
+        DropControllerCache(cancelGestures: false);
+        InvalidateControllerLanes();
         _laneTabs.InvalidateVisual();
     }
 
@@ -88,13 +96,14 @@ public sealed partial class PianoRollView
         _laneCtl = ctl;
         _ctlLane.ResetGesture();
         if (_laneMode != LaneMode.Controller) SetLaneMode(LaneMode.Controller);
+        FitControllerLanes();
         _ctlLane.InvalidateVisual();
         _laneTabs.InvalidateVisual();
     }
 
     /// <summary>The controller picker: what the clip holds first (marked), the common
     /// controllers, then every other CC in groups of 16.</summary>
-    internal void ShowControllerPicker(Control anchor)
+    internal void ShowControllerPicker(Control anchor, Action<int>? select = null)
     {
         var f = new MenuFlyout();
         var data = ControllersWithData();
@@ -102,7 +111,7 @@ public sealed partial class PianoRollView
         {
             var it = new MenuItem { Header = header };
             if (Array.IndexOf(data, ctl) >= 0) it.Icon = MenuKit.Icon(GlyphKind.Automation);
-            it.Click += (_, _) => SelectController(ctl);
+            it.Click += (_, _) => (select ?? SelectController)(ctl);
             return it;
         }
         foreach (int c in data) f.Items.Add(Item(c, ControllerLabel(c)));
@@ -129,10 +138,11 @@ public sealed partial class PianoRollView
 
     // ---- the lane ------------------------------------------------------------------------
 
-    private sealed class ControllerLane : Control
+    private sealed partial class ControllerLane : Control
     {
         private readonly PianoRollView _o;
         public ControllerLane(PianoRollView o) { _o = o; }
+        internal int? Controller { get; set; }
 
         private const double Pad = 6, EdgePx = 5, PointPx = 7;
         private const double Eps = 1.0 / 1024;   // beats: where a drawn stretch meets the old curve
@@ -142,11 +152,11 @@ public sealed partial class PianoRollView
         private static readonly IPen BlockEdge = new Pen(NotaPalette.VizInk, 1.5);
         private static readonly IPen BlockEdgeHot = new Pen(NotaPalette.Accent, 1.5);
 
-        private int Ctl => _o._laneCtl < 0 ? MidiController.Sustain : _o._laneCtl;
+        private int Ctl => Controller ?? (_o._laneCtl < 0 ? MidiController.Sustain : _o._laneCtl);
         private bool IsSwitch => MidiController.IsSwitch(Ctl);
-        private bool Editable => _o.SetController is not null;
+        private bool Editable => _o.SetController is not null && _o._set.IsEditable(_o._set.Active);
 
-        private enum Drag { None, Draw, Point, NewBlock, MoveBlock, BlockStart, BlockEnd }
+        private enum Drag { None, Waveform, Draw, Point, NewBlock, MoveBlock, BlockStart, BlockEnd }
         private Drag _drag;
         private List<AutomationPoint>? _work;             // the curve while a gesture reshapes it
         private List<AutomationPoint> _orig = new();      // ... and what it started from
@@ -158,12 +168,19 @@ public sealed partial class PianoRollView
         private static readonly Cursor ResizeCursor = new(StandardCursorType.SizeWestEast);
         private static readonly Cursor MoveCursor = new(StandardCursorType.SizeAll);
         private int _hoverBlock = -1, _selBlock = -1;
+        private IPointer? _capturedPointer;
+        private int _gestureGeneration;
         private double _hoverBeat = double.NaN;
 
         internal void ResetGesture()
         {
+            ++_gestureGeneration;
             _drag = Drag.None; _work = null; _stroke.Clear();
             _pt = _hoverPt = _hoverBlock = _selBlock = -1;
+            var pointer = _capturedPointer;
+            _capturedPointer = null;
+            if (pointer?.Captured == this) pointer.Capture(null);
+            InvalidateVisual();
         }
 
         private IReadOnlyList<AutomationPoint> Cur => (IReadOnlyList<AutomationPoint>?)_work ?? _o.ControllerPoints(Ctl);
@@ -454,6 +471,7 @@ public sealed partial class PianoRollView
         // ---- gestures ----
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
+            if (ToolControllerPressed(e)) { Focus(); return; }
             var pt = e.GetCurrentPoint(this);
             var p = e.GetPosition(this);
             if (pt.Properties.IsRightButtonPressed)
@@ -513,6 +531,7 @@ public sealed partial class PianoRollView
                     ApplyStroke(StrokeSamples());
                 }
             }
+            _capturedPointer = e.Pointer;
             e.Pointer.Capture(this);
             InvalidateVisual();
             e.Handled = true;
@@ -520,6 +539,7 @@ public sealed partial class PianoRollView
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (_drag == Drag.Waveform) { MoveWaveform(e); return; }
             var p = e.GetPosition(this);
             double local = Math.Clamp(LocalAt(p.X), 0, ClipLen);
             _hoverBeat = local;
@@ -547,7 +567,7 @@ public sealed partial class PianoRollView
                 {
                     int hp = IsSwitch ? -1 : PointAt(p);
                     var (hb, edge) = IsSwitch ? BlockAt(p) : (-1, 0);
-                    Cursor = hb < 0 ? Cursor.Default : edge != 0 ? ResizeCursor : MoveCursor;
+                    Cursor = _o.EditingTool != ArrangementTool.Select ? _o.ToolCursor : hb < 0 ? Cursor.Default : edge != 0 ? ResizeCursor : MoveCursor;
                     _hoverPt = hp; _hoverBlock = hb;
                     break;
                 }
@@ -637,6 +657,7 @@ public sealed partial class PianoRollView
 
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
+            _capturedPointer = null;
             if (_drag != Drag.None) { _drag = Drag.None; _work = null; _stroke.Clear(); InvalidateVisual(); }
             base.OnPointerCaptureLost(e);
         }
@@ -667,8 +688,11 @@ public sealed partial class PianoRollView
         private void ShowClearMenu()
         {
             int ctl = Ctl;
+            int generation = _o._controllerCacheGeneration, gesture = _gestureGeneration;
             ClipEditorKit.ShowMenu(this, new[] { Loc.F("Clear {0}", MidiController.Name(ctl)) }, -1, _ =>
             {
+                if (generation != _o._controllerCacheGeneration || gesture != _gestureGeneration
+                    || TopLevel.GetTopLevel(this) is null) return;
                 _selBlock = -1;
                 _o.StoreController(ctl, new List<AutomationPoint>());
             });

@@ -6,6 +6,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nota.Application;
@@ -73,13 +74,41 @@ public partial class TransportViewModel(IAudioEngine engine) : ObservableObject
     private long _sentBpmAt;
     private const long SentBpmTimeoutMs = 1000;   // no audio thread draining commands: stop waiting
     private bool _followingBpm;                   // reflecting the engine's tempo, not a user edit
+    public bool FollowingEngineTempo => _followingBpm;
+    private double? _bpmGestureBeat;
+    public void BeginBpmGesture() { _bpmGestureBeat = _engine.PositionBeats; _engine.BeginUndoGroup(); }
+    public void EndBpmGesture() { _engine.EndUndoGroup(); _bpmGestureBeat = null; }
+    public void RestoreBpm(double bpm)
+    {
+        _followingBpm = true;
+        try { _sentBpm = null; Bpm = (decimal)Math.Round(bpm, 2); }
+        finally { _followingBpm = false; }
+    }
 
     partial void OnBpmChanged(decimal value)
     {
         if (_followingBpm) return;   // the engine already has it (unrounded): don't echo it back
+        var map = _engine.GetTempoMap();
+        if (map.Points.Length > 1 || map.Anchors.Any(a => a.Locked != 0))
+        {
+            long tick = TempoPoint.ToTick(_bpmGestureBeat ?? _engine.PositionBeats);
+            var points = map.Points.ToList();
+            int at = points.FindIndex(p => p.Tick >= tick);
+            double bpm = Math.Clamp((double)value, map.MinBpm, map.MaxBpm);
+            if (at >= 0 && points[at].Tick == tick) points[at] = points[at] with { Bpm = bpm };
+            else points.Insert(at < 0 ? points.Count : at, new TempoPoint(tick, bpm));
+            if (!_engine.TrySetTempoMap(map with { Points = points.ToArray() }, out _))
+            {
+                RestoreBpm(_engine.TempoAtBeat(_engine.PositionBeats));
+                Message?.Invoke(Loc.T("Protected timing anchors prevent this tempo edit."));
+                return;
+            }
+            _sentBpm = bpm; _sentBpmAt = Environment.TickCount64;
+            return;
+        }
         _sentBpm = (double)value;
         _sentBpmAt = Environment.TickCount64;
-        _engine.SetBpm((double)value);
+        _engine.SetBpmDeferred((double)value);
     }
     partial void OnTimeSigNumeratorChanged(int value) => _engine.SetTimeSignature(value, TimeSigDenominator);
     partial void OnTimeSigDenominatorChanged(int value) => _engine.SetTimeSignature(TimeSigNumerator, value);
@@ -271,7 +300,7 @@ public partial class TransportViewModel(IAudioEngine engine) : ObservableObject
     {
         if (ShowTimeDisplay)
         {
-            double sec = Bpm > 0 ? beats * 60.0 / (double)Bpm : 0.0;
+            double sec = _engine.SecondsAtBeat(beats);
             int m = (int)(sec / 60.0);
             double s = sec - m * 60.0;
             // The app installs a display culture (point separator, U+2212 minus) at start-up.

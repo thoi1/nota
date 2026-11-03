@@ -1,0 +1,3 @@
+PASS actual transport drag: 25 BPM changes; slowest input 24.086 ms
+PASS MainWindow debounce/poller completed latest tempo (355 ms)
+PASS closed-window continuation does not access the disposed engine

@@ -173,7 +173,7 @@ public partial class MainWindow
                            && (session ? SessionEditorTrack == trackId : SelectedClip(out _, out _, out _));
         bool wasPattern = keepClipTab && DetailBody.Content is DrumPatternView;
 
-        ShowDevices(trackId, takeOverPanel: !keepClipTab);
+        ShowDevices(trackId, takeOverPanel: !keepClipTab && DetailPanel.IsVisible && !DetailFloating);
         if (_modular?.IsVisible == true) _modular.Show(trackId);   // keep the graph on the selected track
         SyncClipTab();
         // The new clip may be on a track with no Drum Rack, so a pattern user falls back to
@@ -186,6 +186,7 @@ public partial class MainWindow
     // popped-out window shows "select a clip" instead of the previous track's editor).
     private void ResetClipEditor()
     {
+        SetDetailMaximized(false);
         _editorRoll = null;
         _clipEditor = null;
         _audioEditor = null;
@@ -372,6 +373,7 @@ public partial class MainWindow
 
     private void OnDetailPattern(object? sender, RoutedEventArgs e)
     {
+        SetDetailMaximized(false);
         if (!PatternTarget(out int tid, out int ci, out int scene))
         {
             DetailPatternBtn.IsChecked = false;
@@ -403,6 +405,7 @@ public partial class MainWindow
     // — a browser drop, Convert, the Devices tab — leave it true.
     private void ShowDevices(int trackId, bool takeOverPanel = true)
     {
+        if (takeOverPanel) SetDetailMaximized(false);
         _trackInspector?.Show(trackId);
         if (_vm is null || _deviceChain is null) return;
         // No track (the selected one was just deleted): empty the chain instead of leaving the
@@ -422,6 +425,7 @@ public partial class MainWindow
         // skip it when we're only following the selection. Floating has its own pane, so the
         // chain always goes there and no tab is at stake.
         if (DetailFloating || takeOverPanel) SetHost(DeviceHost, _deviceChain);
+        if (takeOverPanel && _detailWindow is { } window) window.DevicesVisible = true;
         if (DetailFloating || !takeOverPanel) return;   // floating: bottom pane only, don't touch the docked row/tabs
         DetailDevicesBtn.IsChecked = true;
         DetailPatternBtn.IsChecked = false;
@@ -436,13 +440,30 @@ public partial class MainWindow
     // In track mode (specs/059) it opens the clip's whole track instead.
     private void OpenClipEditor(int trackId, int clipIndex)
     {
+        if (!Engine.TryGetClipInfo(trackId, clipIndex, out var info) || !info.IsMidi) return;
+        BeginMidiWorkspace();
         if (!FocusTrackClip(trackId, clipIndex))
         {
             var sel = Timeline.SelectedMidiClips();
-            if (!ClipTrackMode && sel.Count >= 2 && sel.Contains((trackId, clipIndex))) BuildClipEditor(sel, trackId, clipIndex);
-            else BuildClipEditor(trackId, clipIndex);
+            bool multiple = !ClipTrackMode && sel.Count >= 2 && sel.Contains((trackId, clipIndex));
+            bool reusable = !ClipTrackMode && _editorTrackId == trackId && _editorClipIndex == clipIndex
+                && _editorRoll is { } current && _clipEditor is not null
+                && current.Clips.Count == (multiple ? sel.Count : 1)
+                && (!multiple || sel.All(c => current.Clips.IndexOf(c.TrackId, c.ClipIndex) >= 0));
+            if (!reusable)
+            {
+                if (multiple) BuildClipEditor(sel, trackId, clipIndex);
+                else BuildClipEditor(trackId, clipIndex);
+            }
         }
         ShowClipPanel();
+        SetDetailMaximized(true);
+        _editorRoll?.FocusNotes();
+        var focusedRoll = _editorRoll;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_detailMaximized && ReferenceEquals(focusedRoll, _editorRoll)) focusedRoll?.FocusNotes();
+        }, DispatcherPriority.Loaded);
     }
 
     /// <summary>"Edit selected clips": every selected MIDI clip in one editor, the first in time
@@ -585,6 +606,7 @@ public partial class MainWindow
     // --- audio clip editor (M-audio-editor) --------------------------------
     private void OpenAudioClipEditor(int trackId, int clipIndex)
     {
+        SetDetailMaximized(false);
         BuildAudioClipEditor(trackId, clipIndex);
         ShowAudioClipPanel();
     }
@@ -596,7 +618,8 @@ public partial class MainWindow
         // edits repaint the Session grid instead of the timeline.
         bool slot = SessionClip.SceneOf(clipIndex) >= 0;
         _audioEditor = new AudioClipEditorView(Engine, trackId, clipIndex,
-            TrackBrush(trackId), slot ? () => _session?.Refresh() : () => Timeline.Refresh());
+            TrackBrush(trackId), slot ? () => _session?.Refresh() : () => { Timeline.Refresh(); Timeline.ReloadTempo(); RequestTempoWarpBuild(); });
+        _audioEditor.SetTimeSignature(_vm.Transport.TimeSigNumerator, _vm.Transport.TimeSigDenominator);
         _audioEditor.WarpBuildRequested = () => _ = PollWarpBuildAsync();
         // The ruler and the playhead line move the transport (#278); a slot plays on its own clock.
         if (!slot)
@@ -653,8 +676,9 @@ public partial class MainWindow
         _editorRoll?.SettlePlacement();
         var set = new ClipSet(open, activeTrack, activeClip, Timeline.BeatsPerBar, trackMode);
         PianoRollView roll = null!;
-        roll = new PianoRollView
+        roll = new PianoRollView(_pianoToolState)
         {
+            LaneSettings = _vm.Settings,
             BeatsPerBar = Timeline.BeatsPerBar,   // bar lines and bar steps match the arrangement
             // Each clip whose notes changed, as one undo step. The roll can outlive a clip: the
             // track/clip may have been removed, shifted by a lower-index delete, undone, or
@@ -700,6 +724,7 @@ public partial class MainWindow
             AuditionOn = (pitch, vel) => AuditionNoteOn(roll.AuditionTrackId > 0 ? roll.AuditionTrackId : _editorTrackId, pitch, vel),
             AuditionOff = pitch => Engine.TrackNoteOff(roll.AuditionTrackId > 0 ? roll.AuditionTrackId : _editorTrackId, pitch),
             ClipNameOf = (t, c) => Engine.GetClipName(t, c) is { Length: > 0 } n ? n : Loc.F("Track {0} clip", t),
+            SecondsAtBeat = Engine.SecondsAtBeat, BeatAtSeconds = Engine.BeatAtSeconds,
             Bpm = () => Engine.Bpm,   // the ruler's time display (#275)
             // The ruler moves the transport (#50): editor beat → arrangement beat.
             Seek = local =>
@@ -1163,15 +1188,19 @@ public partial class MainWindow
     {
         if (on == _detailMaximized) return;
         _detailMaximized = on;
+        ArrangementTools.IsVisible = !on && Timeline.IsVisible;
+        RequestTransportFit();
         BrowserGrid.IsVisible = !on;
         _mainRow.MinHeight = on ? 0 : 120;
         _mainRow.Height = on ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
         _detailRow.Height = on ? new GridLength(1, GridUnitType.Star) : new GridLength(_detailWanted > 120 ? _detailWanted : _detailDefault);
         DetailSplitter.IsVisible = !on;
         DetailMaximizeGlyph.Kind = on ? GlyphKind.Shrink : GlyphKind.Expand;
+        DetailReturnLabel.IsVisible = on;
         ToolTip.SetTip(DetailMaximizeBtn, MenuKit.Keys(on ? Loc.T("Back to the split (⌘⇧F)") : Loc.T("Fill the window with the clip editor (⌘⇧F)")));
         if (MenuItemFor("view.maximizeDetail") is { } mi) mi.IsChecked = on;
         LayoutBottomPanels();
+        if (!on) RestoreMidiWorkspace();
     }
 
     // Some paths only flip the panel's visibility (View ▸ Toggle detail panel, a closed clip):
@@ -1297,6 +1326,7 @@ public partial class MainWindow
 
     private void CloseDetail()
     {
+        SetDetailMaximized(false);
         DetailPanel.IsVisible = false;
         DetailSplitter.IsVisible = false;
         var row = _detailRow;
@@ -1306,6 +1336,7 @@ public partial class MainWindow
 
     private void OpenSessionClipEditor(int trackId, int scene)
     {
+        SetDetailMaximized(false);
         if (_vm is null) return;
 
         // Audio slot → the compact audio-slot editor; MIDI slot → the piano roll.
@@ -1327,8 +1358,9 @@ public partial class MainWindow
         // The editor being replaced lets its pending placement go into its own clip first (it
         // may never have had focus to lose, e.g. after a menu paste).
         _editorRoll?.SettlePlacement();
-        var roll = new PianoRollView
+        var roll = new PianoRollView(_pianoToolState)
         {
+            LaneSettings = _vm.Settings,
             BeatsPerBar = Timeline.BeatsPerBar,   // bar lines and bar steps match the arrangement
             Commit = notes =>
             {
@@ -1351,6 +1383,7 @@ public partial class MainWindow
             AuditionOn = (pitch, vel) => AuditionNoteOn(trackId, pitch, vel),
             AuditionOff = pitch => Engine.TrackNoteOff(trackId, pitch),
             IsSessionSlot = true,   // no Seek: the slot plays on its own loop clock
+            SecondsAtBeat = Engine.SecondsAtBeat, BeatAtSeconds = Engine.BeatAtSeconds,
             Bpm = () => Engine.Bpm,
         };
         double slotLen = Engine.SessionSlotLength(trackId, scene);

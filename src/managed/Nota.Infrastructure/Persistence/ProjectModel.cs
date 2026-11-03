@@ -19,6 +19,7 @@ namespace Nota.Infrastructure;
 
 public sealed class ProjectDocument
 {
+    public Nota.Application.TempoMapState? TempoMap { get; set; }
     /// <summary>Bumped on breaking format changes; older builds refuse newer files.</summary>
     public int FormatVersion { get; set; } = ProjectService.CurrentFormatVersion;
     public string App { get; set; } = "Nota";
@@ -376,6 +377,10 @@ public sealed class SamplerDto
 /// bundle-relative path into <c>samples/</c>.</summary>
 public sealed class AudioClipDto
 {
+    public GridReferenceGeometry? GridReference { get; set; }
+    public byte[]? GridWarpBaseline { get; set; }
+    public bool GridFollowsAudio { get; set; }
+    public long TempoReferenceId { get; set; }
     public string Sample { get; set; } = "";
     public string? Name { get; set; }
     public bool Active { get; set; } = true;   // clip deactivate / key 0 (v17); default true = plays

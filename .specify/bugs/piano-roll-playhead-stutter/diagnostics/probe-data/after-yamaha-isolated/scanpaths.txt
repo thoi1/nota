@@ -1,0 +1,1 @@
+C:\Dev\nota\.specify\bugs\piano-roll-playhead-stutter\diagnostics\probe-data\after-yamaha-isolated\plugins\VST3

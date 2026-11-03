@@ -1,0 +1,119 @@
+{
+  "machine": "Windows x64, Ryzen 9 7900X, 12 cores / 24 logical processors",
+  "settings": {
+    "frames": 512,
+    "sampleRate": 48000,
+    "deadlineMs": 10.666666666666666
+  },
+  "method": "Saved plug-in states and MIDI, device-path hook into memory, 120 warm-up / 400 measured callbacks",
+  "limits": "Physical ASIO playback, audible popping and Studio One are not measured by this profile",
+  "before": {
+    "one-swam": {
+      "mode": "one-swam",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 2.9266,
+      "p95Ms": 3.3298,
+      "meanMs": 2.9682707500000034,
+      "deadlinePercent": 27.827538281250035,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 0,
+      "rms": 0.061122271071589275
+    },
+    "four-swam": {
+      "mode": "four-swam",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 6.2957,
+      "p95Ms": 6.6926,
+      "meanMs": 6.299720750000001,
+      "deadlinePercent": 59.05988203125002,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 2406.25,
+      "rms": 0.1429638719883666
+    },
+    "complete-project": {
+      "mode": "complete-project",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 6.4137,
+      "p95Ms": 6.8129,
+      "meanMs": 6.427171000000007,
+      "deadlinePercent": 60.25472812500007,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 2500,
+      "rms": 0.14418099584078087
+    }
+  },
+  "after": {
+    "one-swam": {
+      "mode": "one-swam",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 2.9649,
+      "p95Ms": 3.2687,
+      "meanMs": 2.990245499999996,
+      "deadlinePercent": 28.033551562499966,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 0,
+      "rms": 0.06562266049737078
+    },
+    "four-swam": {
+      "mode": "four-swam",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 3.2661,
+      "p95Ms": 3.7011,
+      "meanMs": 3.2981610000000012,
+      "deadlinePercent": 30.920259375000015,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 3843.75,
+      "rms": 0.14114381247873695
+    },
+    "complete-project": {
+      "mode": "complete-project",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 3.4138,
+      "p95Ms": 3.829,
+      "meanMs": 3.4370314999999976,
+      "deadlinePercent": 32.22217031249998,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 3937.5,
+      "rms": 0.14726111852926857
+    },
+    "four-swam-all-workers": {
+      "mode": "four-swam-all-workers",
+      "rate": 48000,
+      "frames": 512,
+      "helpers": 16,
+      "startBeat": 88.932,
+      "medianMs": 3.2675,
+      "p95Ms": 3.9315,
+      "meanMs": 3.339216,
+      "deadlinePercent": 31.305150000000005,
+      "late": 0,
+      "count": 400,
+      "workerCpuMs": 5062.5,
+      "rms": 0.15093620282416909
+    }
+  }
+}

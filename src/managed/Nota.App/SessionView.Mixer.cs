@@ -36,6 +36,7 @@ public sealed partial class SessionView
     {
         public required Control Root { get; init; }
         public required Action UpdateMeter { get; init; }
+        public required Action UpdateState { get; init; }
     }
 
     private int ReturnRows => Math.Min(_engine.ReturnTrackCount, 4);
@@ -205,22 +206,19 @@ public sealed partial class SessionView
             }
             root.Children.Add(Section(panRow, FaderRow(vol, db), meters, btns));
         }
-        if (sendSyncs.Count > 0)
+        Action updateState = () =>
         {
-            var meterOnly = meter;
-            meter = () => { meterOnly(); foreach (var sync in sendSyncs) sync(); };
-        }
-        if (follow.Count > 0)
-        {
-            var before = meter;
-            int trackId = c.TrackId;
-            meter = () =>
-            {
-                before();
-                if (_mixInfo.TryGetValue(trackId, out var t)) foreach (var f in follow) f(t);
-            };
-        }
-        return new MixerParts { Root = root, UpdateMeter = meter };
+            foreach (var sync in sendSyncs) sync();
+            if (_mixInfo.TryGetValue(c.TrackId, out var t)) foreach (var f in follow) f(t);
+        };
+        return new MixerParts { Root = root, UpdateMeter = meter, UpdateState = updateState };
+    }
+
+    public void UpdateLevelMeters()
+    {
+        if (!_showMixer) return;
+        foreach (var c in _cols)
+            if (c.Mixer is { Root.IsEffectivelyVisible: true } mixer) mixer.UpdateMeter();
     }
 
     private static TextBlock ReadoutText()

@@ -48,7 +48,15 @@ struct ClipAdsr {
 
 // A placed audio clip. `startBeat` is the musical anchor on the timeline; the
 // audio itself plays at its natural rate (no time-stretch in MVP — AR/Non-Goal).
+struct GridWarpBaseline;
 struct AudioClip {
+    // Reference to the owning project's sole immutable clock, never a separate map.
+    std::shared_ptr<const TempoMap> tempoMap;
+    std::shared_ptr<const GridWarpBaseline> gridBaseline;
+    bool gridFollowsAudio = false;
+    int64_t tempoReferenceId = 0;
+    double gridSourceStart = 0, gridSourceEnd = 0;
+    double gridOriginSeconds = -1; // absolute source head, independent from musical warp data
     std::shared_ptr<SampleBuffer> sample;
     std::string name;                // user-facing clip name (empty = default)
     double startBeat = 0.0;          // timeline position (beats)
@@ -107,6 +115,15 @@ struct AudioClip {
     double pitchRatio() const { return std::pow(2.0, static_cast<double>(pitchSemitones) / 12.0); }
 };
 
+// Shared immutable first-edit baseline. No source PCM or live device state is copied.
+struct GridWarpBaseline {
+    std::shared_ptr<const TempoMap> map;
+    int64_t firstTick=0,lastTick=0,referenceId=0;
+    double sourceStart=0,sourceEnd=0,originSeconds=0;
+    bool gridFollowsAudio=false,warpEnabled=false;
+};
+
+
 // The short edge fade (~3 ms) an unwarped clip plays at both ends, so one that starts or ends
 // mid-waveform doesn't click: the gain `into` device frames into a clip `len` device frames
 // long at device rate `sr`. Flatten (specs/067) bakes the same fades into the joins it removes.
@@ -125,6 +142,7 @@ inline double audioClipEdgeGain(double into, double len, double sr) {
 // (originBeat), so a frame inside a take is the same point of the loop in every take. The
 // track plays ordinary clips (the comp); a take is never played directly.
 struct AudioTake {
+    std::shared_ptr<const TempoMap> tempoMap;
     std::shared_ptr<SampleBuffer> sample;
     int32_t id = 0;     // engine-unique; comp clips carry it in AudioClip::takeId
     int32_t number = 0; // "Take N" on its track, in recording order
@@ -362,6 +380,8 @@ class Track {
     // (un)freeze structural edit, so the audio thread reads it lock-free like `instrument`.
     std::shared_ptr<const std::vector<float>> frozenBuf;
     double frozenSpb = 0.0;
+    std::shared_ptr<const TempoMap> frozenTempoMap;
+    double frozenSampleRate = 0;
 
   private:
     int32_t id_;

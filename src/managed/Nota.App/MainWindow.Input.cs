@@ -49,11 +49,13 @@ public partial class MainWindow
         if (e.Key == Key.P && ArrangementView.IsPrimaryDown(e.KeyModifiers)
             && (e.KeyModifiers & KeyModifiers.Shift) != 0 && (e.KeyModifiers & KeyModifiers.Alt) == 0)
         {
+            _toolEditorContext = FindToolEditor(e.Source as Visual) ?? _toolEditorContext;
             TogglePalette(e.Source is Avalonia.Visual v ? TopLevel.GetTopLevel(v) as Window : null);
             e.Handled = true;
             return;
         }
         if (_vm.SuspendEnginePolling || PaletteOpen) return;   // the palette has the keyboard
+        if (!Timeline.TempoHasFocus && TryEditorToolKey(e)) return;
         if (e.Source is TextBox || e.Source is NumericUpDown) return;
         if ((e.KeyModifiers & (KeyModifiers.Meta | KeyModifiers.Control | KeyModifiers.Alt)) != 0) return;
 
@@ -138,6 +140,7 @@ public partial class MainWindow
     // Shared with the floating detail window (see HandleFloatingKeyDown).
     internal void HandleKeyDown(KeyEventArgs e)
     {
+        if (e.Handled || Timeline.TempoHasFocus) return;
         if (_vm is null || _vm.SuspendEnginePolling || e.Source is TextBox || e.Source is NumericUpDown) { base.OnKeyDown(e); return; }
 
         // ⌘/⌃/⌥ combos are shortcuts (menu accelerators handle them) — never

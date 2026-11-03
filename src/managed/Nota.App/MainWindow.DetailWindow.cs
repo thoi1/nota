@@ -57,6 +57,11 @@ public partial class MainWindow
 
     private void OnToggleDetailWindow(object? sender, RoutedEventArgs e)
     {
+        var workspaceWindow = _midiWorkspace?.Window;
+        SetDetailMaximized(false);
+        // Pop-out from a main workspace returns to its existing detached editor.
+        // Treating that restored window as a second toggle would immediately close it.
+        if (workspaceWindow is not null) { workspaceWindow.Activate(); return; }
         if (_detailWindow is not null) { _detailWindow.Close(); return; }   // → DockDetail
 
         var win = new DetailWindow(this);
@@ -109,5 +114,7 @@ public partial class MainWindow
     {
         _shuttingDown = true;
         _detailWindow?.Close();
+        _midiWorkspace?.Window?.Close();
+        _midiWorkspace = null;
     }
 }

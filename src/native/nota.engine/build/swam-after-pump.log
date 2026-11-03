@@ -1,0 +1,17 @@
+C:\Dev\nota\tests\Nota.SmokeTest\HistoryTests.cs(311,39): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(9818,11): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(4312,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(5862,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6570,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6570,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6570,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(11197,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(14491,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+engine v0.36.1
+PROFILE loading 1 SWAM Violin Section, helpers=4; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":1,"helpers":4,"rate":48000,"frames":128,"medianMs":0.7333,"p95Ms":0.9064,"meanMs":0.7453835000000004,"deadlinePercent":27.951881250000017,"late":0,"count":200,"workerCpuMs":0,"rms":0.01913939127991457}
+PROFILE loading 4 SWAM Violin Section, helpers=0; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":4,"helpers":0,"rate":48000,"frames":128,"medianMs":3.2175,"p95Ms":3.6894,"meanMs":3.2402310000000005,"deadlinePercent":121.50866250000003,"late":200,"count":200,"workerCpuMs":0,"rms":0.0236501406347196}
+PROFILE loading 4 SWAM Violin Section, helpers=4; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":4,"helpers":4,"rate":48000,"frames":128,"medianMs":1.503,"p95Ms":1.7834,"meanMs":1.549871,"deadlinePercent":58.120162500000006,"late":0,"count":200,"workerCpuMs":328.125,"rms":0.02406444104185849}

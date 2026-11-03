@@ -38,7 +38,26 @@ public interface IAudioEngine : IDisposable
     bool LoopRecordReplace { get; }
     void StopTransport();
     void SetBpm(double bpm);
+    /// <summary>Interactive tempo edit; drive WarpBuildPoll to replace stale caches.</summary>
+    void SetBpmDeferred(double bpm);
     double Bpm { get; }
+    TempoMapState GetTempoMap();
+    long TempoRevision { get; }
+    string TempoEditError { get; }
+    bool TrySetTempoMap(TempoMapState map, out string error, bool checkpoint = true);
+    bool TryCommitGridWarp(int trackId, int clipIndex, TempoMapState map, out string error);
+    double SecondsAtBeat(double beat);
+    double BeatAtSeconds(double seconds);
+    double TempoAtBeat(double beat);
+    bool ClipGridFollowsAudio(int trackId, int clipIndex);
+    bool TrySetClipTempoMode(int trackId, int clipIndex, bool gridFollows, bool lockAnchors, out string error);
+    void RestoreClipTempoReference(int trackId, int clipIndex, bool gridFollows, long referenceId = 0);
+    GridReferenceGeometry? GetGridReferenceGeometry(int trackId, int clipIndex);
+    void RestoreGridReferenceGeometry(int trackId, int clipIndex, GridReferenceGeometry geometry);
+    byte[] GetGridWarpBaseline(int trackId, int clipIndex);
+    void RestoreGridWarpBaseline(int trackId, int clipIndex, byte[] state);
+    bool TryResetGridWarp(int trackId, int clipIndex, out string error);
+    long ClipTempoReferenceId(int trackId, int clipIndex);
     void SetTimeSignature(int num, int denom);
     void SetLoop(bool enabled, double startBeat, double endBeat);
     void SetMetronome(bool enabled);
@@ -355,6 +374,7 @@ public interface IAudioEngine : IDisposable
     void CancelFreeze();
     /// <summary>Arms a capture exactly <paramref name="lengthBeats"/> long (no ring-out tail); returns frames.</summary>
     long BeginBounce(int trackId, double lengthBeats);
+    long BeginBounceRange(int trackId, double startBeat, double endBeat);
     /// <summary>Paste Bounced Audio: copies the armed capture's frames into <paramref name="outFrames"/>
     /// (interleaved stereo) and disarms it without freezing the track. Returns frames copied.</summary>
     long TakeFreezeCapture(float[] outFrames);
@@ -1160,6 +1180,10 @@ public interface IAudioEngine : IDisposable
     /// <summary>Project load (no undo entry): tag a restored clip as a section of a restored take.</summary>
     void SetClipTakeId(int trackId, int clipIndex, int takeId);
     bool TryGetSampleInfo(long sampleId, out NotaSampleInfo info);
+    /// <summary>Shared source-relative analysis. Requests capture on the authoring thread.</summary>
+    ITransientAnalysisService TransientAnalysis { get; }
+    /// <summary>Capture a completed source on the authoring thread; returned job has no engine dependency.</summary>
+    ITransientAnalysisJob CreateTransientAnalysis(long sampleId, TransientAnalysisSettings settings);
     float[] ReadSample(long sampleId);
     bool TryGetSamplerInfo(int trackId, out NotaSamplerInfo info);
     bool TryGetSessionAudioSlot(int trackId, int scene, out NotaSessionAudioSlot info);

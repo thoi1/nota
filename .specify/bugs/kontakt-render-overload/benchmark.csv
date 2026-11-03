@@ -1,0 +1,5 @@
+build,mode,median_ms,p95_ms,worker_cpu_ms,late_blocks,blocks
+before,offline,2.9141,3.0124,0,100,100
+before,device,5.7741,5.9836,0,100,100
+after,offline,0.7791,0.9166,187.5,0,100
+after,device,1.6317,1.8457,500,0,100

@@ -29,6 +29,9 @@
   <!-- App icon for the window / taskbar. The macOS .app dock & Finder icon comes
        from the .icns produced by scripts/bundle-mac.sh out of the same source PNG. -->
   <ItemGroup>
+    <!-- BSD-2-Clause requires the complete SuperFlux notice with binary distribution. -->
+    <None Include="..\..\..\LICENSES\SuperFlux.txt" Link="licenses/SuperFlux.txt"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <AvaloniaResource Include="..\..\..\assets\icons\logo.png" Link="Assets/logo.png" />
     <!-- Windows/Linux window icon (.ico with multiple resolutions). macOS uses the
          .icns produced by scripts/bundle-mac.sh for the dock/Finder icon. -->

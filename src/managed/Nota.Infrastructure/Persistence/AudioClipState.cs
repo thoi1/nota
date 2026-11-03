@@ -28,12 +28,16 @@ internal static class AudioClipState
             WarpPlayStart = ac.WarpPlayStart,
             WarpPlayEnd = ac.WarpPlayEnd,
             Reversed = ac.Reversed != 0,
+            GridFollowsAudio = engine.ClipGridFollowsAudio(trackId, clipIndex),
+            TempoReferenceId = engine.ClipTempoReferenceId(trackId, clipIndex),
+            GridReference = engine.ClipGridFollowsAudio(trackId, clipIndex) ? engine.GetGridReferenceGeometry(trackId, clipIndex) : null,
+            GridWarpBaseline = engine.GetGridWarpBaseline(trackId, clipIndex) is { Length: > 0 } baseline ? baseline : null,
         };
         // Warp off keeps its markers for a later re-enable (#310), so they're saved either way.
         if (ac.WarpEnabled != 0 || ac.WarpBeats > 0)
         {
-            var ms = new double[128]; var mb = new double[128];
-            int nm = Math.Min(engine.GetClipWarpMarkers(trackId, clipIndex, ms, mb), 128);
+            var (ms, mb) = ClipWarpMarkers.Read(engine, trackId, clipIndex);
+            int nm = ms.Length;
             if (nm >= 2)
             {
                 dto.WarpMarkers = new List<WarpMarkerDto>(nm);
@@ -54,6 +58,8 @@ internal static class AudioClipState
     public static int Restore(IAudioEngine engine, int trackId, AudioClipDto ac, string path)
     {
         int ci = engine.AddAudioClipEx(trackId, path, ac.StartBeat, ac.SourceOffsetFrames, ac.LengthFrames, ac.Gain);
+        if (ci >= 0 && engine.TryGetAudioClipInfo(trackId, ci, out var sourceInfo))
+            SourceTempoCache.Restore(engine, sourceInfo.SampleId, path);
         if (ci < 0) return -1;
         if (ac.Name is { Length: > 0 } acn) engine.SetClipName(trackId, ci, acn);
         if (!ac.Active) engine.SetClipActive(trackId, ci, false);   // clip deactivate (v17)
@@ -85,6 +91,9 @@ internal static class AudioClipState
         else if (markers) engine.SetClipWarp(trackId, ci, false, ac.WarpMode);   // keep the mode for re-enable
         if ((ac.WarpEnabled != 0 || markers) && ac.WarpPlayEnd > 0)   // restore the trim window (v11); 0 = whole warp
             engine.SetClipWarpTrim(trackId, ci, ac.WarpPlayStart, ac.WarpPlayEnd);
+        if (ac.GridFollowsAudio) engine.RestoreClipTempoReference(trackId, ci, true, ac.TempoReferenceId);
+        if (ac.GridReference is { } grid) engine.RestoreGridReferenceGeometry(trackId, ci, grid);
+        if (ac.GridWarpBaseline is { Length: > 0 } baseline) engine.RestoreGridWarpBaseline(trackId, ci, baseline);
         if (ac.VolumeEnvelope is { Length: > 0 } venv)   // clip volume envelope (v8)
             engine.SetClipVolumeEnvelope(trackId, ci, Array.ConvertAll(venv, p => p.ToPoint()));
         if (ac.PanEnvelope is { Length: > 0 } penv)      // clip pan envelope (v9)

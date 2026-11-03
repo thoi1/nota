@@ -1,0 +1,1 @@
+C:\Dev\nota\specs\072-piano-roll-workspace\validation\probe-data\plugins\VST3

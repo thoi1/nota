@@ -69,6 +69,9 @@ internal static partial class NativeMethods
     [LibraryImport(Lib, EntryPoint = "nota_transport_set_bpm")]
     internal static partial NotaResult SetBpm(IntPtr engine, double bpm);
 
+    [LibraryImport(Lib, EntryPoint = "nota_transport_set_bpm_deferred")]
+    internal static partial NotaResult SetBpmDeferred(IntPtr engine, double bpm);
+
     [LibraryImport(Lib, EntryPoint = "nota_transport_bpm")]
     internal static partial double TransportBpm(IntPtr engine);
 

@@ -1,0 +1,166 @@
+engine v0.36.1
+-- architecture: layer boundaries --
+  [PASS] Domain depends on nothing but the BCL
+  [PASS] Application references neither Avalonia nor Infrastructure/Presentation
+  [PASS] Presentation references neither Avalonia nor Infrastructure
+-- design: palette wiring --
+  [PASS] NotaTheme.axaml holds no colour (the theme files are the only home)
+  [PASS] NotaPalette.KeyMap parsed (71 keys)
+  [PASS] every referenced Brush.* key is published (in KeyMap)
+  [PASS] every Shadow.* key is built from the theme (Shadow.Modal, Shadow.Popover, Shadow.Raised, Shadow.Sunken)
+-- design: geometry --
+  [PASS] NotaTheme geometry matches NotaGeometry.cs (30 keys)
+  [PASS] every referenced Radius/Control/Space key exists
+  [PASS] no CornerRadius literals in views (NotaRadius only)
+  [PASS] no drop shadows in views
+  [PASS] no gradients in views
+  [PASS] no Rectangle radius off the 0/1/2/3/4 scale (0 allow-listed)
+  [PASS] radius allow-list has no stale entries
+  [PASS] radius allow-list: 0 entries (ratchet: may only shrink)
+-- design: type --
+  [PASS] Font.UI / Font.Mono match NotaFonts (avares://Nota.App/Assets/Fonts#Geist · avares://Nota.App/Assets/Fonts#Geist Mono)
+  [PASS] all eight Geist weights are bundled
+  [PASS] the Geist OFL licence ships with the fonts
+  [PASS] no view names a font family (NotaFonts / Font.* only)
+  [PASS] no text below the 7px floor
+-- design: controls --
+  [PASS] no icon glyphs typed as text (Glyph draws them)
+  [PASS] Knob snaps to the three almanac sizes
+  [PASS] SwitchTrack is 18×10 with a 7px knob inset 1.5
+  [PASS] SliderTrack is a 3px track with a 6×7 handle
+-- design: visualisers --
+  [PASS] graphs draw their window through NotaGraph.Window
+  [PASS] no fills under curves
+  [PASS] meters and spectra have no release ballistics
+  [PASS] level meter channels are 11px with a 5px step
+  [PASS] the arrangement playhead is a 1px accent line with no glow
+-- design: layout --
+  [PASS] device card header is 22px
+  [PASS] device cards are 700 wide (documented exceptions aside)
+  [PASS] transport is a docked row at the top of the window
+  [PASS] transport console is the recessed group inside it
+  [PASS] browser list rows are 26–28px
+-- design: numbers --
+  [PASS] the app installs the display culture (point, U+2212 minus)
+  [PASS] no hyphen in a negative format section
+  [PASS] no hyphen before infinity
+  [PASS] no invariant culture on a readout
+  [PASS] no plain space before a unit
+  [PASS] no vowel-dropped parameter label
+  [PASS] no hyphen-minus before a digit in a view literal (use U+2212) (0 allow-listed)
+  [PASS] number allow-list has no stale entries
+  [PASS] number allow-list: 0 entries (ratchet: may only shrink)
+-- design: bans --
+  [PASS] no hex colour outside NotaPalette.Ink()
+  [PASS] no RGB colour typed as numbers
+  [PASS] no named system colour
+  [PASS] no Opacity used as a state
+  [PASS] no brush snapshotting a theme colour
+-- design: studio --
+  [PASS] every Radius.* is on the 0/1/2/3/4 scale
+  [PASS] only Shadow.Popover / Shadow.Modal carry a blur (floating layers)
+  [PASS] views take shadows from Shadow.* resources only
+  [PASS] no tracked (letter-spaced) text class in the theme
+  [PASS] no view sets a positive LetterSpacing
+  [PASS] NotaType tracking constants are 0
+  [PASS] the shared label builders do not upper-case (NotaText.Label)
+  [PASS] knob arcs, slider fills and graph curves are neutral at rest (accent only while live)
+  [PASS] transport row 44 · console 30 · panels meet on a 1px seam
+  [PASS] no Ember palette value in the Studio themes
+-- design: themes --
+  [PASS] token catalogue: 107 tokens
+  [PASS] BuiltInOrder lists exactly the 4 theme files
+  [PASS] no view or control names a theme id (adding a theme is its file + BuiltInOrder)
+  [PASS] the theme card preview draws the theme's own colours (ColorIn), not the live slots
+  [PASS] ember-graphite: valid (dark, 107 tokens, all opaque but shadows)
+  [PASS] ember-graphite: every readability pairing holds (T3.1–T3.9)
+  [PASS] ember-paper: valid (light, 107 tokens, all opaque but shadows)
+  [PASS] ember-paper: every readability pairing holds (T3.1–T3.9)
+  [PASS] studio-dark: valid (dark, 107 tokens, all opaque but shadows)
+  [PASS] studio-dark: every readability pairing holds (T3.1–T3.9)
+  [PASS] studio-light: valid (light, 107 tokens, all opaque but shadows)
+  [PASS] studio-light: every readability pairing holds (T3.1–T3.9)
+-- design: appearance --
+  [PASS] legacy Dark → Studio Dark
+  [PASS] legacy Light → Studio Light
+  [PASS] legacy System → follow system, Studio Dark / Studio Light
+  [PASS] no setting → Studio Dark
+  [PASS] a stored theme is kept
+  [PASS] unknown theme id → Studio Dark
+  [PASS] unknown dark-mode id and wrong-kind light-mode id fall back per mode
+  [PASS] follow system wears the theme for the OS mode
+  [PASS] the page shows Follow system while following, else the single theme's kind
+  [PASS] Dark / Light wear that mode's remembered pick, and switching back returns to it
+  [PASS] picking a theme wears it and remembers it for its mode
+  [PASS] picking a theme of the other kind switches mode and keeps the other mode's pick
+  [PASS] while following, a pick sets only that mode's theme
+  [PASS] store round-trips and keeps the legacy Theme in step (Light)
+  [PASS] follow system stores as "system", legacy Theme = System
+-- design: interface scale --
+  [PASS] scale presets are 75 / 100 / 125 / 150 / 200 %
+  [PASS] every preset is kept
+  [PASS] an unknown scale reads as 100 %
+  [PASS] scale factor follows the normalised percent
+  [PASS] no setting → 100 %
+-- design: labels --
+  [PASS] NotaText.Fixed parsed (77 acronyms and units)
+  [PASS] no ALL CAPS label (0 allow-listed)
+  [PASS] no Title Case label (5 allow-listed)
+  [PASS] label allow-list has no stale entries
+  [PASS] label allow-list: 5 entries (ratchet: may only shrink)
+-- design: icons --
+  [PASS] no new icon geometry outside Glyph (Geometry.Parse, Data="M…", path strings)
+  [PASS] icon allow-list counts are tight
+  [PASS] icon allow-list: 0 sites in 0 files (ratchet: may only shrink)
+-- design: menus --
+  [PASS] menus: icons via MenuKit.Icon, destructive items via MenuKit.Danger, no Color / Track height submenus
+  [PASS] menu allow-list counts are tight
+  [PASS] menus lay out in MenuItemsPanel (popup sized on the first pass)
+-- design: browser --
+  [PASS] Instrument: every built-in device has a category
+  [PASS] Instrument: no device in two categories
+  [PASS] Instrument: no stale category entries
+  [PASS] Instrument: no empty category
+  [PASS] Instrument: category names unique, sentence case
+  [PASS] Instrument: 16 shelved of 16 built-in devices (expected 16)
+  [PASS] AudioEffect: every built-in device has a category
+  [PASS] AudioEffect: no device in two categories
+  [PASS] AudioEffect: no stale category entries
+  [PASS] AudioEffect: no empty category
+  [PASS] AudioEffect: category names unique, sentence case
+  [PASS] AudioEffect: 27 shelved of 27 built-in devices (expected 27)
+  [PASS] MidiEffect: every built-in device has a category
+  [PASS] MidiEffect: no device in two categories
+  [PASS] MidiEffect: no stale category entries
+  [PASS] MidiEffect: no empty category
+  [PASS] MidiEffect: category names unique, sentence case
+  [PASS] MidiEffect: 7 shelved of 7 built-in devices (expected 7)
+-- design: remote --
+  [PASS] phone sources found (22)
+  [PASS] phone: no colour literal (every colour is a theme token)
+  [PASS] phone: the first-paint fallback is built from the theme files by the Vite plugin
+  [PASS] phone: no tracked labels
+  [PASS] phone: no forced capitals
+  [PASS] phone: radii are 0 / 1 / 2 / 3 / 4
+  [PASS] phone: every custom property read is a theme token (107) or defined
+  [PASS] transport display: snapshot ABI size is 64 bytes
+  [PASS] transport display: interpolates a rendered block between engine updates
+  [PASS] transport display: later display frame advances within the same block
+  [PASS] transport display: stalled audio or a delayed UI frame holds the exact rendered endpoint
+  [PASS] transport display: stop/pause uses the authoritative position immediately
+  [PASS] transport display: seek and tempo changes use the new block without old clock drift
+  [PASS] transport display: a leading count-in cannot move the cursor early
+  [PASS] transport display: a zero-length playing portion uses its exact position
+  [PASS] transport display: interpolates across a loop seam
+  [PASS] transport display: playback before the loop start stays outside the loop
+  [PASS] transport display: an exact loop endpoint wraps to the loop start
+  [PASS] transport display: an invalid loop range never divides by zero
+  [PASS] transport snapshot: unavailable before the first block
+  [PASS] transport snapshot: C ABI returns a coherent rendered block and native clock age
+  [PASS] transport snapshot: stop rewinds to the authoritative launch anchor
+  [PASS] transport snapshot: a seek and tempo change replace the old block together
+  [PASS] transport snapshot: a block split at a loop seam retains its original start and wrapped end
+  [PASS] transport snapshot: fractional-sample loop lengths do not accumulate display drift
+  [PASS] transport snapshot: count-in leaves the transport cursor stationary
+  [PASS] transport snapshot: a block ending its count-in publishes only the playing portion
+  [PASS] transport snapshot: concurrent reads never mix two published blocks

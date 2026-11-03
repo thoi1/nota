@@ -1,0 +1,360 @@
+MIDI activation enters the main workspace
+workspace removes main/Devices/Mixer space and splitter
+workspace has an explicit return label
+workspace focuses note editing
+hidden Devices continue processing audible instrument playback
+return restores the same device chain and prior desired height
+return restores a previously visible docked Mixer
+reopening the same MIDI selection reuses its roll
+docked close removes the complete detail row
+return preserves a manually closed detail panel
+floating close hides the actual Volt/Sends container
+track selection does not reopen manually hidden floating Devices
+floating editor moves into main workspace without a new window
+return restores the same floating window, editor and hidden Devices state
+workspace pop-out returns to the existing detached window instead of closing it
+existing Devices command reopens the same floating chain
+workspace changes preserve MIDI notes
+audio clip activation keeps the ordinary split editor
+actual pointer drags resize Velocity and two CC lanes independently
+lane resize release persists three independent heights
+even two lanes for the same CC resize independently
+reopening an editor restores its primary height
+readding CC lanes restores their individual saved heights
+lane height safely normalizes −100
+lane height safely normalizes 0
+lane height safely normalizes 99999
+lane height safely normalizes NaN
+lane height safely normalizes Infinity
+short editors retain note editing with resized CC lanes
+narrow windows retain a valid roll layout
+velocity onset is exact at 6 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+maximum zoom reaches eight times the old limit
+zoom retains pointer anchoring
+extreme horizontal scrolling clamps accurately
+original zoom-out limit remains unchanged
+extreme-zoom ruler rendering stays bounded
+layout, scaling and zoom never create MIDI edits or undo steps
+MIDI activation enters the main workspace
+workspace removes main/Devices/Mixer space and splitter
+workspace has an explicit return label
+workspace focuses note editing
+hidden Devices continue processing audible instrument playback
+return restores the same device chain and prior desired height
+return restores a previously visible docked Mixer
+reopening the same MIDI selection reuses its roll
+docked close removes the complete detail row
+return preserves a manually closed detail panel
+floating close hides the actual Volt/Sends container
+track selection does not reopen manually hidden floating Devices
+floating editor moves into main workspace without a new window
+return restores the same floating window, editor and hidden Devices state
+workspace pop-out returns to the existing detached window instead of closing it
+existing Devices command reopens the same floating chain
+workspace changes preserve MIDI notes
+audio clip activation keeps the ordinary split editor
+actual pointer drags resize Velocity and two CC lanes independently
+lane resize release persists three independent heights
+even two lanes for the same CC resize independently
+reopening an editor restores its primary height
+readding CC lanes restores their individual saved heights
+lane height safely normalizes −100
+lane height safely normalizes 0
+lane height safely normalizes 99999
+lane height safely normalizes NaN
+lane height safely normalizes Infinity
+short editors retain note editing with resized CC lanes
+narrow windows retain a valid roll layout
+velocity onset is exact at 6 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 100% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 125% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 150% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 6 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 400 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 1600 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 0
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 1
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+velocity onset is exact at 3200 px/beat, 200% scale, grid index 3
+scaled lane and note-grid origins coincide
+velocity cap picking shares its exact onset
+maximum zoom reaches eight times the old limit
+zoom retains pointer anchoring
+extreme horizontal scrolling clamps accurately
+original zoom-out limit remains unchanged
+extreme-zoom ruler rendering stays bounded
+layout, scaling and zoom never create MIDI edits or undo steps

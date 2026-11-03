@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect width="960" height="440" fill="#fcfcfb"/>
+<text x="64" y="34" font-size="18" font-weight="600" fill="#0b0b0b">Four independent VST3 instruments</text>
+<text x="64" y="56" font-size="13" fill="#52514e">Synthetic fixture; Ryzen 9 7900X; 128 samples / 48 kHz; device deadline 2.667 ms</text>
+<rect x="64" y="70" width="12" height="12" rx="3" fill="#2a78d6"/>
+<text x="82" y="80" font-size="13" fill="#52514e">Before</text>
+<rect x="139.0" y="70" width="12" height="12" rx="3" fill="#eb6834"/>
+<text x="157.0" y="80" font-size="13" fill="#52514e">After</text>
+<line x1="64" x2="936" y1="384.0" y2="384.0" stroke="#c3c2b7" stroke-width="1"/>
+<text x="56" y="388.0" font-size="12" fill="#898781" text-anchor="end">0</text>
+<line x1="64" x2="936" y1="312.0" y2="312.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="56" y="316.0" font-size="12" fill="#898781" text-anchor="end">2</text>
+<line x1="64" x2="936" y1="240.0" y2="240.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="56" y="244.0" font-size="12" fill="#898781" text-anchor="end">4</text>
+<line x1="64" x2="936" y1="168.0" y2="168.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="56" y="172.0" font-size="12" fill="#898781" text-anchor="end">6</text>
+<line x1="64" x2="936" y1="96.0" y2="96.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="56" y="100.0" font-size="12" fill="#898781" text-anchor="end">8</text>
+<text x="14" y="240" font-size="12" fill="#898781" transform="rotate(-90 14 240)" text-anchor="middle">ms per block</text>
+<path d="M168.3,384.0 V180.1 Q168.3,176.1 172.3,176.1 H204.3 Q208.3,176.1 208.3,180.1 V384.0 Z" fill="#2a78d6"/>
+<text x="188.3" y="171.1" font-size="11" fill="#52514e" text-anchor="middle">5.8</text>
+<path d="M210.3,384.0 V329.3 Q210.3,325.3 214.3,325.3 H246.3 Q250.3,325.3 250.3,329.3 V384.0 Z" fill="#eb6834"/>
+<text x="230.3" y="320.3" font-size="11" fill="#52514e" text-anchor="middle">1.6</text>
+<text x="209.3" y="406" font-size="13" fill="#52514e" text-anchor="middle">Device median</text>
+<path d="M459.0,384.0 V172.6 Q459.0,168.6 463.0,168.6 H495.0 Q499.0,168.6 499.0,172.6 V384.0 Z" fill="#2a78d6"/>
+<text x="479.0" y="163.6" font-size="11" fill="#52514e" text-anchor="middle">6.0</text>
+<path d="M501.0,384.0 V321.6 Q501.0,317.6 505.0,317.6 H537.0 Q541.0,317.6 541.0,321.6 V384.0 Z" fill="#eb6834"/>
+<text x="521.0" y="312.6" font-size="11" fill="#52514e" text-anchor="middle">1.8</text>
+<text x="500.0" y="406" font-size="13" fill="#52514e" text-anchor="middle">Device p95</text>
+<path d="M749.7,384.0 V283.1 Q749.7,279.1 753.7,279.1 H785.7 Q789.7,279.1 789.7,283.1 V384.0 Z" fill="#2a78d6"/>
+<text x="769.7" y="274.1" font-size="11" fill="#52514e" text-anchor="middle">2.9</text>
+<path d="M791.7,384.0 V360.0 Q791.7,356.0 795.7,356.0 H827.7 Q831.7,356.0 831.7,360.0 V384.0 Z" fill="#eb6834"/>
+<text x="811.7" y="351.0" font-size="11" fill="#52514e" text-anchor="middle">0.78</text>
+<text x="790.7" y="406" font-size="13" fill="#52514e" text-anchor="middle">Offline median</text>
+</svg>

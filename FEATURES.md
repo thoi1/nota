@@ -42,7 +42,10 @@ Contents
 Architecture: engine and DSP in C++20 (CMake + Ninja), UI in .NET 10 / Avalonia 12 (C#),
 with a C ABI + P/Invoke boundary between them. Plugin hosting is isolated in a separate
 JUCE module; the engine core is JUCE-free. A project too heavy for the audio thread renders
-on a pool of render threads, export and freeze use every core, and an idle engine uses no CPU.
+on a pool of render threads, including independent VST3 instrument and effect tracks.
+Worker use adapts to the audio deadline; export and freeze use the available render
+workers, and idle workers sleep. Audio Units and racks containing hosted plugins retain
+serial processing.
 
 ---
 
@@ -90,6 +93,14 @@ on a pool of render threads, export and freeze use every core, and an idle engin
     CPU used by the whole Nota process, in the system monitor's scale.
 - **Tempo (BPM)** and **time signature** (edited by dragging; the denominator snaps to a
   power of two), grid and quantization.
+- **Tempo track**: a pinned, collapsible and resizable Arrangement lane with Step, Linear
+  and Smooth BPM curves, labelled BPM points, point and box selection, fine dragging,
+  numeric edits, keyboard nudging, copy/paste and grouped undo. View → Toggle tempo track
+  shows or hides it. The shared musical-time map drives playback and export. **Grid follows
+  audio** aligns musical grid lines to source-time anchors and creates Tempo Track automation
+  without altering the source or its playback timing; **Audio follows grid** stretches audio
+  non-destructively while leaving tempo fixed. Protected absolute timing anchors reject
+  conflicting edits. Maps and lane layout persist.
 - **Tap tempo**: a TAP cell beside the BPM (and *Tap Tempo* in the command palette) sets the
   tempo from tapped beats — mean of the last eight gaps, restarts on a pace change or a 3 s pause.
 - **Loop region** (on/off and range; Cmd/Ctrl+L loops the selection; drag an end of the brace
@@ -110,6 +121,16 @@ Session · Modular**; each names its view in a tooltip). The Mixer (**View → M
 docks as a panel under any of the three, or floats in its own window — see
 [Tracks and mixer](#tracks-and-mixer).
 
+- **Shared editing tools** — matching Arrangement and Piano Roll toolbar keys: Select,
+  Pencil, Eraser, Waveform Draw and Nota Warp. Bare top-row **1–5** target the focused
+  editor; **4** cycles Sine, Triangle, Sawtooth, Square and Freehand when already active.
+  Waveform icons/menus/settings are shared; active tools are separate. Pencil creates
+  snapped MIDI clips or notes; Eraser removes clicked clips/notes/CC or automation points.
+  Waveform Draw edits Arrangement track/return/master automation or Piano Roll CC lanes
+  with amplitude/cycle/phase presets, cancellable previews and one Undo per stroke.
+  Nota Warp gives muted red ruler feedback; clicking an Arrangement audio clip opens its
+  warp editor and analyses attacks. The piano roll keeps ruler feedback only; variable
+  tempo-map editing and Arrangement MIDI CC lanes are unavailable. Drawing never alters audio samples.
 - **Arrangement View** — a linear timeline:
   place, move, trim and duplicate clips; the snap grid (below); scroll and zoom;
   recording into the arrangement (audio and MIDI); split at the cursor or across a
@@ -177,8 +198,9 @@ docks as a panel under any of the three, or floats in its own window — see
   (trim brackets, warp markers and envelope points snap); ⌘1 / ⌘2 narrow / widen (in Auto,
   the density), ⌘3 triplets, ⌘4 snap on / off, ⌘5 Auto ↔ fixed (also Edit → Grid), acting
   on the editor used last (the arrangement while the audio clip editor shows ADSR or an
-  unwarped clip, which follow no grid). Hold ⌥ to drag freely; clip edges still attract a
-  dragged clip.
+  unwarped clip, which follow no grid). A separate Snap button beside the Piano Roll chip
+  toggles note snapping directly. Hold ⌥ to drag freely; clip edges still attract a dragged
+  clip.
 - **Session View** — a clip grid (tracks × scenes) with an inspector that the toolbar's
   **Inspector** key (the sidebar icon) shows or hides (remembered); on a narrow window the least-used
   toolbar controls fold into a **⋯** menu. Named, coloured clips with note / waveform
@@ -307,6 +329,11 @@ docks as a panel under any of the three, or floats in its own window — see
 - **Piano Roll**: draw, move, stretch and delete notes on the snap grid; **QUANTIZE** with
   its own step (1/32 … 1/2, triplets; independent of the zoom) and strength; a velocity
   editor; transposing the selection.
+  - Double-click an Arrangement MIDI clip to fill the editing workspace with the piano
+    roll, retaining the menu and transport. **Back to Arrangement** restores the previous
+    docked or detached layout and manual Devices visibility. Audio clip activation is unchanged.
+  - Horizontal zoom reaches 3,200 pixels per beat (eight times the earlier maximum),
+    with pointer anchoring and the original zoom-out range. Velocity stems share note onsets.
   - A note drawn takes the length and velocity of the note last touched (clicked, moved,
     resized or velocity-changed); before any note is touched, one grid step at velocity 0.8.
   - **Shape a note as you place it** (#45): keep the button down after the double-click and
@@ -436,7 +463,12 @@ docks as a panel under any of the three, or floats in its own window — see
   Operator, Pentad, Consort). The sustain pedal holds released keys on every melodic built-in
   (Keys and Mosaic model their own damper; drums ignore it); a re-struck held key restarts.
   MCP `get_clip_controllers` / `set_clip_controller`.
-  - **Controller lane in the piano roll** — the fifth tab of the lane under the notes edits
+  - **Multiple controller lanes in the piano roll** — **+** adds independently selected CC
+    lanes beneath the existing velocity/MPE lane; **−** hides a lane and keeps its data.
+    Extra lanes scroll in a bounded area and share the note grid's time axis.
+    Drag the divider above Velocity or any CC lane to resize it independently; heights
+    are remembered across editor reopening and restarts without changing MIDI values.
+    The fifth tab of the lane under the notes edits
     any controller: click the active tab for a picker (the clip's controllers first, then
     Sustain, Mod wheel, Pitch wheel, Channel pressure, Expression, Breath and **Other CC**).
     Pedals (CC64–69) are on/off blocks — drag to draw, move or resize one on the grid (⌘ free),
@@ -560,19 +592,36 @@ docks as a panel under any of the three, or floats in its own window — see
   The first use offers to download the model.
 - **Warp / time-stretch**: **Complex** and **Complex Pro** modes (the latter with formant
   preservation, correct even when the sample rate and the device rate differ), plus
-  transient detection. Trim brackets, warp markers and envelope points snap to the clip
-  editors' snap grid. Warping runs in the background (the track shows "Processing…" and a
-  re-warped clip plays its previous version until the new one is ready), so long files
-  don't stall the app. The clip editor redraws the visible waveform at screen resolution,
-  down to single samples, and its ruler — in the clip's arrangement position, bars or time,
-  warped or not — thins or adds bars, beats and 16ths with the zoom. Click or drag the ruler,
-  or drag the playhead line, to move the playhead (snapped on a warped clip, ⌥ free); the
-  playhead shows while stopped too.
+  SuperFlux transient detection. **Analyse transients**, **Show transients**, **Snap to
+  transients**, **Detection threshold** (0–100%, default 50%) and **Minimum spacing**
+  (5–250 ms, default 30 ms) share debounced background analysis across clips. Thin attack
+  guides follow trims, reverse, playback rate and warp in the editor and Arrangement.
+  **Grid follows audio** displays musical beat lines over the unchanged source; drag a line
+  in the ruler or waveform onto a transient to set fixed timing anchors and generate editable tempo automation, with
+  BPM previews, snapping, Shift bypass and Alt-click anchor removal. **Snap selected anchor**
+  aligns a selected musical anchor with the nearest valid source attack. **Add anchor**, numeric
+  beat/time edits and **Reset grid** provide precise editing with a persisted, undoable region
+  baseline. **Snap all beats** estimates original-source pulse with starting/min/max BPM and
+  sensitivity; inspect/correct separate proposals, then **Apply** or **Cancel**. Drag an
+  Arrangement audio clip onto Tempo to open this extraction workflow. Original source BPM
+  and extracted beat observations are cached alongside the saved sample, independent of warp. **Audio follows grid**
+  keeps the grid fixed and edits the existing nondestructive warp markers. Double-click near
+  a guide to anchor that attack on the grid, then drag the anchor, or use **Snap selected
+  anchor** to refine its source. Hold ⌥ or disable transient snapping for manual placement.
+  Trim brackets, warp markers and envelope points snap to the clip editors' snap grid.
+  Warping runs in the background (the track shows "Processing…" and a re-warped clip plays
+  its previous version until the new one is ready), so long files don't stall the app. The
+  clip editor redraws the visible waveform at screen resolution, down to single samples,
+  and its ruler — in the clip's arrangement position, bars or time, warped or not — thins or
+  adds bars, beats and 16ths with the zoom. Click or drag the ruler, or drag the playhead
+  line, to move the playhead (snapped on a warped clip, ⌥ free); the playhead shows while
+  stopped too.
   - **Tempo** next to the Warp switch: the tempo the audio was recorded at — drag it or type
     it; **÷2** / **×2** fix a half- or double-time detection. Warp markers keep their relative
     timing; on an unwarped clip a tempo turns Warp on. One undo step each.
   - Dragging a warp marker (or a segment's BPM chip) stretches the waveform live; the clip is
     re-warped once on release, and Esc during the drag puts it back.
+  - Long marker lists are read and saved in full; no 128-anchor truncation.
 - **Changing the sample rate** does not break third-party plugins or warped clips — the
   caches are rebuilt once when the rate changes.
 
@@ -1307,6 +1356,8 @@ audio effects after it keep running and keep their settings; saved with the proj
 - **Devices/Clip panel in its own window** — the ⧉ button in the bottom panel's header
   detaches it (the selected clip's piano roll on top, the device chain below, both at
   once). The content moves across as-is: edits, meters and graphs all keep working live.
+  Close the whole lower Devices area with its header's ×; View → Show devices reopens
+  it without unloading the instrument or effects.
 - **Clip editor fills the window** — the expand button in the bottom panel's header (Clip
   and Pattern tabs), View → Clip editor fills the window or ⌘⇧F / Ctrl+Shift+F folds away
   the browser, the main view and a docked Mixer; the same again brings back the split.
@@ -1329,6 +1380,10 @@ audio effects after it keep running and keep their settings; saved with the proj
 ---
 
 ## Preferences
+
+- **Meter refresh rate** in Appearance: 30 Hz (default) or 60 Hz for primary transport,
+  arrangement, Session and Mixer audio level meters. Applies immediately, saved across
+  launches; hidden meters skip updates. Audio timing and CPU/DSP sampling are independent.
 
 - **Audio**: device, sample rate, buffer size (latency); **WASAPI exclusive mode**
   (Windows). On Windows, **Audio system** WASAPI / **ASIO**: the driver, the output and input
@@ -1444,6 +1499,11 @@ Coverage:
 
 ## Other
 
+- **Native transient analysis API**: SuperFlux with vibrato suppression and optional
+  attack refinement; source-relative samples, strength, confidence and uncertainty.
+  A shared background service provides cached analysis, nearest/range queries, cancellation
+  and progress. The audio warp editor and Arrangement share it; beat inference and
+  variable tempo-map integration remain separate work.
 - **Undo/redo** for every editing operation.
 - **Semantic versioning** with a single source of truth (`VERSION`), a changelog in Keep a
   Changelog format, and `vX.Y.Z` git tags.

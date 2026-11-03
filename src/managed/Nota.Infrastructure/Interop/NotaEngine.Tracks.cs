@@ -289,7 +289,13 @@ public sealed partial class NotaEngine
 
     /// <summary>Replaces a warped clip's source↔beat markers (≥2; sorted internally).</summary>
     public void SetClipWarpMarkers(int trackId, int clipIndex, double[] srcFrames, double[] beats)
-    { ThrowIfDisposed(); Check(NativeMethods.ClipSetWarpMarkers(_handle, trackId, clipIndex, srcFrames, beats, srcFrames.Length)); }
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(srcFrames);
+        ArgumentNullException.ThrowIfNull(beats);
+        if (srcFrames.Length != beats.Length) throw new ArgumentException("Warp source and beat counts differ.");
+        Check(NativeMethods.ClipSetWarpMarkers(_handle, trackId, clipIndex, srcFrames, beats, srcFrames.Length));
+    }
 
     /// <summary>Reads a warped clip's markers into the buffers; returns the total count.</summary>
     public int GetClipWarpMarkers(int trackId, int clipIndex, double[] outSrc, double[] outBeat)
@@ -559,6 +565,8 @@ public sealed partial class NotaEngine
     /// ring-out tail) — a one-shot range bounce finished with <see cref="TakeFreezeCapture"/>.</summary>
     public long BeginBounce(int trackId, double lengthBeats)
     { ThrowIfDisposed(); return NativeMethods.TrackBounceBegin(_handle, trackId, lengthBeats); }
+    public long BeginBounceRange(int trackId, double startBeat, double endBeat)
+    { ThrowIfDisposed(); return NativeMethods.TrackBounceRangeBegin(_handle, trackId, startBeat, endBeat); }
 
     /// <summary>Copies the armed capture's rendered frames (interleaved stereo, device rate) into
     /// <paramref name="outFrames"/> and disarms it without freezing the track. Returns frames copied.</summary>

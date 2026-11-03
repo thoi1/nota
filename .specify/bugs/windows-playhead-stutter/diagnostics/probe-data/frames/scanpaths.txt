@@ -1,0 +1,1 @@
+C:\Dev\nota\.specify\bugs\windows-playhead-stutter\diagnostics\probe-data\frames\plugins\VST3

@@ -13,6 +13,7 @@
 using System;
 using System.Globalization;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -26,7 +27,7 @@ using Nota.Application.Localization;
 
 namespace Nota.App;
 
-public sealed class AudioClipEditorView : UserControl
+public sealed partial class AudioClipEditorView : UserControl
 {
     private readonly IAudioEngine _engine;
     private readonly Action _onChanged;
@@ -48,6 +49,9 @@ public sealed class AudioClipEditorView : UserControl
     private Action _syncAttack = () => { }, _syncDecay = () => { }, _syncSustain = () => { }, _syncRelease = () => { };
     private ClipAdsr _adsr = ClipAdsr.Identity;
     private int _mode;   // 0 = Sample, 1 = Envelope, 2 = ADSR
+    private int _warpToolMode; // 0 = None, 1 = Audio follows grid, 2 = Grid follows audio
+    private readonly ToggleButton[] _warpToolButtons = new ToggleButton[3];
+    private Control[] _audioWarpControls = Array.Empty<Control>();
     private ColumnFlow _inspectorFlow = null!;
     private SectionColumns _sampleSections = null!, _adsrSections = null!;
 
@@ -81,9 +85,11 @@ public sealed class AudioClipEditorView : UserControl
         TrackId = trackId;
         ClipIndex = clipIndex;
         _onChanged = onChanged;
+        _wave.SecondsAtBeat = engine.SecondsAtBeat; _wave.BeatAtSeconds = engine.BeatAtSeconds;
         _wave.SetColor(clipColor);
         _wave.MarkersCommitted = (src, beat) =>
         {
+            if (_warpToolMode == 2) return;
             WarpEdit(() => _engine.SetClipWarpMarkers(TrackId, ClipIndex, src, beat));
             Reload();
             _onChanged();
@@ -94,7 +100,7 @@ public sealed class AudioClipEditorView : UserControl
             var pk = new float[n * 2];
             var rms = new float[n];
             int got = 0;
-            if (_warpEnabled)
+            if (_warpEnabled && _warpToolMode != 2)
             {
                 if (_engine.TryGetAudioClipInfo(TrackId, ClipIndex, out var wi) && wi.WarpBeats > 0)
                     got = _engine.GetClipWarpPeaksRange(TrackId, ClipIndex, f0 * wi.WarpBeats, f1 * wi.WarpBeats, pk, n, rms);
@@ -109,6 +115,7 @@ public sealed class AudioClipEditorView : UserControl
             Reload();
             _onChanged();
         };
+        _wave.GridWarpCommitted = HandleGridWarpEdit;
         _wave.WarpTrimCommitted = (ps, pe) =>
         {
             WarpEdit(() => _engine.SetClipWarpTrim(TrackId, ClipIndex, ps, pe));
@@ -154,10 +161,14 @@ public sealed class AudioClipEditorView : UserControl
         Grid.SetColumn(mode, 1); warpRow.Children.Add(mode);
         var detect = ClipEditorKit.Button(Loc.T("Detect tempo"), AutoWarp);
         ToolTip.SetTip(detect, Loc.T("Detect the file's tempo and conform it to the project"));
-        var transients = ClipEditorKit.Button(Loc.T("To transients"), TransientWarp);
-        ToolTip.SetTip(transients, Loc.T("Pin a marker on every hit so drums lock to the grid"));
+        var warpTools = BuildWarpToolSelector();
+        var protectTiming = ClipEditorKit.Button(Loc.T("Protect timing anchors"), () => SetTempoWorkflow(true, true));
+        protectTiming.IsEnabled = ClipIndex >= 0;
+        ToolTip.SetTip(protectTiming, Loc.T("Fit the grid and protect these anchors against conflicting tempo edits"));
+        var tempoRow = TempoRow();
+        _audioWarpControls = new Control[] { warpSwitch, mode, tempoRow, detect, protectTiming, pitchRow, reverse };
         var warp = Section(SectionTitle(Loc.T("Warp"), _markerCount), 8,
-            warpRow, TempoRow(), Pair(detect, transients), Card(KeyValue(Loc.T("Detected"), _detectedText)));
+            warpRow, warpTools, tempoRow, detect, protectTiming, Card(KeyValue(Loc.T("Detected"), _detectedText)));
 
         // ADSR — the clip's amplitude shape (the ADSR tab swaps the inspector to it). Times
         // run on a square-law slider over the clip length, so short attacks stay fine-grained.
@@ -177,7 +188,7 @@ public sealed class AudioClipEditorView : UserControl
         ToolTip.SetTip(resetAll, Loc.T("Play the whole sample at full level"));
         var adsr = Section(SectionTitle("ADSR"), 10, attack, decay, sustain, release, resetAll);
 
-        _sampleSections = Sections(clip, playback, warp);
+        _sampleSections = Sections(clip, playback, warp, BuildGridExtractionSection(), BuildTransientSection());
         _adsrSections = Sections(adsr);
         var inspector = Inspector(_sampleSections, _hint, out _inspectorFlow);
         DockPanel.SetDock(inspector, Dock.Left);
@@ -204,9 +215,10 @@ public sealed class AudioClipEditorView : UserControl
         waveHost.Children.Add(_wave);
         waveHost.Children.Add(_wave.PlayheadLayer);
         waveHost.Children.Add(_overlay);
-        var col1 = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Background = NotaPalette.BgSunken };
-        col1.Children.Add(waveHost);
-        Grid.SetRow(_hScroll, 1); col1.Children.Add(_hScroll);
+        var col1 = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto"), Background = NotaPalette.BgSunken };
+        col1.Children.Add(BuildGridQuickBar());
+        Grid.SetRow(waveHost, 1); col1.Children.Add(waveHost);
+        Grid.SetRow(_hScroll, 2); col1.Children.Add(_hScroll);
 
         var grid = new DockPanel { Children = { inspector, col1 } };
 
@@ -228,12 +240,56 @@ public sealed class AudioClipEditorView : UserControl
         Reload();
     }
 
+    private Control BuildWarpToolSelector()
+    {
+        string[] names = { Loc.T("None"), Loc.T("Audio follows grid"), Loc.T("Grid follows audio") };
+        string[] help =
+        {
+            Loc.T("Select no warp editing tool"),
+            Loc.T("Stretch audio to the grid; committing a marker edit unlinks this clip's Grid Warp anchors and preserves tempo events"),
+            Loc.T("Edit the musical grid to follow this audio without stretching it")
+        };
+        var row = new StackPanel { Orientation = Orientation.Vertical };
+        for (int i = 0; i < names.Length; i++)
+        {
+            string name = names[i], description = help[i];
+            int mode = i;
+            var button = new ToggleButton
+            {
+                Content = name,
+                Classes = { "seg" },
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                IsChecked = i == _warpToolMode,
+            };
+            AutomationProperties.SetName(button, name);
+            AutomationProperties.SetHelpText(button, description);
+            ToolTip.SetTip(button, description);
+            button.Click += (_, _) => SelectWarpTool(mode);
+            _warpToolButtons[i] = button;
+            row.Children.Add(button);
+        }
+        return new Border { Classes = { "segmented" }, Child = row };
+    }
+
+    private void SelectWarpTool(int mode)
+    {
+        int next = mode is 1 or 2 && _warpToolMode == mode ? 0 : mode;
+        if (_warpToolMode == 2 && next != 2) CancelBeatPreview();
+        _warpToolMode = next;
+        for (int i = 0; i < _warpToolButtons.Length; i++)
+            _warpToolButtons[i].IsChecked = i == _warpToolMode;
+        _wave.SetWarpToolMode(_warpToolMode);
+        _wave.SetGridWarpMode(_warpToolMode == 2);
+        foreach (var control in _audioWarpControls) control.IsEnabled = _warpToolMode != 2;
+        Reload();
+    }
+
     /// <summary>The snap grid of the axis the wave draws (for the status line of ⌘1–⌘5).</summary>
     internal ResolvedGrid SnapGridState => _wave.DrawnGrid;
 
     /// <summary>Nothing here follows the grid right now: ADSR handles don't snap, and an unwarped
     /// clip in Sample mode has no beat grid (#269). ⌘1–⌘5 then act on the arrangement (#114).</summary>
-    internal bool GridInert => _mode == 2 || (_mode == 0 && !_warpEnabled);
+    internal bool GridInert => _mode == 2 || (_mode == 0 && !_warpEnabled && _warpToolMode != 2);
 
     /// <summary>Moves the transport to an arrangement beat: a click or drag on the ruler or the
     /// playhead line (#278). Left null for a Session slot, which plays on its own loop clock.</summary>
@@ -344,14 +400,16 @@ public sealed class AudioClipEditorView : UserControl
         var peaks = new float[1024 * 2];
         var rms = new float[1024];
         int markers = 0;
-        if (_warpEnabled)
+        bool showAudioWarp = _warpEnabled && _warpToolMode != 2
+            && (!_engine.ClipGridFollowsAudio(TrackId, ClipIndex) || _warpToolMode == 1);
+        if (showAudioWarp)
         {
             // Show the FULL warp with markers + Start/End trim brackets (trim the played
             // window without stretching).
             int n = _engine.GetClipWarpFullPeaks(TrackId, ClipIndex, peaks, 1024, rms);
             _wave.SetPeaks(peaks, rms, n);
-            var ms = new double[128]; var mb = new double[128];
-            markers = Math.Min(_engine.GetClipWarpMarkers(TrackId, ClipIndex, ms, mb), 128);
+            var (ms, mb) = ClipWarpMarkers.Read(_engine, TrackId, ClipIndex);
+            markers = ms.Length;
             _wave.SetMarkers(ms, mb, markers);
             _mkSrc = ms[..markers]; _mkBeat = mb[..markers];
             _playStart = gi.WarpPlayStart; _playEnd = gi.WarpPlayEnd;
@@ -372,12 +430,23 @@ public sealed class AudioClipEditorView : UserControl
             }
             else _wave.SetSourceRegion(0, 0, 0);
         }
-        _markerCount.Text = _warpEnabled ? Loc.Plural(markers, "{0} marker", "{0} markers") : Loc.T("off");
-        _clipBpm = _warpEnabled ? ClipTempo.Bpm(_mkSrc, _mkBeat, _playStart, _playEnd, srcSR) : 0;
+        _markerCount.Text = showAudioWarp ? Loc.Plural(markers, "{0} marker", "{0} markers") : Loc.T("off");
+        _clipBpm = showAudioWarp ? ClipTempo.Bpm(_mkSrc, _mkBeat, _playStart, _playEnd, srcSR) : 0;
         SyncTempo();
 
         // Where the played region sits in the arrangement (playhead, ruler seeks and labels).
         _wave.SetPlacement(_startBeat, _lengthBeats, SessionClip.SceneOf(ClipIndex) >= 0);
+        var gridGeometry = _engine.GetGridReferenceGeometry(TrackId, ClipIndex);
+        if (gridGeometry is { } geometry)
+            _wave.SetGridWarp(_engine, _engine.GetTempoMap(),
+                _engine.ClipTempoReferenceId(TrackId, ClipIndex), TrackId, ClipIndex, _startBeat,
+                geometry.SourceStart, geometry.SourceEnd - geometry.SourceStart, geometry.SourceRate, _reversed);
+        _wave.SetGridWarpMeter(_timeSigNumerator, _timeSigDenominator);
+        _transientSource = gi.SampleId;
+        SyncTransients();
+        SyncGridExtraction();
+        if (_warpToolMode == 2 && gridGeometry is { } originalGeometry)
+            _wave.SetSourceRegion(originalGeometry.SourceStart, originalGeometry.SourceEnd - originalGeometry.SourceStart, srcFrames);
 
         // Clip envelope: clip-local domain = warpBeats when warped, else clip length.
         LoadEnvelope();
@@ -400,6 +469,12 @@ public sealed class AudioClipEditorView : UserControl
         else
             frac = (_lengthBeats > 0 && beats >= _startBeat && beats <= _startBeat + _lengthBeats)
                 ? (beats - _startBeat) / _lengthBeats : -1;
+        if (scene < 0 && !_warpEnabled && frac >= 0)
+        {
+            double start = _engine.SecondsAtBeat(_startBeat);
+            double duration = _engine.SecondsAtBeat(_startBeat + _lengthBeats) - start;
+            frac = duration > 0 ? (_engine.SecondsAtBeat(beats) - start) / duration : -1;
+        }
         _wave.SetPlayhead(frac);
     }
 
@@ -525,8 +600,18 @@ public sealed class AudioClipEditorView : UserControl
     // file): the clip keeps playing its previous cache until the background build lands.
     private void WarpEdit(Action edit)
     {
+        _warpEditError = null;
         _engine.SetDeferWarpBuild(true);
         try { edit(); }
+        catch (Exception)
+        {
+            Reload();
+            _warpEditError = _engine.TempoEditError.Contains("protected", StringComparison.OrdinalIgnoreCase)
+                ? Loc.T("Protected timing anchors prevent this edit. Unlock them in the Tempo Track first.")
+                : Loc.T("Warp edit rejected: check anchor order and BPM limits.");
+            _transientStatus.Text = _warpEditError;
+            return;
+        }
         finally { _engine.SetDeferWarpBuild(false); }
         WarpBuildRequested?.Invoke();
     }
@@ -553,13 +638,14 @@ public sealed class AudioClipEditorView : UserControl
 
     private void ToggleReverse()
     {
-        _engine.SetClipReverse(TrackId, ClipIndex, !_reversed);
+        WarpEdit(() => _engine.SetClipReverse(TrackId, ClipIndex, !_reversed));
         Reload();          // picks the new state up (and re-reads the played peaks)
         _onChanged();
     }
 
     private void ToggleWarp()
     {
+        if (_warpToolMode == 2) return;
         _warpEnabled = !_warpEnabled;
         WarpEdit(() => _engine.SetClipWarp(TrackId, ClipIndex, _warpEnabled, _warpMode));
         Reload();
@@ -568,6 +654,7 @@ public sealed class AudioClipEditorView : UserControl
 
     private void SetWarpMode(int mode)
     {
+        if (_warpToolMode == 2) return;
         _warpMode = Math.Clamp(mode, 0, WarpModes.Length - 1);
         WarpEdit(() => _engine.SetClipWarp(TrackId, ClipIndex, _warpEnabled, _warpMode));
         Reload();
@@ -579,17 +666,8 @@ public sealed class AudioClipEditorView : UserControl
     // material, in which case the clip is left as-is.
     private void AutoWarp()
     {
+        if (_warpToolMode == 2) return;
         WarpEdit(() => _detectedBpm = _engine.AutoWarpClip(TrackId, ClipIndex));
-        ShowDetected();
-        Reload();
-        _onChanged();
-    }
-
-    // Beats-mode warp: detect transients and pin grid-snapped markers at each hit so
-    // percussion locks tightly to the grid ("Beats"). Fails on flat material.
-    private void TransientWarp()
-    {
-        WarpEdit(() => _detectedBpm = _engine.BeatWarpClip(TrackId, ClipIndex));
         ShowDetected();
         Reload();
         _onChanged();
@@ -639,7 +717,7 @@ public sealed class AudioClipEditorView : UserControl
 
     private double TimeNorm(double beats) => _lengthBeats > 0 ? Math.Sqrt(Math.Clamp(beats / _lengthBeats, 0, 1)) : 0;
     private double NormTime(double v) => v * v * _lengthBeats;
-    private string AdsrTime(double beats) => NotaNum.Time(beats * 60.0 / Math.Max(1, _engine.Bpm));
+    private string AdsrTime(double beats) => NotaNum.Time(_engine.SecondsAtBeat(_startBeat + beats) - _engine.SecondsAtBeat(_startBeat));
 
     private void SetEnvTarget(int target)
     {
@@ -684,7 +762,7 @@ public sealed class AudioClipEditorView : UserControl
     // The waveform is drawn in SOURCE time; markers tie a source point to a beat.
     // Interior markers drag along source (aligning audio to their fixed beat);
     // double-click adds one (beat interpolated) / removes an interior one.
-    private sealed class WaveformView : Control
+    private sealed partial class WaveformView : Control
     {
         private static readonly IBrush Bg = NotaPalette.BgSunken;
         private static readonly IBrush RulerBg = NotaPalette.Panel;
@@ -718,6 +796,7 @@ public sealed class AudioClipEditorView : UserControl
         private double _scale = 1;   // device pixels per DIP, as of the last render
         private double _frac = -1;
         private double _gain = 1.0;
+        private int _warpToolMode;
         private readonly System.Collections.Generic.List<(double src, double beat)> _mk = new();
         private int _drag = -1;
         private int _hoverMk = -1;          // marker under the cursor (hover highlight)
@@ -725,6 +804,7 @@ public sealed class AudioClipEditorView : UserControl
         // Arrangement placement of the played region (#277 / #278 / #275): the playhead, ruler
         // seeks and ruler labels all go through Map, so they can't disagree.
         private double _placeStart, _placeLen = 4;
+        public Func<double, double>? SecondsAtBeat, BeatAtSeconds;
         private bool _slot;
         public Action<double>? Seek;
         private bool _seekDrag;             // a ruler / playhead-line scrub in progress
@@ -738,7 +818,7 @@ public sealed class AudioClipEditorView : UserControl
         }
         private ClipTimeMap Map
             => _srcMode && _srcTotal > 0
-                ? new ClipTimeMap(_placeStart, _placeLen, ClipContentDomain.SourceFrames, _srcTotal, _srcOff, _srcOff + _srcLen, _reversed, _slot)
+                ? new ClipTimeMap(_placeStart, _placeLen, ClipContentDomain.SourceFrames, _srcTotal, _srcOff, _srcOff + _srcLen, _reversed, _slot, SecondsAtBeat, BeatAtSeconds)
                 : _trimMode && _trimTotal > 0
                     ? new ClipTimeMap(_placeStart, _placeLen, ClipContentDomain.WarpBeats, TotalBeats, _trimStart, _trimEnd, _reversed, _slot)
                     : new ClipTimeMap(_placeStart, _placeLen, ClipContentDomain.WarpBeats, 1, 0, 1, _reversed, _slot);
@@ -749,9 +829,23 @@ public sealed class AudioClipEditorView : UserControl
         // (the host adds it), so a transport tick repaints one line instead of the whole wave,
         // ruler and markers (#142). Anything that repaints the view repaints the layer too.
         public Control PlayheadLayer { get; }
-        public WaveformView() => PlayheadLayer = new PlayheadOverlay(this);
+        public WaveformView()
+        {
+            Focusable = true;
+            PlayheadLayer = new PlayheadOverlay(this);
+        }
+        public void SetWarpToolMode(int mode)
+        {
+            if (_warpToolMode == mode) return;
+            CancelGesture();
+            _warpToolMode = mode;
+            _hoverMk = _bpmHoverSeg = -1;
+            Redraw();
+        }
         private void Redraw()
         {
+            if (_lBeat.Length == _mk.Count)
+                for (int i = 0; i < _mk.Count; i++) _lBeat[i] = _mk[i].beat;
             InvalidateVisual();
             PlayheadLayer.InvalidateVisual();
         }
@@ -1059,6 +1153,7 @@ public sealed class AudioClipEditorView : UserControl
         /// <summary>Drop a marker drag or segment-tempo scrub: back to the committed markers.</summary>
         public bool CancelGesture()
         {
+            if (_gridDrag is not null) { CancelGridWarpDrag(); return true; }
             if (_drag < 0 && _bpmScrubSeg < 0) return false;
             RestoreCommitted();
             return true;
@@ -1091,15 +1186,17 @@ public sealed class AudioClipEditorView : UserControl
         private bool OverEditHandle(Point p, double w, double h)
         {
             if (_adsrMode) return ClipAdsrKit.Hit(p, AdsrFrameNow(w, h), _adsr) != AdsrHandle.None;
-            if (!_envMode)
+            if (_warpToolMode == 2 && OverGridWarpHandle(p)) return true;
+            if (_warpToolMode == 1 && !_envMode)
                 foreach (var b in _bpmHot)
                     if (b.rect.Contains(p)) return true;
             if (_envMode) return HitEnv(p.X, p.Y, w, h) >= 0 || HitEnvSegment(p.X, p.Y, w, h) is not null;
             if (_srcMode)
                 return Math.Abs(p.X - SrcToX(_srcOff, w)) <= HandlePx || Math.Abs(p.X - SrcToX(_srcOff + _srcLen, w)) <= HandlePx;
-            if (_trimMode && (Math.Abs(p.X - BeatToX(_trimStart, w)) <= HandlePx || Math.Abs(p.X - BeatToX(_trimEnd, w)) <= HandlePx))
+            if (_warpToolMode == 1 && _trimMode
+                && (Math.Abs(p.X - BeatToX(_trimStart, w)) <= HandlePx || Math.Abs(p.X - BeatToX(_trimEnd, w)) <= HandlePx))
                 return true;
-            if (_mk.Count < 2) return false;
+            if (_warpToolMode != 1 || _mk.Count < 2) return false;
             int m = HitMarker(p.X, w);
             return m > 0 && m < _mk.Count - 1;
         }
@@ -1113,6 +1210,9 @@ public sealed class AudioClipEditorView : UserControl
             // The line yields to an edit handle under the pointer (a warp marker, a bracket,
             // an ADSR or envelope point), so a stopped playhead never hides one.
             var pt = e.GetCurrentPoint(this);
+            // In Grid Warp the musical lines in the ruler are editing handles too.
+            // A miss falls through to the normal transport seek between those lines.
+            if (_warpToolMode == 2 && BeginGridWarpGesture(e)) return;
             if (Seek is not null && pt.Properties.IsLeftButtonPressed && e.ClickCount == 1
                 && (pt.Position.Y < RulerH
                     || (OnPlayheadLine(pt.Position.X, W) && !OverEditHandle(pt.Position, W, H))))
@@ -1152,7 +1252,7 @@ public sealed class AudioClipEditorView : UserControl
 
             // BPM chip: drag up/down to scrub the segment tempo (like the global BPM),
             // double-click to type an exact value.
-            if (!_envMode && !e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            if (_warpToolMode == 1 && !_envMode && !e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
                 var pp = e.GetPosition(this);
                 foreach (var b in _bpmHot)
@@ -1201,6 +1301,8 @@ public sealed class AudioClipEditorView : UserControl
                 return;
             }
 
+            if (_warpToolMode == 2) return;
+
             // Source-region brackets (unwarped whole-sample view): grab Start / End.
             if (_srcMode)
             {
@@ -1215,7 +1317,7 @@ public sealed class AudioClipEditorView : UserControl
             }
 
             // Warped-clip trim brackets take priority over markers at the window edges.
-            if (_trimMode)
+            if (_warpToolMode == 1 && _trimMode)
             {
                 double xw = Bounds.Width, xp = e.GetPosition(this).X;
                 double xs = BeatToX(_trimStart, xw), xe = BeatToX(_trimEnd, xw);
@@ -1225,18 +1327,19 @@ public sealed class AudioClipEditorView : UserControl
                 if (_trimDrag >= 0) { e.Pointer.Capture(this); e.Handled = true; return; }
             }
 
-            if (_mk.Count < 2) return;
+            if (_warpToolMode != 1 || _mk.Count < 2) return;
+            if (!pt.Properties.IsLeftButtonPressed) return;
             double w = Bounds.Width, x = e.GetPosition(this).X;
             if (e.ClickCount == 2)
             {
                 int hit = HitMarker(x, w);
                 if (hit > 0 && hit < _mk.Count - 1) { _mk.RemoveAt(hit); Commit(); }   // delete interior
-                else AddMarker(SnapWarp(XToBeat(x, w)));                                // add on the grid
+                else AddMarker(SnapWarp(XToBeat(x, w)), NearestTransient(x, w));         // chosen attack, then grid
                 e.Handled = true;
                 return;
             }
             int h = HitMarker(x, w);
-            if (h != _selMk) { _selMk = h; Redraw(); }   // a click picks a marker (or clears the pick)
+            if (h != _selMk) { _selMk = h; SelectionChanged?.Invoke(); Redraw(); }   // a click picks a marker (or clears the pick)
             if (h > 0 && h < _mk.Count - 1) { _drag = h; e.Pointer.Capture(this); _gesturePointer = e.Pointer; e.Handled = true; }
         }
 
@@ -1268,8 +1371,25 @@ public sealed class AudioClipEditorView : UserControl
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             _free = (e.KeyModifiers & KeyModifiers.Alt) != 0;   // live, so Alt can toggle mid-drag
+            if (!_envMode && !_adsrMode) HighlightTransient(e.GetPosition(this).X, Bounds.Width);
             if (_seekDrag) { SeekAt(e.GetPosition(this).X, Bounds.Width); return; }
-            if (!Dragging && UpdateSeekHover(e.GetPosition(this), Bounds.Width)) return;
+            if (!Dragging && !OverGridWarpHandle(e.GetPosition(this)) && UpdateSeekHover(e.GetPosition(this), Bounds.Width)) return;
+            if (_gridWarpMode && _gridDrag is not null) { MoveGridWarpGesture(e); return; }
+            if (_warpToolMode == 2 && !_envMode && !_adsrMode)
+            {
+                var p = e.GetPosition(this);
+                long hover = p.Y >= 0
+                    ? HitGridAnchor(p.X) is int anchor && anchor >= 0
+                        ? _gridAnchorHits[anchor].anchor.Tick : HitGridLine(p.X)
+                    : -1;
+                if (hover != _gridHoverTick)
+                {
+                    _gridHoverTick = hover;
+                    Redraw();
+                }
+                SetCursorKind(hover >= 0 ? StandardCursorType.SizeWestEast : StandardCursorType.Arrow);
+                return;
+            }
             if (_adsrDrag != AdsrHandle.None)
             {
                 var p = e.GetPosition(this);
@@ -1357,6 +1477,13 @@ public sealed class AudioClipEditorView : UserControl
                 if (hv != _envHover) { _envHover = hv; Redraw(); }
                 return;
             }
+            if (_warpToolMode != 1)
+            {
+                if (_hoverMk != -1 || _bpmHoverSeg != -1)
+                { _hoverMk = -1; _bpmHoverSeg = -1; Redraw(); }
+                SetCursorKind(StandardCursorType.Arrow);
+                return;
+            }
             if (_drag < 0)   // no active drag: track hover for marker/bracket highlight + cursor
             {
                 UpdateHover(e.GetPosition(this), Bounds.Width);
@@ -1367,10 +1494,12 @@ public sealed class AudioClipEditorView : UserControl
             double lo = _mk[_drag - 1].beat + 1e-3, hi = _mk[_drag + 1].beat - 1e-3;  // stay between neighbours
             _mk[_drag] = (_mk[_drag].src, Math.Clamp(b, lo, hi));   // source fixed; beat moves (warp)
             Redraw();
+            HighlightTransient(e.GetPosition(this).X, w);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            if (EndGridWarpGesture(e)) return;
             if (_seekDrag) { _seekDrag = false; e.Pointer.Capture(null); return; }
             if (_adsrDrag != AdsrHandle.None)
             {
@@ -1401,12 +1530,13 @@ public sealed class AudioClipEditorView : UserControl
                 WarpTrimCommitted?.Invoke(_trimStart, _trimEnd);
                 return;
             }
-            if (_drag < 0) return;
+            if (_warpToolMode != 1 || _drag < 0) return;
             _drag = -1; _gesturePointer = null; e.Pointer.Capture(null); Commit();
         }
 
         protected override void OnPointerExited(PointerEventArgs e)
         {
+            if (_nearestTransient >= 0) { _nearestTransient = -1; Redraw(); }
             if (_hoverMk != -1 || _bpmHoverSeg != -1 || _envHover != -1 || _adsrHover != AdsrHandle.None)
             { _hoverMk = -1; _bpmHoverSeg = -1; _envHover = -1; _adsrHover = AdsrHandle.None; Redraw(); }
             SetCursorKind(StandardCursorType.Arrow);
@@ -1432,7 +1562,8 @@ public sealed class AudioClipEditorView : UserControl
         {
             double x = p.X;
             int bpmHover = -1;
-            foreach (var b in _bpmHot) if (b.rect.Contains(p)) { bpmHover = b.seg; break; }
+            if (_warpToolMode == 1)
+                foreach (var b in _bpmHot) if (b.rect.Contains(p)) { bpmHover = b.seg; break; }
             if (bpmHover != _bpmHoverSeg) { _bpmHoverSeg = bpmHover; Redraw(); }
             if (bpmHover >= 0) { SetCursorKind(StandardCursorType.SizeNorthSouth); return; }
 
@@ -1444,12 +1575,12 @@ public sealed class AudioClipEditorView : UserControl
             }
             else
             {
-                if (_trimMode)   // warped trim brackets (edges of the played window)
+                if (_warpToolMode == 1 && _trimMode)   // warped trim brackets (edges of the played window)
                 {
                     double xs = BeatToX(_trimStart, w), xe = BeatToX(_trimEnd, w);
                     overHandle = Math.Abs(x - xs) <= HandlePx || Math.Abs(x - xe) <= HandlePx;
                 }
-                if (!overHandle && _mk.Count >= 2)
+                if (_warpToolMode == 1 && !overHandle && _mk.Count >= 2)
                 {
                     int hv = HitMarker(x, w);
                     if (hv != _hoverMk) { _hoverMk = hv; Redraw(); }
@@ -1460,15 +1591,27 @@ public sealed class AudioClipEditorView : UserControl
             SetCursorKind(overHandle ? StandardCursorType.SizeWestEast : StandardCursorType.Arrow);
         }
 
-        private bool Dragging => _drag >= 0 || _srcDrag >= 0 || _trimDrag >= 0 || _envDrag >= 0 || _envBend is not null
+        private bool Dragging => _gridDrag is not null || _drag >= 0 || _srcDrag >= 0 || _trimDrag >= 0 || _envDrag >= 0 || _envBend is not null
                                  || _bpmScrubSeg >= 0 || _adsrDrag != AdsrHandle.None;
 
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             _seekDrag = false;
+            if (_gridDrag is not null) CancelGridWarpDrag();
             // Capture taken away mid-drag (window deactivated, a popup): nothing half-committed.
             if (_drag >= 0 || _bpmScrubSeg >= 0) { _gesturePointer = null; RestoreCommitted(); }
             base.OnPointerCaptureLost(e);
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && _gridDrag is not null)
+            {
+                CancelGridWarpDrag();
+                e.Handled = true;
+                return;
+            }
+            base.OnKeyDown(e);
         }
 
         // Ruler / playhead-line hover: a hand over the ruler, ↔ on the line; a Session slot
@@ -1505,15 +1648,20 @@ public sealed class AudioClipEditorView : UserControl
             SetPlayhead(pf >= 0 && pf <= 1 ? pf : -1);
         }
 
-        private void AddMarker(double beat)
+        private void AddMarker(double beat, int transient = -1)
         {
             for (int i = 0; i + 1 < _mk.Count; i++)
             {
                 if (beat <= _mk[i].beat || beat >= _mk[i + 1].beat) continue;
                 double t = (beat - _mk[i].beat) / (_mk[i + 1].beat - _mk[i].beat);
                 double src = _mk[i].src + (_mk[i + 1].src - _mk[i].src) * t;   // interpolate source → no warp jump
+                if (transient >= 0 && _transients is { } data)
+                    src = data.Transients[transient].SamplePosition;
+                if (src <= _mk[i].src || src >= _mk[i + 1].src) return; // never cross source anchors
                 _mk.Insert(i + 1, (src, beat));
+                _selMk = i + 1;
                 Commit();
+                SelectionChanged?.Invoke();
                 return;
             }
         }
@@ -1693,16 +1841,18 @@ public sealed class AudioClipEditorView : UserControl
 
             // Ruler (24) and the warp-marker strip (22) above the wave.
             ctx.FillRectangle(RulerBg, new Rect(0, 0, w, RulerH));
+            if (_trimMode) WarpRuler.Background(ctx, w, RulerH);
             ctx.DrawLine(RulerEdge, new Point(0, RulerH - 0.5), new Point(w, RulerH - 0.5));
             ctx.DrawLine(StripEdge, new Point(0, top - 0.5), new Point(w, top - 0.5));
-            DrawRuler(ctx, w);
+            if (_gridWarpMode) DrawGridWarpRuler(ctx, w);
+            else DrawRuler(ctx, w);
 
             // The snap grid through the wave: one line per snap position at the drawn step
             // (SnapGrid.GridLines, the same set the drags land on). Envelope mode draws the
             // envelope's played timeline; otherwise the warp beats (warped clips only — an
             // unwarped clip has no beat grid). Only the visible slice is walked.
             var drawn = DrawnGrid;
-            if (_envMode || _mk.Count > 1)
+            if (!_gridWarpMode && (_envMode || _mk.Count > 1))
             {
                 double step = drawn.Draw.Beats(BeatsPerBar);
                 double total = _envMode ? _clipBeats : TotalBeats;
@@ -1754,6 +1904,9 @@ public sealed class AudioClipEditorView : UserControl
                         DrawPeaks(ctx, _dPeaks!, _dRms, _dCount, _dF0, _dF1, w, mid, wh, adsrF, adsrFit, shaped);
                 }
             }
+
+            if (_gridWarpMode) DrawGridWarpOverlay(ctx, w, h);
+            DrawTransients(ctx, w, h);
 
             // Warp markers: a triangle in the strip (Ink 4; brass under the hand or selected).
             // The selected one carries its position and a dim brass line through the wave.
@@ -1934,10 +2087,11 @@ public sealed class AudioClipEditorView : UserControl
                     int chars = st >= 1 ? 5 : st >= 0.1 ? 7 : st >= 0.01 ? 8 : 9;
                     if (st * pxPerSec >= chars * cw + LabelPadPx + 4) { stepS = st; break; }
                 }
-                double t0 = RulerLabels.Seconds(lo, _bpm), t1 = RulerLabels.Seconds(hi, _bpm);
+                double t0 = SecondsAtBeat?.Invoke(lo) ?? RulerLabels.Seconds(lo, _bpm);
+                double t1 = SecondsAtBeat?.Invoke(hi) ?? RulerLabels.Seconds(hi, _bpm);
                 for (long k = Math.Max(0, (long)Math.Floor(t0 / stepS) - 1); k * stepS <= t1 + stepS; k++)
                 {
-                    double t = k * stepS, x = XAt(RulerLabels.BeatsAt(t, _bpm));
+                    double t = k * stepS, x = XAt(BeatAtSeconds?.Invoke(t) ?? RulerLabels.BeatsAt(t, _bpm));
                     if (x < -200 || x > w + 0.5) continue;
                     ctx.DrawLine(GridBeatPen, new Point(x + 0.5, 0), new Point(x + 0.5, RulerH));
                     Label(RulerLabels.Time(t, stepS, NotaNum.Culture), x, true);

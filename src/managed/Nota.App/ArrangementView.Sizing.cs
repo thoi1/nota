@@ -629,6 +629,9 @@ public sealed partial class ArrangementView
         [JsonPropertyName("trackHeights")] public List<TrackHeightDto> TrackHeights { get; set; } = new();
         // specs/045: return rows ride in trackHeights by index; the master has no index.
         [JsonPropertyName("masterHeight")] public double? MasterHeight { get; set; }
+        [JsonPropertyName("tempoVisible")] public bool TempoVisible { get; set; } = true;
+        [JsonPropertyName("tempoExpanded")] public bool TempoExpanded { get; set; }
+        [JsonPropertyName("tempoHeight")] public double TempoHeight { get; set; } = 140;
     }
 
     private sealed class TrackHeightDto
@@ -644,14 +647,15 @@ public sealed partial class ArrangementView
         var path = System.IO.Path.Combine(bundleDir, TrackViewSidecar);
         try
         {
-            var dto = new TrackViewDto();
+            var dto = new TrackViewDto { TempoVisible = ShowTempo, TempoExpanded = TempoExpanded, TempoHeight = TempoLaneHeight };
             if (Math.Abs(_userHeaderW - DefaultHeaderW) >= 0.5) dto.HeaderWidth = _userHeaderW;
             if (_engine is not null)
                 for (int i = 0; i < _engine.TrackCount; i++)
                     if (_engine.TryGetTrackInfo(i, out var ti) && _trackHeights.TryGetValue(ti.Id, out var h))
                         dto.TrackHeights.Add(new TrackHeightDto { Index = i, Height = h });
             if (Math.Abs(_masterHeight - DefaultFooterRowHeight) >= 0.5) dto.MasterHeight = _masterHeight;
-            if (dto.HeaderWidth is null && dto.TrackHeights.Count == 0 && dto.MasterHeight is null)
+            if (dto.HeaderWidth is null && dto.TrackHeights.Count == 0 && dto.MasterHeight is null
+                && dto.TempoVisible && !dto.TempoExpanded && dto.TempoHeight == 140)
             {
                 if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
                 return;
@@ -672,6 +676,7 @@ public sealed partial class ArrangementView
         {
             var dto = JsonSerializer.Deserialize<TrackViewDto>(System.IO.File.ReadAllText(path));
             if (dto is null || dto.Version > 1) return;
+            ShowTempo = dto.TempoVisible; TempoLaneHeight = double.IsFinite(dto.TempoHeight) ? dto.TempoHeight : 140; TempoExpanded = dto.TempoExpanded;
             if (dto.HeaderWidth is { } w) _userHeaderW = Math.Round(Math.Clamp(w, MinHeaderW, MaxHeaderW));
             foreach (var th in dto.TrackHeights)   // tracks and returns alike (specs/045)
                 if (th.Index >= 0 && _engine.TryGetTrackInfo(th.Index, out var ti))
@@ -685,6 +690,7 @@ public sealed partial class ArrangementView
     /// <summary>Back to the default layout (New project, or before a load).</summary>
     public void ResetTrackView()
     {
+        ShowTempo = true; TempoLaneHeight = 140; TempoExpanded = false;
         _trackHeights.Clear();
         _masterHeight = DefaultFooterRowHeight;
         _clipboardHeights = null;

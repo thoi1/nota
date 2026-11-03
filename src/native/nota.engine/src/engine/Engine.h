@@ -347,7 +347,29 @@ class Engine {
     // backToArrangement stops every session clip and hands all tracks back to the timeline.
     bool arrangementActive() const { return arrangementActive_.load(std::memory_order_relaxed); }
     void backToArrangement();
-    void setBpm(double bpm);
+    void setBpm(double bpm, bool deferWarpCaches = false);
+    bool setTempoMap(std::vector<TempoPoint> points, double minBpm, double maxBpm,
+        std::vector<TempoAnchor> anchors, bool checkpoint = true);
+    bool commitGridWarp(int32_t trackId, int32_t clipIndex, std::vector<TempoPoint> points,
+        double minBpm, double maxBpm, std::vector<TempoAnchor> anchors);
+    std::vector<TempoPoint> tempoPoints() const;
+    std::vector<TempoAnchor> tempoAnchors() const;
+    double tempoMinBpm() const;
+    double tempoMaxBpm() const;
+    double secondsAtBeat(double beat) const;
+    double beatAtSeconds(double seconds) const;
+    double tempoAtBeat(double beat) const;
+    const std::string& tempoError() const { return tempoError_; }
+    int64_t tempoRevision() const;
+    bool resetGridWarp(int32_t trackId,int32_t clipIndex);
+    std::vector<uint8_t> gridWarpBaseline(int32_t trackId,int32_t clipIndex) const;
+    bool restoreGridWarpBaseline(int32_t trackId,int32_t clipIndex,const uint8_t* data,int32_t size);
+    bool gridReferenceInfo(int32_t trackId,int32_t clipIndex,double* result) const;
+    bool restoreGridReferenceGeometry(int32_t trackId,int32_t clipIndex,const double* values);
+    bool clipGridFollowsAudio(int32_t trackId, int32_t clipIndex) const;
+    bool setClipTempoMode(int32_t trackId, int32_t clipIndex, bool gridFollows, bool lockAnchors);
+    bool restoreClipTempoReference(int32_t trackId, int32_t clipIndex, bool gridFollows, int64_t referenceId = 0);
+    int64_t clipTempoReferenceId(int32_t trackId, int32_t clipIndex) const;
     double bpm() const;
     void setTimeSignature(int num, int denom);
     void setLoop(bool enabled, double startBeat, double endBeat);
@@ -407,7 +429,7 @@ class Engine {
     // have the backend stopped and then pump renderOffline() for the returned frame
     // count (the capture is filled inside mixGraph). endFreeze publishes the frozen
     // track; cancelFreeze aborts without freezing. Not undoable (a view toggle).
-    int64_t beginFreeze(int32_t trackId, double lengthBeats, double tailSec = 2.0); // capture frames, or 0 on failure
+    int64_t beginFreeze(int32_t trackId, double lengthBeats, double tailSec = 2.0, double originBeat = 0.0); // capture frames, or 0 on failure
     void endFreeze(int32_t trackId);
     void cancelFreeze();
     // Paste Bounced Audio (⌘⇧V): copies the armed capture's rendered frames into out (up to
@@ -706,6 +728,9 @@ class Engine {
         int64_t lengthFrames, float gain);
     // Decoded-sample metadata / raw interleaved read, keyed by sample id.
     bool sampleInfo(int64_t sampleId, NotaSampleInfo* out) const;
+    // Authoring-thread capture only: background analysis owns the immutable source,
+    // never traverses authoring graph state and survives engine/clip destruction.
+    std::shared_ptr<const SampleBuffer> captureAnalysisSource(int64_t sampleId) const;
     // Copies up to `cap` interleaved floats into `out`; returns the total count
     // (frames*channels). Pass out=null to query the size.
     int64_t sampleRead(int64_t sampleId, float* out, int64_t cap) const;
@@ -1863,7 +1888,8 @@ class Engine {
     // Mix one audio clip (warp cache / resampled source, envelopes, ADSR, edge fades) into
     // `dst` for the block at blockStart samples on the clip's timeline. Adds; never clears.
     void mixAudioClip(
-        const AudioClip& clip, float* dst, int32_t frames, double blockStart, double spb, float extraGain);
+        const AudioClip& clip, float* dst, int32_t frames, double blockStart, double spb, float extraGain,
+        bool musicalPlacement = true, double sessionPhase = -1.0, double sessionLength = 0.0);
 
     // recording target (message thread)
     int32_t recordTrackId_ = 0;
@@ -2012,8 +2038,8 @@ class Engine {
     // A clip's controller curves on the playback wire for one block (specs/020): the value at the
     // clip's start or at a jump into it (chase), every point inside the block, and a value every
     // 64 samples while a curve moves. Times are in samples on the block's clock.
-    static void clipCtlEvents(const MidiClip& clip, double clipStartS, double clipEndS, double blockStart,
-        int32_t frames, double spb, bool chase, ExprEv* out, int& n, int cap);
+    void clipCtlEvents(const MidiClip& clip, double clipStartS, double clipEndS, double blockStart,
+        int32_t frames, double spb, bool chase, ExprEv* out, int& n, int cap, bool musical = true);
     // At a clip's end, the pedals it holds down and a bent wheel go back to rest — no note stays
     // held by a clip that is over.
     static void clipCtlEndResets(const MidiClip& clip, double clipStartS, double clipEndS, double blockStart,
@@ -2021,8 +2047,9 @@ class Engine {
     // Appends a clip note's recorded expression for the block: the note sounds over
     // [onS, offS) in samples relative to the block start; one value per dim at the note's
     // start (or the block's) and then every kExprStep samples while its curve moves.
-    static void noteExprEvents(
-        const Note& note, double onS, double offS, int32_t frames, double spb, ExprEv* out, int& n, int cap);
+    void noteExprEvents(
+        const Note& note, double onS, double offS, int32_t frames, double spb, ExprEv* out, int& n, int cap,
+        double blockStart = 0, double noteBeat = 0, bool musical = false);
 
     // Live input monitoring: the input thread also feeds this ring while any audio track
     // monitors the hardware input; the audio thread pops one segment's worth per mixGraph
@@ -2144,7 +2171,7 @@ class Engine {
         bool audible = false, capturing = false, feeding = false, toMix = false;
         bool monitoring = false, frozenActive = false, sessionActive = false;
         bool postTapMuted = false; // sidechain tap muted with its source leaf (vocoder key)
-        bool eligible = false;     // parallel DSP (built-ins only, no shared writers)
+        bool eligible = false;     // worker-capable DSP, no shared writers
         LeafPath path = LeafPath::Skip;
         int wid = -1;           // pool worker that rendered this track (diagnostic)
         int64_t workNs = 0;     // time its parallel DSP took (sizes the next block's helpers)
@@ -2199,11 +2226,15 @@ class Engine {
     // kRtMaxHoldSeconds), so a wrong guess costs one late block, rarely.
     int64_t leafWorkNs_ = 0;
     int64_t parWorkNs_ = 0;
+    int64_t leafPeakNs_ = 0; // largest indivisible task: total work alone can under-size helpers
     bool deviceBlock_ = false; // render() (a device callback) vs renderOffline()
     bool rtParallel_ = false;
     double rtParallelLeftNs_ = 0;
     double rtProbeLeftNs_ = 0;
-    static constexpr double kRtSizeLoad = 0.85; // helpers: finish within this much of the buffer
+    // Once parallel rendering is needed, reserve half the callback for voice
+    // attacks and scheduler jitter. Near-deadline sizing leaves four large
+    // plug-in jobs in two serial waves despite useful cores being available.
+    static constexpr double kRtSizeLoad = 0.50;
     static constexpr double kRtHoldSeconds = 2.0;
     static constexpr double kRtMaxHoldSeconds = 32.0;
     static constexpr double kRtProbeSeconds = 0.5;
@@ -2237,12 +2268,26 @@ class Engine {
     int64_t freezeCapFrames_ = 0;         // capacity in frames
     int64_t freezeCursor_ = 0;            // frames written so far
     double freezeCaptureSpb_ = 0.0;       // samples-per-beat at capture
+    std::shared_ptr<const TempoMap> freezeCaptureTempo_;
+    double freezeCaptureSampleRate_ = 0;
     // Sample rate every node was last prepared at (propagateSampleRate). The offline render
     // re-prepares only when it changes, so a chunked export doesn't reset DSP state per block.
     double preparedSR_ = 0.0;
     // Warp-cache build deferral (project load): when set, configureClipWarp skips the heavy
     // stretch so Apply stays fast; warpBuildStep then fills caches incrementally with a bar.
     bool deferWarpBuild_ = false;
+    bool tempoWarpBuildPending_ = false;
+    std::string tempoError_;
+    int64_t nextTempoReferenceId_ = 0;
+    int32_t nextGridAnchorId_ = 0; // never rewind with undo, deletion or project reset
+    // Concurrent UI/export queries retain a prepared map. The callback reads Graph's
+    // nonowning pointer through Transport and never touches this owning atomic.
+    std::atomic<std::shared_ptr<const TempoMap>> tempoQueryMap_;
+    std::atomic<double> tempoQueryBpm_{120.0};
+    std::atomic<int64_t> tempoRevision_{1};
+    bool fitClipTempo(int32_t trackId, int32_t clipIndex, std::shared_ptr<Track> replacement, bool lockAnchors);
+    void refreshTempoReferences(Graph& graph, const TempoMap& map);
+    double warpBuildSamplesPerBeat() const;
     // Cursor over the ONE warp clip currently being built incrementally (warpBuildStep):
     // its partial cache + stretcher + how far it's filled. Identified by (trackId, clipIndex)
     // and re-fetched+revalidated each step, so a user edit that republishes the track between
@@ -2253,6 +2298,7 @@ class Engine {
         int32_t clipIndex = -1;
         std::shared_ptr<WarpCache> cache;
         std::unique_ptr<ClipWarpStream> stream;
+        std::vector<WarpMarker> mappedMarkers;
         int64_t offset = 0;
     } wb_;
     // The ONE clip being stretched on a worker thread (warpBuildPoll). The worker only reads

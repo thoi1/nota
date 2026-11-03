@@ -13,6 +13,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Nota.Application;
+using Nota.Application.Editing;
 using Nota.Presentation;
 using Nota.Application.Localization;
 
@@ -183,7 +184,7 @@ public sealed partial class ArrangementView
 
         /// <summary>A clip drag / trim, marquee, time-range or envelope edit is in progress:
         /// Follow must not scroll the lanes out from under it (#105).</summary>
-        public bool IsGesturing => _drag != Drag.None || _marquee is not null || _auto.IsActive || _takeSwipe is not null;
+        public bool IsGesturing => _drag != Drag.None || _marquee is not null || _auto.IsActive || _takeSwipe is not null || _toolClipTrack is not null;
         private double RowTop(int i) => _o.RowTop(i);
         private double RowH(int i) => _o.ClipAreaHeightAt(i);
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -236,6 +237,7 @@ public sealed partial class ArrangementView
             if (RowSeamPressed(e)) return;
             if (TakeLanePressed(e)) return;
             if (_o._automationMode) { _auto.AutoPointerPressed(e); return; }
+            if (ToolClipPressed(e)) return;
             var pt = e.GetCurrentPoint(this);
             var hit = HitTest(pt.Position, out double beat);
 
@@ -384,11 +386,13 @@ public sealed partial class ArrangementView
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (ToolClipMoved(e)) return;
             if (_o.IsRowResizing) { _o.UpdateRowResize(e.GetPosition(this).Y); return; }
             if (_takeSwipe is not null) { TakeSwipeMoved(e); return; }
             if (e.GetCurrentPoint(this).Properties is { IsLeftButtonPressed: false, IsRightButtonPressed: false }
                 && RowSeamHover(e.GetPosition(this))) return;
             if (_o._automationMode) { _auto.AutoPointerMoved(e); return; }
+            if (_o.EditingTool != ArrangementTool.Select) { Cursor = _o.ToolCursor; return; }
             var pos = e.GetPosition(this);
             _lastPos = pos;
             _lastMods = e.KeyModifiers;
@@ -483,6 +487,15 @@ public sealed partial class ArrangementView
         // Split out so the autoscroll timer can re-run it after nudging the view (req 2.10).
         private void UpdateActiveDrag(Point pos, KeyModifiers mods)
         {
+            bool tempoTarget = _drag == Drag.Move && _grabClip is { IsMidi: false }
+                && this.TranslatePoint(pos, _o) is { } ownerPoint && _o.OverTempoRow(ownerPoint);
+            _o.SetTempoClipDrop(tempoTarget);
+            if (tempoTarget && _groupMove is not null)
+            {
+                foreach (var item in _groupMove) item.vm.StartBeat = item.origStart;
+                _moveRowDelta = 0; SetLoadRow(-1); SetNewTrackRows(false); _autoScroll?.Stop();
+                InvalidateVisual(); return;
+            }
             double beat = _o._scrollBeats + pos.X / _o._pixelsPerBeat;
 
             if (_drag == Drag.Move && _groupMove is not null)
@@ -539,6 +552,7 @@ public sealed partial class ArrangementView
         }
         private void AutoScrollTick()
         {
+            if (_o._tempoClipDrop) { _autoScroll?.Stop(); return; }
             // Only clip move/resize drags autoscroll; anything else stops the timer.
             if (_drag != Drag.Move && _drag != Drag.TrimL && _drag != Drag.TrimR) { _autoScroll?.Stop(); return; }
             const double zone = 40;                 // logical px from an edge where scrolling kicks in
@@ -555,10 +569,22 @@ public sealed partial class ArrangementView
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            if (ToolClipReleased(e)) return;
             if (_o.IsRowResizing) { e.Pointer.Capture(null); _o.EndRowResize(); return; }
             if (_takeSwipe is not null) { TakeSwipeReleased(e); return; }
             if (_o._automationMode) { _auto.AutoPointerReleased(e); return; }
             var eng = _o._engine;
+            if (_drag == Drag.Move && _groupMove is not null && _grabClip is { IsMidi: false } audio
+                && _o.OverTempoRow(e.GetPosition(_o)))
+            {
+                foreach (var item in _groupMove) item.vm.StartBeat = item.origStart;
+                int sourceTrack = _grabTrackId, sourceClip = audio.ClipIndex;
+                _groupMove = null; _drag = Drag.None; _moveRowDelta = 0; _pending = false;
+                SetLoadRow(-1); SetNewTrackRows(false); _o.SetTempoClipDrop(false); _autoScroll?.Stop();
+                e.Pointer.Capture(null); InvalidateVisual(); e.Handled = true;
+                _o.OriginalTempoExtractionRequested?.Invoke(sourceTrack, sourceClip); return;
+            }
+            _o.SetTempoClipDrop(false);
 
             if (_adsrDrag != AdsrHandle.None)
             {
@@ -718,8 +744,11 @@ public sealed partial class ArrangementView
             bool active = _drag != Drag.None || _groupMove is not null || _rangeActive
                           || _auto.IsActive
                           || _adsrDrag != AdsrHandle.None
-                          || _takeSwipe is not null;
+                          || _takeSwipe is not null || _toolClipTrack is not null;
             if (!active) return false;
+            _o.SetTempoClipDrop(false);
+            _toolClipTrack = null; _toolClipPreview = null;
+            _toolClipPointer?.Capture(null); _toolClipPointer = null;
             _pending = false; _drag = Drag.None; _groupMove = null; _moveRowDelta = 0; _dragClip = null; _rpPeaks = null;
             _takeSwipe = null; _takeMoved = false;   // an abandoned take swipe never comps
             _marqueeArmed = false; _rangeActive = false; _marquee = null; _shiftClipTrack = -1; _shiftClipIndex = -1;
@@ -1071,6 +1100,8 @@ public sealed partial class ArrangementView
             }
             if (_o._tracks.Count == 0)
                 ctx.FillRectangle(LaneBgA, new Rect(0, 0, w, h));
+
+            DrawToolClipPreview(ctx);
 
             // Selected-track highlight: a soft brass wash + bright top/bottom edges
             // so the selection reads across the whole grid, not just the header.
@@ -1495,7 +1526,11 @@ public sealed partial class ArrangementView
             // DrawWaveform already clip themselves to the rect they are handed.
             var contentRect = new Rect(rect.X, rect.Y + BandH, rect.Width, Math.Max(0, rect.Height - BandH));
             if (c.IsMidi) DrawNotes(ctx, c, contentRect, content, pitches, appear);
-            else DrawWaveform(ctx, c, contentRect, content, trackId);
+            else
+            {
+                DrawWaveform(ctx, c, contentRect, content, trackId);
+                DrawTransientGuides(ctx, c, contentRect);
+            }
 
             // The title band: the track colour mixed 30% toward black across the top, the
             // accent when the clip is selected; the name sits on it in derived ink. It is drawn

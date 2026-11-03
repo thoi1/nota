@@ -519,7 +519,9 @@ NotaResult nota_midi_clip_env_set(
 NotaResult nota_clip_set_warp_markers(
     NotaEngine* e, int32_t track_id, int32_t clip_index, const double* src, const double* beats, int32_t count) {
     if (!e) return NOTA_ERR_INVALID_ARG;
-    return ENG(e)->setClipWarpMarkers(track_id, clip_index, src, beats, count) ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+    try {
+        return ENG(e)->setClipWarpMarkers(track_id, clip_index, src, beats, count) ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+    } catch (...) { return NOTA_ERR_UNKNOWN; }
 }
 int32_t nota_clip_get_warp_markers(
     const NotaEngine* e, int32_t track_id, int32_t clip_index, double* out_src, double* out_beat, int32_t max_count) {
@@ -748,6 +750,10 @@ void nota_track_freeze_cancel(NotaEngine* e) {
 }
 int64_t nota_track_bounce_begin(NotaEngine* e, int32_t track_id, double length_beats) {
     return e ? ENG(e)->beginFreeze(track_id, length_beats, 0.0) : 0;
+}
+int64_t nota_track_bounce_range_begin(NotaEngine* e,int32_t track,double start,double end) {
+    if (!e || !std::isfinite(start) || !std::isfinite(end) || start<0 || end<=start) return 0;
+    try { return ENG(e)->beginFreeze(track,end-start,0,start); } catch (...) { return 0; }
 }
 int64_t nota_track_freeze_take(NotaEngine* e, float* out, int64_t cap_frames) {
     return e ? ENG(e)->takeFreezeCapture(out, cap_frames) : 0;

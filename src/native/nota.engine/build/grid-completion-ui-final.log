@@ -1,0 +1,9 @@
+C:\Dev\nota\specs\079-grid-warp\ui\Program.cs(326,70): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\079-grid-warp\ui\GridWarpUi.csproj]
+C:\Dev\nota\specs\079-grid-warp\ui\Program.cs(360,60): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\079-grid-warp\ui\GridWarpUi.csproj]
+C:\Dev\nota\specs\079-grid-warp\ui\Program.cs(363,60): warning CS0618: 'Bitmap.Save(string, int?)' is obsolete: 'Use the overload accepting BitmapEncoderOptions instead.' [C:\Dev\nota\specs\079-grid-warp\ui\GridWarpUi.csproj]
+PASS actual captured clip-to-Tempo drop, original-source preview, correction, Cancel and Apply
+PASS actual Step tempo/reference undo, Reset and dark/light editor screenshots
+PASS Grid Warp headless UI harness setup
+PASS Grid Warp mode exclusivity and side-effect-free selection
+PASS Grid Warp grid gestures, transient snapping, anchors and audio preservation
+PASS transient slider bounds, defaults, debounce and anchor preservation

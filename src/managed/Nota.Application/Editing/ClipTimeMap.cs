@@ -8,11 +8,11 @@
 // the ruler labels and ruler seeks all go through this one map so they can't disagree. Free of
 // Avalonia and the engine so the smoke test can link it.
 
-namespace Nota.App;
+namespace Nota.Application;
 
-internal enum ClipContentDomain { WarpBeats, SourceFrames }
+public enum ClipContentDomain { WarpBeats, SourceFrames }
 
-internal readonly record struct ClipTimeMap(
+public readonly record struct ClipTimeMap(
     double StartBeat,
     double LengthBeats,
     ClipContentDomain Domain,
@@ -20,7 +20,9 @@ internal readonly record struct ClipTimeMap(
     double PlayStart,
     double PlayEnd,
     bool Reversed,
-    bool IsSlot)
+    bool IsSlot,
+    Func<double, double>? SecondsAtBeat = null,
+    Func<double, double>? BeatAtSeconds = null)
 {
     private double Window => PlayEnd - PlayStart;
     public bool Valid => ContentTotal > 0 && Window > 0;
@@ -43,8 +45,22 @@ internal readonly record struct ClipTimeMap(
     }
 
     public double ArrangementBeatAtContent(double contentFrac)
-        => StartBeat + PlayFracAtContent(contentFrac) * LengthBeats;
+    {
+        if (!IsSlot && Domain == ClipContentDomain.SourceFrames && SecondsAtBeat is { } time && BeatAtSeconds is { } beat)
+        {
+            double start = time(StartBeat), duration = time(StartBeat + LengthBeats) - start;
+            return beat(start + PlayFracAtContent(contentFrac) * duration);
+        }
+        return StartBeat + PlayFracAtContent(contentFrac) * LengthBeats;
+    }
 
     public double ContentAtArrangementBeat(double beat)
-        => LengthBeats > 0 ? ContentAtPlayFrac((beat - StartBeat) / LengthBeats) : 0;
+    {
+        if (!IsSlot && Domain == ClipContentDomain.SourceFrames && SecondsAtBeat is { } time)
+        {
+            double start = time(StartBeat), duration = time(StartBeat + LengthBeats) - start;
+            return duration > 0 ? ContentAtPlayFrac((time(beat) - start) / duration) : 0;
+        }
+        return LengthBeats > 0 ? ContentAtPlayFrac((beat - StartBeat) / LengthBeats) : 0;
+    }
 }

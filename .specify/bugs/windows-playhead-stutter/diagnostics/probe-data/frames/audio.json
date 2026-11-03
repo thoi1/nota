@@ -1,0 +1,12 @@
+{
+  "asioDriver": "",
+  "asioDriverName": "",
+  "asioInputPair": 0,
+  "asioOutputPair": 0,
+  "audioSystem": "wasapi",
+  "bufferFrames": 2048,
+  "inputDeviceUid": "",
+  "outputDeviceUid": "",
+  "sampleRate": 0.0,
+  "wasapiExclusive": false
+}

@@ -172,6 +172,13 @@ public sealed class Settings
     /// <summary>Interface scale in percent (Settings → Appearance, spec 027): one of
     /// <see cref="Application.InterfaceScale.Presets"/>; anything else reads as 100.</summary>
     public int InterfaceScale { get; set; } = Application.InterfaceScale.Default;
+    private int _meterRefreshHz = MeterRefreshRate.Default;
+    /// <summary>Primary audio level-meter presentation only; independent of audio/metric clocks.</summary>
+    public int MeterRefreshHz
+    {
+        get => MeterRefreshRate.Normalize(_meterRefreshHz);
+        set => _meterRefreshHz = MeterRefreshRate.Normalize(value);
+    }
     /// <summary>Interface language code, lower-case (Settings → Appearance, spec 068): "en" or
     /// "fr". Read at start-up, so a change applies after a restart. An empty, unknown or
     /// hand-edited value reads as English (<see cref="Localization.UiLanguage.Normalize"/>).</summary>
@@ -179,6 +186,8 @@ public sealed class Settings
     /// <summary>Piano-roll note audition (#46): notes sound while they are placed, clicked or
     /// dragged. The speaker chip in the clip editor's header; on by default.</summary>
     public bool PianoRollAudition { get; set; } = true;
+    /// <summary>Logical lane heights keyed by velocity, MPE dimension or MIDI controller.</summary>
+    public Dictionary<string, double> PianoRollLaneHeights { get; set; } = new();
     /// <summary>Shift + wheel over a note in the piano roll (specs/063): false — wheel up raises
     /// the velocity; true — wheel up lowers it.</summary>
     public bool PianoRollVelocityWheelReversed { get; set; }

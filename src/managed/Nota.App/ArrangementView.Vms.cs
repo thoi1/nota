@@ -97,6 +97,10 @@ public sealed partial class ArrangementView
         public float Gain = 1f;
         /// <summary>Audio clip ADSR amplitude shape (identity = full length, full level).</summary>
         public ClipAdsr Adsr = ClipAdsr.Identity;
+        public long SampleId;
+        public TransientClipMap? TransientMap;
+        public TransientSnapshot? TransientSnapshot;
+        public TransientGuideLayout? TransientGuides;
         public NotaNote[]? Notes;
         public string Name = "";
         /// <summary>True when no clip on the same track ends where this one begins — the head

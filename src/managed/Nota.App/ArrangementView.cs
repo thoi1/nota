@@ -507,6 +507,9 @@ public sealed partial class ArrangementView : UserControl
         root.Children.Add(_overviewRow);   // Overview sits above the ruler
         root.Children.Add(_sectionsRow);   // …then the named song sections
         root.Children.Add(top);
+        var tempo = BuildTempoRow();
+        DockPanel.SetDock(tempo, Dock.Top);
+        root.Children.Add(tempo);
         root.Children.Add(bottom);
         root.Children.Add(_footerScroller);
         root.Children.Add(footerSeam);     // docked after the footer → sits on top of it
@@ -531,6 +534,7 @@ public sealed partial class ArrangementView : UserControl
         island.BindResource(Border.BackgroundProperty, "Brush.BgApp");   // lanes sit on the ground
         island.BindResource(Border.BorderBrushProperty, "Brush.BorderDefault");
         Content = island;
+        InitArrangementTools();
     }
 
     public IAudioEngine? Engine
@@ -539,7 +543,10 @@ public sealed partial class ArrangementView : UserControl
         set
         {
             if (_engine is not null) _engine.AutomationTouched -= OnAutomationTouched;
+            if (_transientWorkspace is not null) _transientWorkspace.Changed -= TransientViewsChanged;
             _engine = value;
+            _transientWorkspace = value is null ? null : TransientWorkspace.For(value);
+            if (_transientAttached && _transientWorkspace is not null) _transientWorkspace.Changed += TransientViewsChanged;
             if (_engine is not null) _engine.AutomationTouched += OnAutomationTouched;
             Refresh();
         }
@@ -581,7 +588,7 @@ public sealed partial class ArrangementView : UserControl
     public bool AutomationMode
     {
         get => _automationMode;
-        set { if (_automationMode == value) return; _automationMode = value; Refresh(); }
+        set { if (_automationMode == value) return; CancelActiveGesture(); _automationMode = value; Refresh(); }
     }
     /// <summary>While recording, reload the visible envelopes so writes appear live (M9-C).</summary>
     public void RefreshAutomationLive()
@@ -727,7 +734,11 @@ public sealed partial class ArrangementView : UserControl
         _wasPlaying = playing;
         // Follow must repaint the content as well as the moving overlay.
         bool scrolled = _followPlayhead && !FollowSuspended && playing && !_lanes.IsGesturing && !_footerLanes.IsGesturing && CenterOnPlayhead();
-        if (scrolled) _lanes.InvalidateVisual();
+        if (scrolled)
+        {
+            _lanes.InvalidateVisual();
+            _tempoLane.InvalidateVisual();
+        }
         // Stopped with nothing moving: the playhead chrome is already right — repainting it
         // every tick kept the whole window redrawing ~30×/s while idle (#55).
         if (!moved && !scrolled && !loopChanged) return;
@@ -912,23 +923,30 @@ public sealed partial class ArrangementView : UserControl
         return ClipSelectionSpan() is { } span ? SnapLoopRange(span.Start, span.End) : null;
     }
 
-    /// <summary>Pushes fresh per-track meter readings into the header meters (~30 Hz, M6-2),
-    /// and refreshes the volume/pan controls so automation (playback or scrub) moves them live.</summary>
-    public void UpdateMeters()
+    /// <summary>Pushes visible level readings at the selected presentation cadence.
+    /// Volume/pan controls retain their separate service-clock synchronization.</summary>
+    public void UpdateLevelMeters()
     {
         if (_engine is not { } eng) return;
         foreach (var (id, bar) in _meters)
         {
+            if (!bar.CanUpdate) continue;
             if (eng.TryGetTrackMeter(id, out var m)) bar.Push(m);
             else bar.Reset();
         }
         foreach (var (id, bar) in _footerMeters)
         {
+            if (!bar.CanUpdate) continue;
             if (eng.TryGetTrackMeter(id, out var m)) bar.Push(m);
             else bar.Reset();
         }
         // The master level is the engine's master meter; the master *track* is only its effect chain.
-        _masterRowMeter?.Push(eng.MasterMeter());
+        if (_masterRowMeter is { CanUpdate: true }) _masterRowMeter.Push(eng.MasterMeter());
+    }
+
+    public void UpdateMeters()
+    {
+        if (_engine is not { } eng) return;
         if (GetMasterVolume is { } getMaster)
             FollowVolume(_masterRowFader, _masterRowDb, getMaster());
         int n = eng.TrackCount;
@@ -993,6 +1011,7 @@ public sealed partial class ArrangementView : UserControl
 
     private void Redraw()
     {
+        _tempoLane.InvalidateVisual();
         _ruler.InvalidateVisual();
         _sectionsLane.InvalidateVisual();   // spans follow scroll + zoom
         _lanes.InvalidateVisual();
@@ -1014,6 +1033,7 @@ public sealed partial class ArrangementView : UserControl
 
     public void Refresh(bool rebuildHeaders = true)
     {
+        CancelToolStroke();
         if (rebuildHeaders) RefreshStarting?.Invoke();
         // Peak reuse (⑤): on a live refresh (no header rebuild) the audio content of existing
         // clips can't change — recording appends a separate take drawn elsewhere, and the live
@@ -1029,6 +1049,7 @@ public sealed partial class ArrangementView : UserControl
                     if (!c.IsMidi && c.Peaks is not null) oldClips[(t.Id, c.ClipIndex)] = c;
         }
         if (rebuildHeaders) ReloadSections();   // sections live in the engine's project (specs/016)
+        ReloadTempo();
         _tracks.Clear();
         _returns.Clear();
         var takePeaks = new Dictionary<(int, int, long), (float[], int)>();
@@ -1097,6 +1118,9 @@ public sealed partial class ArrangementView : UserControl
                         cvm.Peaks = prev.Peaks;
                         cvm.Rms = prev.Rms;
                         cvm.PeakCount = prev.PeakCount;
+                        cvm.TransientMap = prev.TransientMap;
+                        cvm.TransientSnapshot = prev.TransientSnapshot;
+                        cvm.TransientGuides = prev.TransientGuides;
                         (cvm.DetailPeaks, cvm.DetailRms, cvm.DetailCount, cvm.DetailF0, cvm.DetailF1)
                             = (prev.DetailPeaks, prev.DetailRms, prev.DetailCount, prev.DetailF0, prev.DetailF1);
                     }
@@ -1116,6 +1140,8 @@ public sealed partial class ArrangementView : UserControl
                         cvm.Gain = ai.Gain;
                         cvm.Adsr = eng.GetClipAdsr(ti.Id, c);
                         cvm.TakeId = eng.ClipTakeId(ti.Id, c);
+                        cvm.SampleId = ai.SampleId;
+                        if (cvm.TransientMap is null) LoadTransientMap(eng, ti.Id, cvm, ai);
                     }
                     tvm.Clips.Add(cvm);
                 }
@@ -2040,11 +2066,12 @@ public sealed partial class ArrangementView : UserControl
         foreach (var (track, clip) in sel)
         {
             if (!_engine.TryGetAudioClipInfo(track, clip, out _)) continue;   // MIDI / stale entry
-            _engine.SetClipReverse(track, clip, target);
+            try { _engine.SetClipReverse(track, clip, target); }
+            catch (Exception) { TempoRejected(_engine.TempoEditError); continue; }
             RaiseClipGeometryChanged(track, clip);   // an open clip editor re-reads the new direction
             any = true;
         }
-        if (any) Refresh();
+        if (any) { Refresh(); TempoMapChanged?.Invoke(); }
         return any;
     }
 
@@ -3370,7 +3397,8 @@ public sealed partial class ArrangementView : UserControl
 
     private static IBrush Alpha(Color c, double a) => new SolidColorBrush(Color.FromArgb((byte)(a * 255), c.R, c.G, c.B));
 
-    private double BeatToX(double beat) => (beat - _scrollBeats) * _pixelsPerBeat;
+    internal double BeatToX(double beat) => (beat - _scrollBeats) * _pixelsPerBeat;
+    internal double XToBeat(double x) => _scrollBeats + x / _pixelsPerBeat;
 
     /// <summary>The vertical grid over a lane-wide canvas: one line per snap position at the
     /// drawn step (SnapGrid.GridLines, the same set Snap() lands on), weighted bar › beat ›

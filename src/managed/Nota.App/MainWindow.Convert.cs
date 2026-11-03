@@ -39,7 +39,7 @@ public partial class MainWindow
             // tempo (a re-warped clip spans a different number of beats). Linear source→beats within
             // the clip; falls back to raw source time at the project tempo when the length is unknown.
             if (Engine.TryGetClipInfo(trackId, clipIndex, out var ci)) { startBeat = ci.StartBeat; clipBeats = ci.LengthBeats; }
-            if (clipBeats <= 0) clipBeats = n / sr * (double)_vm.Transport.Bpm / 60.0;
+            if (clipBeats <= 0) clipBeats = Engine.BeatAtSeconds(Engine.SecondsAtBeat(startBeat) + n / sr) - startBeat;
         }
         catch (Exception ex) { _vm.StatusText = Loc.F("Convert failed: {0}", ex.Message); return; }
 

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (c) 2026 Egor Khindikaynen (Nota). See LICENSES/ for license terms.
+
+#include <cstring>
 //
 // C ABI — the managed/native boundary (AR-7): engine-global slice.
 // Lifecycle, transport, master mixer, realtime control (notes/recording/poll),
@@ -179,11 +181,86 @@ NotaResult nota_transport_set_bpm(NotaEngine* e, double bpm) {
     if (!e) return NOTA_ERR_INVALID_ARG;
     if (!(bpm > 0.0) || bpm > 999.0) return NOTA_ERR_INVALID_ARG;
     ENG(e)->setBpm(bpm);
-    return NOTA_OK;
+    return ENG(e)->tempoError().empty() ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+}
+NotaResult nota_transport_set_bpm_deferred(NotaEngine* e, double bpm) {
+    if (!e || !(bpm > 0.0) || bpm > 999.0) return NOTA_ERR_INVALID_ARG;
+    try {
+        ENG(e)->setBpm(bpm, true);
+        return ENG(e)->tempoError().empty() ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+    } catch (...) {
+        return NOTA_ERR_UNKNOWN;
+    }
 }
 double nota_transport_bpm(const NotaEngine* e) {
     return e ? CENG(e)->bpm() : 120.0;
 }
+int32_t nota_tempo_points(const NotaEngine* e, NotaTempoPoint* out, int32_t capacity) {
+    if (!e || capacity < 0) return 0;
+    try {
+        auto points=CENG(e)->tempoPoints();
+        if (out) for (int32_t i=0; i<std::min<int32_t>(capacity,static_cast<int32_t>(points.size())); ++i)
+            out[i]={points[i].tick,points[i].bpm,points[i].curve,points[i].anchorId};
+        return static_cast<int32_t>(points.size());
+    } catch (...) { return 0; }
+}
+int32_t nota_tempo_anchors(const NotaEngine* e, NotaTempoAnchor* out, int32_t capacity) {
+    if (!e || capacity < 0) return 0;
+    try {
+        auto anchors=CENG(e)->tempoAnchors();
+        if (out) for (int32_t i=0; i<std::min<int32_t>(capacity,static_cast<int32_t>(anchors.size())); ++i) {
+            const auto& a=anchors[i]; out[i]={a.tick,a.seconds,a.locked,a.trackId,a.clipIndex,a.anchorId,a.sourceFrame,a.referenceId};
+        }
+        return static_cast<int32_t>(anchors.size());
+    } catch (...) { return 0; }
+}
+NotaResult nota_tempo_set(NotaEngine* e, const NotaTempoPoint* points, int32_t count,
+    double minBpm, double maxBpm, const NotaTempoAnchor* anchors, int32_t anchorCount, int32_t checkpoint) {
+    if (!e || !points || count < 1 || count > 100000 || anchorCount < 0 || anchorCount > 100000
+        || (anchorCount && !anchors) || (checkpoint!=0 && checkpoint!=1)) return NOTA_ERR_INVALID_ARG;
+    try {
+        std::vector<nota::TempoPoint> p; p.reserve(count);
+        for (int32_t i=0;i<count;++i) p.push_back({points[i].tick,points[i].bpm,points[i].curve,points[i].reserved});
+        std::vector<nota::TempoAnchor> a; a.reserve(anchorCount);
+        for (int32_t i=0;i<anchorCount;++i) a.push_back({anchors[i].tick,anchors[i].seconds,anchors[i].locked,
+            anchors[i].track_id,anchors[i].clip_index,anchors[i].source_frame,anchors[i].reference_id,anchors[i].reserved});
+        return ENG(e)->setTempoMap(std::move(p),minBpm,maxBpm,std::move(a),checkpoint!=0) ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+    } catch (...) { return NOTA_ERR_UNKNOWN; }
+}
+NotaResult nota_grid_warp_commit(NotaEngine* e,int32_t track,int32_t clip,
+    const NotaTempoPoint* points,int32_t pointCount,double minBpm,double maxBpm,
+    const NotaTempoAnchor* anchors,int32_t anchorCount) {
+    if (!e || !points || pointCount<1 || pointCount>100000 || anchorCount<0 || anchorCount>100000
+        || (anchorCount && !anchors)) return NOTA_ERR_INVALID_ARG;
+    try {
+        std::vector<nota::TempoPoint> p; p.reserve(pointCount);
+        for (int32_t i=0;i<pointCount;++i) p.push_back({points[i].tick,points[i].bpm,points[i].curve,points[i].reserved});
+        std::vector<nota::TempoAnchor> a; a.reserve(anchorCount);
+        for (int32_t i=0;i<anchorCount;++i) a.push_back({anchors[i].tick,anchors[i].seconds,anchors[i].locked,
+            anchors[i].track_id,anchors[i].clip_index,anchors[i].source_frame,anchors[i].reference_id,anchors[i].reserved});
+        return ENG(e)->commitGridWarp(track,clip,std::move(p),minBpm,maxBpm,std::move(a))
+            ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+    } catch (...) { return NOTA_ERR_UNKNOWN; }
+}
+double nota_tempo_min_bpm(const NotaEngine* e) { return e ? CENG(e)->tempoMinBpm() : 20; }
+double nota_tempo_max_bpm(const NotaEngine* e) { return e ? CENG(e)->tempoMaxBpm() : 300; }
+double nota_tempo_seconds_at_beat(const NotaEngine* e,double b) { return e && std::isfinite(b) ? CENG(e)->secondsAtBeat(b) : 0; }
+double nota_tempo_beat_at_seconds(const NotaEngine* e,double s) { return e && std::isfinite(s) ? CENG(e)->beatAtSeconds(s) : 0; }
+double nota_tempo_bpm_at_beat(const NotaEngine* e,double b) { return e && std::isfinite(b) ? CENG(e)->tempoAtBeat(b) : 120; }
+const char* nota_tempo_error(const NotaEngine* e) { return e ? CENG(e)->tempoError().c_str() : "Invalid engine"; }
+int64_t nota_tempo_revision(const NotaEngine* e) { return e ? CENG(e)->tempoRevision() : 0; }
+int32_t nota_clip_grid_follows_audio(const NotaEngine* e,int32_t t,int32_t c) { return e && CENG(e)->clipGridFollowsAudio(t,c); }
+NotaResult nota_clip_tempo_mode(NotaEngine* e,int32_t t,int32_t c,int32_t grid,int32_t lock) {
+    if (!e || (grid!=0 && grid!=1) || (lock!=0 && lock!=1)) return NOTA_ERR_INVALID_ARG;
+    try { return ENG(e)->setClipTempoMode(t,c,grid!=0,lock!=0) ? NOTA_OK : NOTA_ERR_INVALID_ARG; }
+    catch (...) { return NOTA_ERR_UNKNOWN; }
+}
+NotaResult nota_clip_tempo_reference_restore(NotaEngine* e,int32_t t,int32_t c,int32_t grid,int64_t reference) {
+    if (!e || (grid!=0 && grid!=1)) return NOTA_ERR_INVALID_ARG;
+    try { return ENG(e)->restoreClipTempoReference(t,c,grid!=0,reference) ? NOTA_OK : NOTA_ERR_INVALID_ARG; }
+    catch (...) { return NOTA_ERR_UNKNOWN; }
+}
+int64_t nota_clip_tempo_reference_id(const NotaEngine* e,int32_t t,int32_t c) { return e ? CENG(e)->clipTempoReferenceId(t,c) : 0; }
 NotaResult nota_transport_set_time_signature(NotaEngine* e, int32_t num, int32_t denom) {
     if (!e) return NOTA_ERR_INVALID_ARG;
     if (num <= 0 || denom <= 0) return NOTA_ERR_INVALID_ARG;
@@ -457,3 +534,29 @@ NotaResult nota_engine_render_offline_at(NotaEngine* e, float* out, int32_t fram
 }
 
 } // extern "C"
+
+extern "C" int32_t nota_grid_reference_info(const NotaEngine* e,int32_t track,int32_t clip,double* values) {
+    return e && values && CENG(e)->gridReferenceInfo(track,clip,values) ? 1 : 0;
+}
+extern "C" NotaResult nota_grid_reference_restore(NotaEngine* e,int32_t track,int32_t clip,const double* values) {
+    if (!e || !values) return NOTA_ERR_INVALID_ARG;
+    try { return ENG(e)->restoreGridReferenceGeometry(track,clip,values) ? NOTA_OK : NOTA_ERR_INVALID_ARG; }
+    catch (...) { return NOTA_ERR_INVALID_ARG; }
+}
+
+extern "C" int32_t nota_grid_baseline_get(const NotaEngine* e,int32_t track,int32_t clip,uint8_t* out,int32_t capacity) {
+    if (!e || capacity<0) return 0;
+    try { auto bytes=CENG(e)->gridWarpBaseline(track,clip); if (out && capacity>0 && !bytes.empty())
+        std::memcpy(out,bytes.data(),std::min<size_t>(bytes.size(),capacity)); return static_cast<int32_t>(bytes.size()); }
+    catch (...) { return 0; }
+}
+extern "C" NotaResult nota_grid_baseline_restore(NotaEngine* e,int32_t track,int32_t clip,const uint8_t* data,int32_t size) {
+    if (!e) return NOTA_ERR_INVALID_ARG;
+    try { return ENG(e)->restoreGridWarpBaseline(track,clip,data,size) ? NOTA_OK : NOTA_ERR_INVALID_ARG; }
+    catch (...) { return NOTA_ERR_UNKNOWN; }
+}
+extern "C" NotaResult nota_grid_warp_reset(NotaEngine* e,int32_t track,int32_t clip) {
+    if (!e) return NOTA_ERR_INVALID_ARG;
+    try { return ENG(e)->resetGridWarp(track,clip) ? NOTA_OK : NOTA_ERR_INVALID_ARG; }
+    catch (...) { return NOTA_ERR_UNKNOWN; }
+}

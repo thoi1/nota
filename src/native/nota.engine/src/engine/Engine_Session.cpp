@@ -59,6 +59,7 @@ bool Engine::addSessionAudioFile(int32_t trackId, int32_t scene, const std::stri
     const double spb = transport_.samplesPerBeat();
     const double seconds = sample->sourceSampleRate > 0 ? sample->frames / sample->sourceSampleRate : 0.0;
     double beats = (spb > 0.0 && sr > 0.0) ? seconds * sr / spb : 4.0;
+    if (authoring_ && authoring_->tempoMap) beats = authoring_->tempoMap->beatAtSeconds(seconds);
     if (!(beats > 0.0)) beats = 4.0;
 
     auto nt = cloneTrack(*old);
@@ -632,6 +633,9 @@ int32_t Engine::sessionNoteCount(int32_t trackId, int32_t scene) const {
 // the current tempo (varispeed included).
 double Engine::audioClipBeats(const AudioClip& c) const {
     if (c.warpEnabled && c.warpBeats > 0.0) return c.warpPlayLen();
+    if (c.tempoMap && c.sample && c.sample->sourceSampleRate > 0.0)
+        return c.tempoMap->beatAtSeconds(c.tempoMap->secondsAtBeat(c.startBeat)
+            + c.effectiveLength() / c.sample->sourceSampleRate / c.pitchRatio()) - c.startBeat;
     const double spb = transport_.samplesPerBeat();
     const double devSR = transport_.sampleRate();
     if (!c.sample || spb <= 0.0 || devSR <= 0.0 || c.sample->sourceSampleRate <= 0.0) return 0.0;

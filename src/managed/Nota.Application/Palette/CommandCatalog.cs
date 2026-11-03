@@ -32,6 +32,11 @@ public static class CommandCatalog
         C("file.exit", Loc.T("Exit Nota"), Loc.T("File"), Shortcut.Cmd('Q'), "quit close leave"),
 
         // ---- Edit -------------------------------------------------------------------------
+        C("tool.select", Loc.T("Select tool"), Loc.T("Edit"), Shortcut.None('1'), "pointer editing tool"),
+        C("tool.pencil", Loc.T("Pencil tool"), Loc.T("Edit"), Shortcut.None('2'), "draw notes clips"),
+        C("tool.eraser", Loc.T("Eraser tool"), Loc.T("Edit"), Shortcut.None('3'), "erase notes clips points"),
+        C("tool.waveform", Loc.T("Waveform draw tool"), Loc.T("Edit"), Shortcut.None('4'), "sine triangle sawtooth square freehand cycle"),
+        C("tool.warp", Loc.T("Nota Warp tool"), Loc.T("Edit"), Shortcut.None('5'), "tempo ruler grid"),
         C("edit.undo", Loc.T("Undo"), Loc.T("Edit"), Shortcut.Cmd('Z'), "back revert"),
         C("edit.redo", Loc.T("Redo"), Loc.T("Edit"), Shortcut.CmdShift('Z'), "forward"),
         C("edit.duplicate", Loc.T("Duplicate"), Loc.T("Edit"), Shortcut.Cmd('D'), "copy clone"),
@@ -63,6 +68,7 @@ public static class CommandCatalog
         C("view.popOutDetail", Loc.T("Open devices in a window"), Loc.T("View"), "", "detach float pop out"),
         C("view.toggleOverview", Loc.T("Toggle overview"), Loc.T("View"), "", "minimap", view: "Arrangement"),
         C("view.toggleSections", Loc.T("Toggle sections"), Loc.T("View"), "", "markers locators", view: "Arrangement"),
+        C("view.toggleTempo", Loc.T("Toggle tempo track"), Loc.T("View"), "", "bpm automation accelerando ritardando", view: "Arrangement"),
         C("edit.resetSectionName", Loc.T("Reset section name"), Loc.T("Edit"), "", "default automatic rename section at playhead", view: "Arrangement"),
         C("view.follow", Loc.T("Follow playhead"), Loc.T("View"), "", "scroll"),
         C("view.showPlayhead", Loc.T("Show playhead"), Loc.T("View"), Shortcut.None('P'), "find locate scroll reveal cursor position", view: "Arrangement"),

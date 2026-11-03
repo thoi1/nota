@@ -1,0 +1,53 @@
+engine v0.36.1
+  [PASS] SuperFlux 22050 Hz: three sharp attacks within 2 ms (0.2000,0.7000,1.2000)
+  [PASS] SuperFlux 22050 Hz: sorted versioned source results with confidence/uncertainty
+  [PASS] SuperFlux 44100 Hz: three sharp attacks within 2 ms (0.2000,0.7000,1.2000)
+  [PASS] SuperFlux 44100 Hz: sorted versioned source results with confidence/uncertainty
+  [PASS] SuperFlux 48000 Hz: three sharp attacks within 2 ms (0.2000,0.7000,1.2000)
+  [PASS] SuperFlux 48000 Hz: sorted versioned source results with confidence/uncertainty
+  [PASS] SuperFlux 96000 Hz: three sharp attacks within 2 ms (0.2000,0.7000,1.2000)
+  [PASS] SuperFlux 96000 Hz: sorted versioned source results with confidence/uncertainty
+  [PASS] SuperFlux soft piano: one candidate per attack within 20 ms (0.203,0.603,1.001,1.401)
+  [PASS] SuperFlux piano chords: one candidate per attack within 20 ms (0.190,0.590,1.000,1.400)
+  [PASS] SuperFlux arpeggios: one candidate per attack within 20 ms (0.203,0.353,0.495,0.645,0.795,0.945,1.103,1.245)
+  [PASS] SuperFlux silence: no arbitrary attack
+  [PASS] SuperFlux short recording safely zero-pads
+  [PASS] SuperFlux low-level noise: no false attacks
+  [PASS] SuperFlux refinement improves attacks between analysis hops
+  [PASS] SuperFlux finite clipped attacks remain analysable
+  [PASS] SuperFlux sustained vibrato: no repeated attacks ()
+  [PASS] unrefined spectral results preserve uncertainty; progress is monotonic through completion
+  [PASS] transient service reuses completed immutable snapshot
+  [PASS] SuperFlux antiphase stereo retains identical attack positions
+  [PASS] transient range is start-inclusive/end-exclusive
+  [PASS] transient nearest binary search handles exact/before/after and extreme positions
+  [PASS] transient cache separates settings
+  [PASS] minimum transient spacing suppresses close candidates without quantising source positions
+  [PASS] invalidation removes every setting, retained snapshot remains valid
+  [PASS] pre-cancelled analysis does not publish
+  [PASS] simultaneous same-key consumers share job/task
+  [PASS] native step exposes bounded monotonic progress
+  [PASS] native cancellation suppresses partial result publication
+  [PASS] transient invalid settings rejected before native capture
+  [PASS] transient invalid settings rejected before native capture
+  [PASS] transient service bounds active workers to two
+  [PASS] running invalidation cancels and prevents stale publication
+  [PASS] queued invalidation cancels before processing
+  [PASS] invalidated source can be analysed again
+  [PASS] in-flight consumers share one analysis
+  [PASS] consumer cancellation propagates through shared job
+  [PASS] completed transient cache evicts old sources at capacity
+  [PASS] oversized results return uncached without evicting useful sources
+  [PASS] all engine-source captures stay on requesting authoring thread
+  [PASS] service disposal cancels outstanding work and rejects requests
+  [PASS] native captured source survives engine disposal
+  [PASS] transient deterministic suite completed in 0.21s (measured)
+  [PASS] transient mapping accounts for source offset and trim
+  [PASS] transient mapping hides source attacks outside the played window
+  [PASS] transient mapping follows native varispeed length without deriving another clock
+  [PASS] reversed transient mapping is invertible in playing order
+  [PASS] moving a clip changes placement, not source identity
+  [PASS] piecewise warped/reversed/trimmed positions round-trip to sub-sample precision
+  [PASS] transient mapping snapshot owns immutable warp metadata
+  [PASS] crossing source anchors invalidate mapping rather than inventing guide positions
+  [PASS] extended unwarped regions preserve leading silence and reject negative source positions

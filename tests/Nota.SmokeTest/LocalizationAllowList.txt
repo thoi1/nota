@@ -2649,3 +2649,10 @@ Nota.Presentation/ViewModels/BrowserViewModel.cs	Audio Effects	# data: identifie
 Nota.Presentation/ViewModels/BrowserViewModel.cs	Instruments	# data: identifier compared in code
 Nota.Presentation/ViewModels/BrowserViewModel.cs	MIDI Effects	# data: identifier compared in code
 Nota.Presentation/ViewModels/BrowserViewModel.cs	Nota	# data: identifier compared in code
+Nota.Application/Palette/CommandCatalog.cs	pointer editing tool	# data: command search aliases
+Nota.Application/Palette/CommandCatalog.cs	draw notes clips	# data: command search aliases
+Nota.Application/Palette/CommandCatalog.cs	erase notes clips points	# data: command search aliases
+Nota.Application/Palette/CommandCatalog.cs	sine triangle sawtooth square freehand cycle	# data: command search aliases
+Nota.Application/Palette/CommandCatalog.cs	tempo ruler grid	# data: command search aliases
+
+Nota.Application/Palette/CommandCatalog.cs	bpm automation accelerando ritardando	# data: command search keywords, never drawn as interface text

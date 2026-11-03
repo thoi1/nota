@@ -1,0 +1,6 @@
+PASS actual captured clip-to-Tempo drop, original-source preview, correction, Cancel and Apply
+PASS actual Step tempo/reference undo, Reset and dark/light editor screenshots
+PASS Grid Warp headless UI harness setup
+PASS Grid Warp mode exclusivity and side-effect-free selection
+PASS Grid Warp grid gestures, transient snapping, anchors and audio preservation
+PASS transient slider bounds, defaults, debounce and anchor preservation

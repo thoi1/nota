@@ -86,6 +86,7 @@ set(NOTA_ENGINE_SOURCES
     src/abi/nota_engine_audio.cpp
     src/abi/nota_engine_rack.cpp
     src/abi/nota_engine_import.cpp
+    src/abi/nota_engine_transients.cpp
     src/abi/nota_engine_audition.cpp
     src/abi/nota_encoder.cpp
     src/engine/Engine.cpp
@@ -93,6 +94,8 @@ set(NOTA_ENGINE_SOURCES
     src/engine/Engine_Modulation.cpp
     src/engine/Engine_Presets.cpp
     src/engine/Engine_Tracks.cpp
+    src/engine/Engine_GridReset.cpp
+    src/engine/Engine_Tempo.cpp
     src/engine/Engine_Session.cpp
     src/engine/Engine_Devices.cpp
     src/engine/Engine_Rack.cpp
@@ -104,6 +107,7 @@ set(NOTA_ENGINE_SOURCES
     src/media/WarpStream.cpp
     src/media/TempoDetect.cpp
     src/media/SampleAnalysis.cpp
+    src/media/SuperFlux.cpp
     src/media/AudioFile.cpp
     src/media/AudioImport.cpp
     src/media/SampleBuffer.cpp  # peak-table math (.h/.cpp)
@@ -133,6 +137,7 @@ set(NOTA_ENGINE_SOURCES
     src/engine/Graph.cpp
     src/engine/Track.cpp
     src/engine/Transport.cpp
+    src/engine/TempoMap.cpp
     src/engine/SessionPlayer.cpp
     src/engine/Automation.cpp
     src/engine/Modulation.cpp
@@ -442,6 +447,43 @@ target_link_libraries(nota-scanworker
 target_compile_definitions(nota-scanworker PRIVATE ${NOTA_JUCE_DEFS})
 if(APPLE)
     target_link_libraries(nota-scanworker PRIVATE "-framework CoreAudioKit")
+endif()
+
+# --- Offline transient reference test (no device / external runtime) ---------
+add_executable(nota-transient-selftest
+    src/media/tests/SuperFluxTest.cpp
+    src/media/SuperFlux.cpp
+    src/media/SampleBuffer.cpp
+)
+target_include_directories(nota-transient-selftest PRIVATE
+    include src ${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/fixtures/superflux)
+target_include_directories(nota-transient-selftest SYSTEM PRIVATE ${signalsmith_linear_SOURCE_DIR}/include)
+enable_testing()
+add_executable(nota-tempo-selftest src/engine/tests/TempoMapTest.cpp src/engine/TempoMap.cpp src/engine/Transport.cpp)
+target_include_directories(nota-tempo-selftest PRIVATE include src)
+target_compile_features(nota-tempo-selftest PRIVATE cxx_std_20)
+add_test(NAME nota-tempo-selftest COMMAND nota-tempo-selftest)
+add_test(NAME nota-transient-selftest COMMAND nota-transient-selftest)
+
+# A real, deterministic VST3 for hosted render-pool regression tests. It stays in
+# the build tree: never copied into a user's plugin directory or app package.
+option(NOTA_BUILD_RENDER_PROBE "Build the hosted render-pool test VST3" ON)
+if(NOTA_BUILD_RENDER_PROBE)
+    juce_add_plugin(nota-render-probe
+        COMPANY_NAME Nota
+        PLUGIN_MANUFACTURER_CODE Nota
+        PLUGIN_CODE Nrpr
+        PRODUCT_NAME "Nota Render Probe"
+        FORMATS VST3
+        IS_SYNTH TRUE
+        NEEDS_MIDI_INPUT TRUE
+        COPY_PLUGIN_AFTER_BUILD FALSE
+        VST3_AUTO_MANIFEST FALSE)
+    target_sources(nota-render-probe PRIVATE pluginhost/tests/RenderProbe.cpp)
+    target_link_libraries(nota-render-probe PRIVATE juce::juce_audio_processors
+        juce::juce_recommended_config_flags)
+    target_compile_definitions(nota-render-probe PRIVATE JUCE_USE_CURL=0
+        JUCE_WEB_BROWSER=0 JUCE_VST3_CAN_REPLACE_VST2=0)
 endif()
 
 # --- Scanner self-test (bug plugin-scan-hang-windows) -------------------------

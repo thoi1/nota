@@ -348,7 +348,7 @@ public sealed partial class SessionView : UserControl
         {
             foreach (var cell in c.Cells) (cell as ILiveCell)?.Tick();
             c.Header?.Sync();
-            c.Mixer?.UpdateMeter();
+            c.Mixer?.UpdateState();
         }
         foreach (var sc in _sceneCells) sc.Tick();
         UpdateToolbar();

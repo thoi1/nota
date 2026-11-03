@@ -1,0 +1,97 @@
+{
+  "workload": "Four real test VST3 instances, 56 channels; not a Kontakt or SWAM instrument benchmark",
+  "frames": 128,
+  "sampleRate": 48000,
+  "before": {
+    "instrument": {
+      "adapter": "instrument",
+      "channels": 56,
+      "small": {
+        "MedianMs": 0.1877,
+        "P95Ms": 0.2396,
+        "CallerMs": 79.23009999999998,
+        "WorkerMs": 0,
+        "DeadlinePercent": 7.4278218749999985,
+        "Late": 0,
+        "Blocks": 400
+      },
+      "large": {
+        "MedianMs": 2.3684,
+        "P95Ms": 2.6985,
+        "CallerMs": 96.14309999999998,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.4083461914062498,
+        "Late": 0,
+        "Blocks": 40
+      }
+    },
+    "insert": {
+      "adapter": "insert",
+      "channels": 56,
+      "small": {
+        "MedianMs": 0.203,
+        "P95Ms": 0.2502,
+        "CallerMs": 83.43330000000003,
+        "WorkerMs": 0,
+        "DeadlinePercent": 7.821871875000004,
+        "Late": 0,
+        "Blocks": 400
+      },
+      "large": {
+        "MedianMs": 2.2479,
+        "P95Ms": 2.6772,
+        "CallerMs": 92.14240000000001,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.3497421875,
+        "Late": 0,
+        "Blocks": 40
+      }
+    }
+  },
+  "after": {
+    "instrument": {
+      "adapter": "instrument",
+      "channels": 56,
+      "small": {
+        "MedianMs": 0.039,
+        "P95Ms": 0.0395,
+        "CallerMs": 15.654099999999982,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.4675718749999982,
+        "Late": 0,
+        "Blocks": 400
+      },
+      "large": {
+        "MedianMs": 2.107,
+        "P95Ms": 2.5494,
+        "CallerMs": 86.61570000000002,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.2687846679687502,
+        "Late": 0,
+        "Blocks": 40
+      }
+    },
+    "insert": {
+      "adapter": "insert",
+      "channels": 56,
+      "small": {
+        "MedianMs": 0.0397,
+        "P95Ms": 0.0473,
+        "CallerMs": 16.577399999999994,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.5541312499999995,
+        "Late": 0,
+        "Blocks": 400
+      },
+      "large": {
+        "MedianMs": 2.1623,
+        "P95Ms": 3.6092,
+        "CallerMs": 93.54210000000002,
+        "WorkerMs": 0,
+        "DeadlinePercent": 1.3702456054687502,
+        "Late": 0,
+        "Blocks": 40
+      }
+    }
+  }
+}

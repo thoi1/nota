@@ -67,7 +67,7 @@ public partial class MainWindow
         // The transport's loop region; with none set yet, the first four bars (as Loop on uses).
         double loopStart = Engine.LoopStart, loopEnd = Engine.LoopEnd;
         if (loopEnd <= loopStart) (loopStart, loopEnd) = (0, 4 * 4);
-        var opts = await new ExportWindow(endBeats, loopStart, loopEnd, bpm).ShowDialog<ExportOptions?>(this);
+        var opts = await new ExportWindow(endBeats, loopStart, loopEnd, bpm, Engine.SecondsAtBeat).ShowDialog<ExportOptions?>(this);
         if (opts is null) return;
 
         Activate(); // keep the native panel focused (see DoImportAsync)
@@ -183,7 +183,8 @@ public partial class MainWindow
         _links.Clear();    // no live-freeze links (cleared first: stale ids must not hit the new graph)
         Engine.Reset();
         // Reset transport to defaults (these setters drive the engine + UI).
-        _vm.Transport.Bpm = 120;
+        Engine.SetBpm(120);
+        _vm.Transport.RestoreBpm(120);
         _vm.Transport.MasterVolume = 1.0;
         _vm.Transport.MetronomeOn = false;
         _vm.Transport.LoopOn = false;
@@ -268,7 +269,7 @@ public partial class MainWindow
             finally { Engine.SetDeferWarpBuild(false); }
             _links.Clear();   // the old project's live-freeze ids mean nothing in the loaded graph
             // Load resets the engine but leaves transport; restore it via the VM.
-            _vm.Transport.Bpm = (decimal)result.Transport.Bpm;
+            _vm.Transport.RestoreBpm(result.Transport.Bpm);
             _vm.Transport.MasterVolume = result.Transport.MasterVolume;
             _vm.Transport.MetronomeOn = result.Transport.MetronomeOn;
             _vm.Transport.LoopOn = result.Transport.LoopOn;

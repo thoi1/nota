@@ -1,0 +1,15 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Nota.Domain -> C:\Dev\nota\src\managed\Nota.Domain\bin\Release\net10.0\Nota.Domain.dll
+  Nota.Application -> C:\Dev\nota\src\managed\Nota.Application\bin\Release\net10.0\Nota.Application.dll
+  Nota.Infrastructure -> C:\Dev\nota\src\managed\Nota.Infrastructure\bin\Release\net10.0\Nota.Infrastructure.dll
+  Nota.Presentation -> C:\Dev\nota\src\managed\Nota.Presentation\bin\Release\net10.0\Nota.Presentation.dll
+  Nota.Mcp -> C:\Dev\nota\src\managed\Nota.Mcp\bin\Release\net10.0\Nota.Mcp.dll
+  Nota.Remote -> C:\Dev\nota\src\managed\Nota.Remote\bin\Release\net10.0\Nota.Remote.dll
+  Nota.SmokeTest -> C:\Dev\nota\tests\Nota.SmokeTest\bin\Release\net10.0\Nota.SmokeTest.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.98

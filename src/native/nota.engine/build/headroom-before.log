@@ -1,0 +1,36 @@
+C:\Dev\nota\tests\Nota.SmokeTest\HistoryTests.cs(311,39): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(9824,11): warning CS8602: Dereference of a possibly null reference. [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(4318,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(5868,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6576,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6576,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(6576,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(11203,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Dev\nota\tests\Nota.SmokeTest\Program.cs(14497,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Dev\nota\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+engine v0.36.1
+  [PASS] real VST3 fixture scanned into isolated temporary catalog
+  [PASS] VST3 instrument: changing callback sizes leave no stale main/sidechain input
+  [PASS] 56-channel VST3 instrument: 128-frame cost 0.0384 ms scales below 1/32 of 8192-frame cost 2.0961 ms
+HOSTED_BUFFER {"adapter":"instrument","channels":56,"small":{"MedianMs":0.0384,"P95Ms":0.0457,"CallerMs":15.926400000000001,"WorkerMs":0,"DeadlinePercent":1.4931,"Late":0,"Blocks":400},"large":{"MedianMs":2.0961,"P95Ms":2.3848,"CallerMs":85.4915,"WorkerMs":0,"DeadlinePercent":1.2523168945312502,"Late":0,"Blocks":40}}
+  [PASS] VST3 insert: changing callback sizes leave no stale main/sidechain input
+  [PASS] 56-channel VST3 insert: 128-frame cost 0.0396 ms scales below 1/32 of 8192-frame cost 2.3264 ms
+HOSTED_BUFFER {"adapter":"insert","channels":56,"small":{"MedianMs":0.0396,"P95Ms":0.0431,"CallerMs":16.11950000000001,"WorkerMs":0,"DeadlinePercent":1.5112031250000009,"Late":0,"Blocks":400},"large":{"MedianMs":2.3264,"P95Ms":2.5762,"CallerMs":92.53470000000002,"WorkerMs":0,"DeadlinePercent":1.3554887695312503,"Late":0,"Blocks":40}}
+  [PASS] VST3 instruments: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 inserts/sidechains: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 bypass, insert removal, instrument replacement and track undo preserve serial output
+  [PASS] real VST3 insert adapters use helpers (93.8 ms CPU)
+  [PASS] VST3 offline helpers participate (234.4 ms worker CPU)
+  [PASS] four VST3 tracks: offline median 0.761 ms vs serial 2.929 ms
+  [PASS] VST3 parallel processing keeps total render CPU work bounded
+HOSTED_OFFLINE {"serial":{"MedianMs":2.9289,"P95Ms":3.0484,"CallerMs":293.3482999999998,"WorkerMs":0,"DeadlinePercent":110.00561249999994,"Late":100,"Blocks":100},"parallel":{"MedianMs":0.7612,"P95Ms":0.9165,"CallerMs":79.28130000000002,"WorkerMs":234.375,"DeadlinePercent":29.73048750000001,"Late":0,"Blocks":100}}
+  [PASS] VST3 overloaded device helpers participate (531.3 ms worker CPU)
+  [PASS] four VST3 tracks: device median 1.620 ms vs serial 5.838 ms
+  [PASS] four indivisible VST3 jobs: 0/100 device deadlines missed after warm-up (<= 1)
+HOSTED_DEVICE {"serial":{"MedianMs":5.8384,"P95Ms":6.0101,"CallerMs":583.2502999999998,"WorkerMs":0,"DeadlinePercent":218.71886249999997,"Late":100,"Blocks":100},"parallel":{"MedianMs":1.6203,"P95Ms":1.8473,"CallerMs":161.10450000000003,"WorkerMs":531.25,"DeadlinePercent":60.41418750000002,"Late":0,"Blocks":100}}
+  [PASS] light VST3 device workload leaves helpers parked (0.0 ms CPU)
+  [FAIL] 512-frame large VST3 jobs reserve headroom: four 6.086 ms vs one 2.916 ms (<= 1.6x)
+  [PASS] 512-frame VST3 headroom keeps caller/worker work proxy bounded (<= 2x four serial tracks)
+HOSTED_HEADROOM {"frames":512,"one":{"MedianMs":2.9156,"P95Ms":2.9435,"CallerMs":293.2112000000001,"WorkerMs":0,"DeadlinePercent":27.48855000000001,"Late":0,"Blocks":100},"four":{"MedianMs":6.086,"P95Ms":6.7348,"CallerMs":617.5811999999999,"WorkerMs":609.375,"DeadlinePercent":57.89823749999999,"Late":0,"Blocks":100}}
+  [PASS] hosted instrument rack retains serial fallback and audible output
+  [PASS] VST3 graph additions/removals during worker renders stay finite and complete (1466 blocks)

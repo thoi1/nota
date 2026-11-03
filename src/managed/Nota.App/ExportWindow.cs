@@ -46,6 +46,7 @@ public sealed class ExportWindow : NotaWindow
     private const int BeatsPerBar = 4;
 
     private readonly double _bpm;
+    private readonly Func<double, double>? _secondsAtBeat;
     private double _startBeats, _rangeBeats;   // the range: where it starts and how long it is
     private int _rangeMode;                     // 0 loop · 1 full song · 2 custom
     private double _customStart, _customEnd;
@@ -73,9 +74,10 @@ public sealed class ExportWindow : NotaWindow
 
     /// <param name="fullBeats">The song's end (last clip end).</param>
     /// <param name="loopStart">The transport loop region's start; <paramref name="loopEnd"/> its end.</param>
-    public ExportWindow(double fullBeats, double loopStart, double loopEnd, double bpm)
+    public ExportWindow(double fullBeats, double loopStart, double loopEnd, double bpm, Func<double, double>? secondsAtBeat = null)
     {
         _bpm = bpm;
+        _secondsAtBeat = secondsAtBeat;
         bool hasLoop = loopEnd > loopStart;
         // Custom starts from the loop region when there is one, else the whole song.
         (_customStart, _customEnd) = hasLoop ? (loopStart, loopEnd) : (0, fullBeats);
@@ -275,11 +277,15 @@ public sealed class ExportWindow : NotaWindow
 
     private bool RangeValid => _rangeMode != 2 || _customValid;
 
+    private double RangeSeconds(double beats) => _secondsAtBeat is { } convert
+        ? Math.Max(0, convert(_startBeats+beats)-convert(_startBeats))
+        : _bpm>0 ? beats*60/_bpm : 0;
+
     private void RefreshRange()
     {
         _customRow.IsVisible = _rangeMode == 2;
         _rangeReadout.IsVisible = RangeValid;
-        double sec = _bpm > 0 ? _rangeBeats * 60.0 / _bpm : 0;
+        double sec = RangeSeconds(_rangeBeats);
         _rangeReadout.Text = string.Format(NotaNum.Culture, "{0} → {1} · {2:0.0} s",
                                            BarBeatText(_startBeats), BarBeatText(_startBeats + _rangeBeats), sec);
         if (_export is not null) Inactive.Set(_export, !RangeValid);
@@ -324,7 +330,7 @@ public sealed class ExportWindow : NotaWindow
     {
         if (_estimate is null) return;
         double tail = _tailOn ? BeatsPerBar : 0;
-        double sec = _bpm > 0 ? (Math.Max(0, _rangeBeats) + tail) * 60.0 / _bpm : 0;
+        double sec = RangeSeconds(Math.Max(0, _rangeBeats) + tail);
         int sr = Rates[_rate.SelectedIndex < 0 ? 1 : _rate.SelectedIndex];
         int bytesPerSample = _depth.SelectedIndex switch { 0 => 2, 2 => 4, _ => 3 };
         double mb = SelectedFormat switch

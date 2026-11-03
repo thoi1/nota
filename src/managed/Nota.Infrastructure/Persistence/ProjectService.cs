@@ -38,7 +38,7 @@ public sealed class ProjectService
     /// v26 (specs/048) adds Preset on instruments, devices and MIDI effects.
     /// v27 (specs/046) adds Preview on hosted plug-ins: the picture of their window.
     /// v29 (specs/067) adds Takes on audio tracks and TakeId on audio clips.
-    public const int CurrentFormatVersion = 29;
+    public const int CurrentFormatVersion = 30;
 
     /// <summary>Manifest file name inside the bundle folder.</summary>
     public const string ManifestName = "project.json";
@@ -64,6 +64,7 @@ public sealed class ProjectService
         var doc = new ProjectDocument
         {
             SessionNames = !contentNames,
+            TempoMap = engine.GetTempoMap(),
             SceneCount = engine.SceneCount,
             Session = CaptureSession(engine),
             Transport = new TransportDto
@@ -90,6 +91,10 @@ public sealed class ProjectService
         var idToIndex = new Dictionary<int, int>();
         for (int i = 0; i < trackCount; i++)
             if (engine.TryGetTrackInfo(i, out var ti0)) idToIndex[ti0.Id] = i;
+
+        if (doc.TempoMap is { } capturedTempo)
+            doc.TempoMap = capturedTempo with { Anchors = capturedTempo.Anchors.Select(a => a with {
+                TrackId = a.TrackId >= 0 && idToIndex.TryGetValue(a.TrackId, out int index) ? index : -1 }).ToArray() };
 
         for (int i = 0; i < trackCount; i++)
         {
@@ -563,6 +568,8 @@ public sealed class ProjectService
         // The saved tempo before any clip (specs/067): take lanes lay their comp out on it, so a
         // section the user moved isn't mistaken for one still on its take when the UI's tempo lands.
         if (doc.Transport.Bpm > 0) engine.SetBpm(doc.Transport.Bpm);
+        if (doc.TempoMap is { } tempo && !engine.TrySetTempoMap(tempo, out var tempoError, checkpoint: false))
+            throw new InvalidDataException("Invalid project tempo map: " + tempoError);
 
         // Pan law (specs/006) first, as the baseline rather than an undo step. A missing mixer
         // is a pre-v21 project: Balance, so the mix sounds as it was saved.
@@ -836,6 +843,8 @@ public sealed class ProjectService
                         if (engine.TryGetSessionAudioSlot(id, sl.Scene, out var lsa))
                             BundleContent.SeedSample(engine, lsa.SampleId, sa.Sample);
                         AudioClipState.ApplyShape(engine, id, SessionClip.Index(sl.Scene), sa);
+                        if (engine.TryGetSessionAudioSlot(id, sl.Scene, out var sourceSlot))
+                            SourceTempoCache.Restore(engine, sourceSlot.SampleId, ResolveInBundle(bundleDir, sa.Sample));
                         engine.SetSessionSlotLength(id, sl.Scene, sl.LengthBeats);   // clip edits resync it; the saved loop wins
                     }
                 }
@@ -1013,6 +1022,12 @@ public sealed class ProjectService
             engine.SetMasterVolumeAutomation(
                 doc.MasterVolumeAutomation.ConvertAll(p => p.ToPoint()).ToArray());
 
+        if (doc.TempoMap is { } restoredTempo)
+        {
+            var mapped = restoredTempo with { Anchors = restoredTempo.Anchors.Select(a => a with {
+                TrackId = a.TrackId >= 0 && a.TrackId < newTrackIds.Count ? newTrackIds[a.TrackId] : -1 }).ToArray() };
+            if (!engine.TrySetTempoMap(mapped, out var error, checkpoint: false)) throw new InvalidDataException("Invalid project tempo references: " + error);
+        }
         return warnings;
     }
 
@@ -1035,7 +1050,11 @@ public sealed class ProjectService
         {
             Directory.CreateDirectory(Path.Combine(bundleDir, BundleContent.SamplesDir));
             foreach (var kv in doc.SampleRefs)
-                WriteSampleWav(engine, kv.Value, ResolveInBundle(bundleDir, kv.Key));
+            {
+                string sourcePath = ResolveInBundle(bundleDir, kv.Key);
+                WriteSampleWav(engine, kv.Value, sourcePath);
+                SourceTempoCache.Save(engine, kv.Value, sourcePath);
+            }
         }
 
         if (doc.StateBlobs.Count > 0)

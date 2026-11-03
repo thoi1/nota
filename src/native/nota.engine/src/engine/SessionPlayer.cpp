@@ -36,6 +36,7 @@ bool SessionPlayer::maybeApply(double blockStartBeats, double blockBeats, double
         const bool legato =
             pendingLegato.load(std::memory_order_relaxed) && playing.load(std::memory_order_relaxed) >= 0;
         playing.store(p, std::memory_order_relaxed);
+        ++launchSerial;
         if (!legato) localBeats = 0.0;
         gain = pendingGain.load(std::memory_order_relaxed);
         playedBeats.store(0.0, std::memory_order_relaxed);

@@ -1,0 +1,11 @@
+engine v0.36.1
+  [PASS] source beats: constant follows original pulse (max error 0.0 ms)
+  [PASS] source beats: accelerando follows original pulse (max error 0.0 ms)
+  [PASS] source beats: ritardando follows original pulse (max error 10.7 ms)
+  [PASS] source beats: rubato follows original pulse (max error 0.0 ms)
+  [PASS] source beats: subdivisions follows original pulse (max error 0.0 ms)
+  [PASS] source beats: missing follows original pulse (max error 0.0 ms)
+  [PASS] source beats: a missing attack is an interpolated proposal, not a transient
+  [PASS] source beats: a manual source/beat constraint stays exact
+  [PASS] source beats: silence, invalid limits and cancellation reject safely
+  [PASS] source beats: starting BPM resolves half/double ambiguity instead of using project tempo

@@ -571,24 +571,38 @@ void Engine::backToArrangement() {
     sceneFollowScene_ = -1;
     arrangementActive_.store(true, std::memory_order_relaxed);
 }
-void Engine::setBpm(double bpm) {
+void Engine::setBpm(double bpm, bool deferWarpCaches) {
+    tempoError_.clear();
+    if (authoring_ && authoring_->tempoMap) {
+        auto points = tempoPoints();
+        const int64_t tick = points.size() == 1 ? 0 : std::max<int64_t>(0,
+            std::llround(transport_.uiPositionBeats()*TempoMap::ticksPerBeat));
+        auto it = std::lower_bound(points.begin(),points.end(),tick,[](const TempoPoint& p,int64_t t){return p.tick<t;});
+        if (it != points.end() && it->tick == tick) it->bpm=bpm;
+        else points.insert(it,{tick,bpm,0});
+        if (!setTempoMap(std::move(points),std::min(tempoMinBpm(),bpm),std::max(tempoMaxBpm(),bpm),
+                tempoAnchors(),false)) return;
+        if (!deferWarpCaches) { reconfigureAllWarpStreams(); tempoWarpBuildPending_=false; }
+        return;
+    }
     Command c;
     c.type = CommandType::SetBpm;
     c.d0 = bpm;
     commands_.push(c);
-    // Warped clips play from an offline cache stretched to the tempo,
-    // so a tempo change must rebuild them. Do it on this (authoring) thread with the new
-    // spb computed directly — the SetBpm command above only reaches the transport on the
-    // audio thread later, so reading transport_.samplesPerBeat() here would be stale.
-    const double devSR = transport_.sampleRate();
-    if (bpm > 0.0 && devSR > 0.0) reconfigureAllWarpStreams(devSR * 60.0 / bpm, devSR);
     if (bpm > 0.0) {
         authoringBpm_ = bpm;
+        tempoQueryBpm_.store(bpm,std::memory_order_relaxed);
+        tempoRevision_.fetch_add(1,std::memory_order_relaxed);
+        // Interactive edits retain the old immutable caches until the existing worker
+        // replaces them. The clock command above still takes effect on the next block.
+        tempoWarpBuildPending_ = deferWarpCaches;
+        if (wj_) wj_->cancel.store(true, std::memory_order_relaxed);
+        if (!deferWarpCaches) reconfigureAllWarpStreams();
         placeTakesForTempo(); // take lanes + their comp keep one mapping (specs/067)
     }
 }
 double Engine::bpm() const {
-    return transport_.bpm();
+    return transport_.uiBpm();
 }
 void Engine::setTimeSignature(int num, int denom) {
     Command c;
@@ -662,6 +676,7 @@ std::shared_ptr<Track> Engine::cloneTrack(const Track& t) const {
     nt->setFrozen(t.frozen());           // M7: freeze state + buffer (shared by pointer)
     nt->frozenBuf = t.frozenBuf;
     nt->frozenSpb = t.frozenSpb;
+    nt->frozenTempoMap=t.frozenTempoMap; nt->frozenSampleRate=t.frozenSampleRate;
     nt->name = t.name; // UI metadata
     nt->colorIndex = t.colorIndex;
     nt->pianoFold = t.pianoFold;
@@ -694,11 +709,38 @@ bool Engine::setRenderThreads(int n) {
 }
 
 void Engine::publishRaw(std::shared_ptr<Graph> g) {
+    // Bind new/replaced audio clips to the same immutable project map. Clone only
+    // affected tracks; never mutate a track shared by an older render snapshot.
+    bool bindTempo = false;
+    for (const auto& t : g->tracks) {
+        for (const auto& c : t->clips) if (c.tempoMap != g->tempoMap) bindTempo = true;
+        for (const auto& s : t->sessionSlots) if (s.hasClip && s.audio.tempoMap != g->tempoMap) bindTempo = true;
+    }
+    if (bindTempo) {
+        auto prepared = std::make_shared<Graph>(); inheritGraphLevel(*prepared,*g); prepared->tracks=g->tracks;
+        for (auto& t : prepared->tracks) {
+            bool changed = false;
+            for (const auto& c : t->clips) if (c.tempoMap != g->tempoMap) changed=true;
+            for (const auto& s : t->sessionSlots) if (s.hasClip && s.audio.tempoMap != g->tempoMap) changed=true;
+            if (!changed) continue;
+            auto nt=cloneTrack(*t);
+            for (auto& c : nt->clips) c.tempoMap=g->tempoMap;
+            for (auto& s : nt->sessionSlots) s.audio.tempoMap=g->tempoMap;
+            t=std::move(nt);
+        }
+        g=std::move(prepared);
+    }
     // Ensure every track has a session slot per scene (M5). Only grows freshly
     // added tracks (already-sized tracks are a no-op), so no race with audio.
     for (auto& t : g->tracks)
         if (static_cast<int32_t>(t->sessionSlots.size()) < g->sceneCount) t->sessionSlots.resize(g->sceneCount);
+    if (authoring_ && authoring_->tempoMap != g->tempoMap) {
+        tempoRevision_.fetch_add(1,std::memory_order_relaxed);
+        tempoWarpBuildPending_=true;
+        if (wj_) wj_->cancel.store(true,std::memory_order_relaxed);
+    }
     authoring_ = g;
+    tempoQueryMap_.store(g->tempoMap,std::memory_order_release);
     retired_.push_back(g);
     if (g) ensureRenderScratch(g->tracks.size());
     // Fresh track objects only: the audio thread never sees them change. Before any CC target

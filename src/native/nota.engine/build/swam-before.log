@@ -1,0 +1,7 @@
+engine v0.36.1
+PROFILE loading 1 SWAM Violin Section, helpers=4; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":1,"helpers":4,"rate":48000,"frames":128,"medianMs":0.01,"p95Ms":0.0144,"meanMs":0.010552999999999995,"deadlinePercent":0.3957374999999998,"late":0,"count":200,"workerCpuMs":0,"rms":0}
+PROFILE loading 4 SWAM Violin Section, helpers=0; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":4,"helpers":0,"rate":48000,"frames":128,"medianMs":0.0199,"p95Ms":0.0233,"meanMs":0.018999,"deadlinePercent":0.7124625,"late":0,"count":200,"workerCpuMs":0,"rms":0}
+PROFILE loading 4 SWAM Violin Section, helpers=4; 48000 Hz / 128 frames
+PLUGIN_PROFILE {"name":"SWAM Violin Section","instances":4,"helpers":4,"rate":48000,"frames":128,"medianMs":0.02,"p95Ms":0.0249,"meanMs":0.019578500000000002,"deadlinePercent":0.7341937500000001,"late":0,"count":200,"workerCpuMs":0,"rms":0}

@@ -1,0 +1,16 @@
+engine v0.36.1
+  [PASS] real VST3 fixture scanned into isolated temporary catalog
+  [PASS] VST3 instruments: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 inserts/sidechains: MIDI, automation, group/return output is sample-identical with helpers
+  [PASS] VST3 bypass, insert removal, instrument replacement and track undo preserve serial output
+  [FAIL] real VST3 insert adapters use helpers (0.0 ms CPU)
+  [FAIL] VST3 offline helpers participate (0.0 ms worker CPU)
+  [FAIL] four VST3 tracks: offline median 2.914 ms vs serial 2.923 ms
+  [PASS] VST3 parallel processing keeps total render CPU work bounded
+HOSTED_OFFLINE {"serial":{"MedianMs":2.9232,"P95Ms":3.0439,"CallerMs":293.7182,"WorkerMs":0,"DeadlinePercent":110.14432500000002,"Late":100,"Blocks":100},"parallel":{"MedianMs":2.9141,"P95Ms":3.0124,"CallerMs":292.2003000000001,"WorkerMs":0,"DeadlinePercent":109.57511250000005,"Late":100,"Blocks":100}}
+  [FAIL] VST3 overloaded device helpers participate (0.0 ms worker CPU)
+  [FAIL] four VST3 tracks: device median 5.774 ms vs serial 5.841 ms
+  [FAIL] four indivisible VST3 jobs: 100/100 device deadlines missed after warm-up (<= 1)
+HOSTED_DEVICE {"serial":{"MedianMs":5.8405,"P95Ms":5.9054,"CallerMs":584.1319999999998,"WorkerMs":0,"DeadlinePercent":219.0495,"Late":100,"Blocks":100},"parallel":{"MedianMs":5.7741,"P95Ms":5.9836,"CallerMs":580.2497000000003,"WorkerMs":0,"DeadlinePercent":217.59363750000014,"Late":100,"Blocks":100}}
+  [PASS] light VST3 device workload leaves helpers parked (0.0 ms CPU)
+  [PASS] hosted instrument rack retains serial fallback and audible output

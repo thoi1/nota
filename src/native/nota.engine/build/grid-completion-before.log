@@ -1,0 +1,24 @@
+engine v0.36.1
+  [PASS] grid warp mapping: 4/4 bar and beat grid uses quarter-note ticks
+  [PASS] grid warp mapping: 6/8 uses eighth-note pulses and a three-quarter-note bar
+  [PASS] grid warp mapping: non-constant tempo uses the authoritative beat/seconds clock
+  [PASS] grid warp mapping: reversed source coordinates round-trip without changing musical time
+  [PASS] grid warp mapping: tempo derives from absolute interval seconds
+  [PASS] grid warp mapping: zero-time, out-of-range BPM, and crossing anchors are rejected
+  [PASS] grid warp: valid tempo/anchor/reference transaction commits ()
+  [FAIL] grid warp: committing grid timing preserves original audio-warp source and beat coordinates
+  [PASS] grid warp: absolute anchor intervals derive the expected step BPM events
+  [PASS] grid warp: enabling the reference preserves source samples and never builds a stretch cache
+  [PASS] grid warp: tempo points, anchors, and reference undo and redo as one action
+  [PASS] grid warp: source audio playback samples are unchanged by tempo mapping
+  [PASS] grid warp: project save/reload restores tempo events, anchors, and the clip reference
+  [PASS] grid warp Tempo Track fixture installs an unrelated fixed anchor ()
+  [PASS] grid warp Tempo Track move updates its anchor and tempo intervals, preserving unrelated anchors ()
+  [PASS] grid warp Tempo Track move is one undo/redo action
+  [PASS] grid warp Tempo Track rejects a conflicting BPM edit on a linked point
+  [PASS] grid warp Tempo Track delete removes the linked anchor and preserves unrelated anchors ()
+  [PASS] grid warp Tempo Track delete is one undo/redo action
+  [PASS] Audio follows grid stretches the clip, unlinks its Grid Warp anchors, and preserves tempo events and source samples
+  [PASS] Audio follows grid edit unlinks Grid Warp in one undo/redo action
+  [PASS] grid warp: out-of-range BPM is rejected without partial state or undo
+  [PASS] grid warp: crossing absolute-time anchors are rejected atomically

@@ -1,0 +1,48 @@
+{
+  "machine": "Windows x64, AMD Ryzen 9 7900X, 12 cores / 24 logical processors",
+  "workload": "Four deterministic real VST3 instances; 4 configured helpers; not Kontakt",
+  "sample_rate": 48000,
+  "buffer_frames": 128,
+  "buffer_deadline_ms": 2.6666666666666665,
+  "measurement": "100 blocks after 80 warm-up blocks; device calls paced to the buffer period",
+  "before": {
+    "offline": {
+      "MedianMs": 2.9141,
+      "P95Ms": 3.0124,
+      "CallerMs": 292.2003000000001,
+      "WorkerMs": 0,
+      "DeadlinePercent": 109.57511250000005,
+      "Late": 100,
+      "Blocks": 100
+    },
+    "device": {
+      "MedianMs": 5.7741,
+      "P95Ms": 5.9836,
+      "CallerMs": 580.2497000000003,
+      "WorkerMs": 0,
+      "DeadlinePercent": 217.59363750000014,
+      "Late": 100,
+      "Blocks": 100
+    }
+  },
+  "after": {
+    "offline": {
+      "MedianMs": 0.7791,
+      "P95Ms": 0.9166,
+      "CallerMs": 82.1616,
+      "WorkerMs": 187.5,
+      "DeadlinePercent": 30.810600000000004,
+      "Late": 0,
+      "Blocks": 100
+    },
+    "device": {
+      "MedianMs": 1.6317,
+      "P95Ms": 1.8457,
+      "CallerMs": 164.18639999999996,
+      "WorkerMs": 500,
+      "DeadlinePercent": 61.56989999999999,
+      "Late": 0,
+      "Blocks": 100
+    }
+  }
+}

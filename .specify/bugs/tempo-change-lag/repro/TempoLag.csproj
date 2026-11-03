@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Nota.Infrastructure"><HintPath>../../../../src/managed/Nota.Infrastructure/bin/Release/net10.0/Nota.Infrastructure.dll</HintPath></Reference>
+    <Reference Include="Nota.Application"><HintPath>../../../../src/managed/Nota.Application/bin/Release/net10.0/Nota.Application.dll</HintPath></Reference>
+    <Reference Include="Nota.Domain"><HintPath>../../../../src/managed/Nota.Domain/bin/Release/net10.0/Nota.Domain.dll</HintPath></Reference>
+    <Reference Include="Nota.Presentation"><HintPath>../../../../src/managed/Nota.Presentation/bin/Release/net10.0/Nota.Presentation.dll</HintPath></Reference>
+    <Reference Include="CommunityToolkit.Mvvm"><HintPath>../../../../src/managed/Nota.App/bin/Release/net10.0/CommunityToolkit.Mvvm.dll</HintPath></Reference>
+    <None Include="../../../../src/native/nota.engine/build/nota_engine.dll" Link="nota_engine.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

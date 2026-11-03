@@ -86,6 +86,7 @@
             <NativeMenuItem Header="{app:T 'Clip editor fills the window'}" app:Commands.Id="view.maximizeDetail" ToggleType="CheckBox"/>
             <NativeMenuItem Header="{app:T 'Toggle overview'}" app:Commands.Id="view.toggleOverview"/>
             <NativeMenuItem Header="{app:T 'Toggle sections'}" app:Commands.Id="view.toggleSections"/>
+            <NativeMenuItem Header="{app:T 'Toggle tempo track'}" app:Commands.Id="view.toggleTempo"/>
             <NativeMenuItem Header="{app:T 'Toggle full screen'}" app:Commands.Id="view.fullscreen"/>
             <NativeMenuItemSeparator/>
             <!-- Header text is matched from code to keep this checkmark in step with the
@@ -320,6 +321,7 @@
                         ToolTip.Tip="{app:T 'Snap clips to the grid (hold Alt to drag freely)'}">
             <app:Glyph Kind="Snap" Size="15"/>
           </ToggleButton>
+          <app:EditingToolBar x:Name="ArrangementTools"/>
           <!-- Automation: a breakpoint envelope — the ramp and handles the lanes draw -->
           <ToggleButton x:Name="AutomationToggle" Classes="tp-icon" Click="OnToggleAutomation">
             <app:Glyph Kind="Automation" Size="15"/>
@@ -598,7 +600,10 @@
             <Button x:Name="DetailMaximizeBtn" Grid.Column="4" Classes="ghost" Height="22" Margin="0,0,2,0" Padding="6,0"
                     Foreground="{DynamicResource Brush.TextTertiary}" Click="OnDetailMaximize" IsVisible="False"
                     ToolTip.Tip="{app:T 'Fill the window with the clip editor (⌘⇧F)'}">
-              <app:Glyph x:Name="DetailMaximizeGlyph" Kind="Expand"/>
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <app:Glyph x:Name="DetailMaximizeGlyph" Kind="Expand"/>
+                <TextBlock x:Name="DetailReturnLabel" Text="{app:T 'Back to Arrangement'}" IsVisible="False" VerticalAlignment="Center"/>
+              </StackPanel>
             </Button>
             <Button x:Name="DetailPopOut" Grid.Column="5" Classes="ghost" Height="22" Padding="6,0"
                     Foreground="{DynamicResource Brush.TextTertiary}" Click="OnToggleDetailWindow"

@@ -48,6 +48,9 @@ public sealed class MeterBar : Control
         InvalidateVisual();
     }
 
+    internal bool CanUpdate => IsEffectivelyVisible && Bounds.Width > 0 && Bounds.Height > 0
+        && TopLevel.GetTopLevel(this) is Window { IsVisible: true, WindowState: not WindowState.Minimized };
+
     /// <summary>Clears the meter and its peak hold (e.g. on stop).</summary>
     public void Reset()
     {

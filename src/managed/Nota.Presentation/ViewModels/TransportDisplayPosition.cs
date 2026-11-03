@@ -9,6 +9,18 @@ namespace Nota.Presentation;
 /// runs past that block if audio stalls, and its result is never an editing position.</summary>
 public static class TransportDisplayPosition
 {
+    public static double At(in NotaTransportSnapshot snapshot, IAudioEngine engine)
+    {
+        if (!snapshot.IsPlaying || snapshot.DurationSeconds <= 0 || !double.IsFinite(snapshot.ElapsedSeconds)
+            || snapshot.ElapsedSeconds >= snapshot.DurationSeconds) return snapshot.PositionBeats;
+        double seconds = engine.SecondsAtBeat(snapshot.StartBeat) + Math.Max(0, snapshot.ElapsedSeconds);
+        if (snapshot.Looping != 0 && snapshot.LoopEnd > snapshot.LoopStart)
+        {
+            double start = engine.SecondsAtBeat(snapshot.LoopStart), end = engine.SecondsAtBeat(snapshot.LoopEnd);
+            if (seconds >= end) seconds = start + (seconds - start) % (end - start);
+        }
+        return engine.BeatAtSeconds(seconds);
+    }
     public static double At(in NotaTransportSnapshot snapshot)
     {
         if (!snapshot.IsPlaying || snapshot.DurationSeconds <= 0 || snapshot.Bpm <= 0

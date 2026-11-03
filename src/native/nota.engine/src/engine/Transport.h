@@ -11,14 +11,41 @@
 #include <cstdint>
 
 #include "TransportInfo.h"
+#include "TempoMap.h"
 #include "nota/nota_engine.h"
 
 namespace nota {
 
 class Transport {
   public:
-    void setSampleRate(double sr) { sampleRate_ = sr; ++presentationEpoch_; }
+    void setSampleRate(double sr) {
+        if (tempoMap_ && sampleRate_ > 0) {
+            playheadSamples_ *= sr/sampleRate_; startAnchorSamples_ *= sr/sampleRate_;
+        }
+        sampleRate_ = sr; ++presentationEpoch_;
+    }
     double sampleRate() const { return sampleRate_; }
+    // Nonowning pointer: immutable Graph retention owns it for the entire render epoch.
+    void setTempoMap(const TempoMap* map) {
+        if (tempoMap_ == map) return;
+        const double beat=positionBeats(), anchor=beatAtSamples(startAnchorSamples_);
+        tempoMap_=map;
+        playheadSamples_=samplesAtBeat(beat); startAnchorSamples_=samplesAtBeat(anchor);
+        ++presentationEpoch_; publish();
+    }
+    bool variableTempo() const { return tempoMap_ && tempoMap_->variable(); }
+    double samplesAtBeat(double beat) const {
+        return tempoMap_ ? tempoMap_->secondsAtBeat(beat)*sampleRate_ : beat*sampleRate_*60/bpm_;
+    }
+    double beatAtSamples(double samples) const {
+        return tempoMap_ ? tempoMap_->beatAtSeconds(samples/sampleRate_) : samples*bpm_/(sampleRate_*60);
+    }
+    double samplesPerBeatAt(double samples) const {
+        return tempoMap_ ? tempoMap_->secondsPerBeat(beatAtSamples(samples))*sampleRate_ : sampleRate_*60/bpm_;
+    }
+    double nextTempoBoundarySamples() const {
+        return tempoMap_ ? tempoMap_->nextKnotSeconds(playheadSamples_/sampleRate_)*sampleRate_ : 1e100;
+    }
 
     // --- control (applied on the audio thread) ---
     void play() {
@@ -39,7 +66,7 @@ class Transport {
         if (bpm > 0 && bpm != bpm_) { bpm_ = bpm; ++presentationEpoch_; }
         publish();
     }
-    double bpm() const { return bpm_; }
+    double bpm() const { return tempoMap_ ? tempoMap_->bpmAtBeat(positionBeats()) : bpm_; }
     void setTimeSignature(int num, int denom) {
         if (num > 0 && denom > 0) {
             tsNum_ = num;
@@ -52,14 +79,14 @@ class Transport {
     // start anchor that Stop rewinds to and the next Play launches from.
     void seekBeats(double beat) {
         ++presentationEpoch_;
-        playheadSamples_ = beat * samplesPerBeat();
+        playheadSamples_ = samplesAtBeat(beat);
         startAnchorSamples_ = playheadSamples_;
         publish();
     }
 
     // --- queries ---
-    double samplesPerBeat() const { return sampleRate_ * 60.0 / bpm_; }
-    double positionBeats() const { return playheadSamples_ / samplesPerBeat(); }
+    double samplesPerBeat() const { return samplesPerBeatAt(playheadSamples_); }
+    double positionBeats() const { return beatAtSamples(playheadSamples_); }
     double playheadSamples() const { return playheadSamples_; }
     bool isPlaying() const { return playing_; }
     bool metronomeEnabled() const { return metronome_; }
@@ -71,13 +98,13 @@ class Transport {
     void advanceBy(int32_t frames);
     // Reset the playhead to the loop start (called at a sample-accurate wrap).
     void wrapToLoopStart() {
-        playheadSamples_ = loopStartBeat_ * samplesPerBeat();
+        playheadSamples_ = samplesAtBeat(loopStartBeat_);
         publish();
     }
 
     bool isLooping() const { return loopEnabled_; }
-    double loopStartSamples() const { return loopStartBeat_ * samplesPerBeat(); }
-    double loopEndSamples() const { return loopEndBeat_ * samplesPerBeat(); }
+    double loopStartSamples() const { return samplesAtBeat(loopStartBeat_); }
+    double loopEndSamples() const { return samplesAtBeat(loopEndBeat_); }
     int timeSigDenom() const { return tsDenom_; }
 
     // Per-block transport snapshot for hosted plugins (AudioPlayHead sync). Built
@@ -88,6 +115,7 @@ class Transport {
     // Atomic mirror for the UI (poll these; never touch the private fields).
     double uiPositionBeats() const { return uiBeats_.load(std::memory_order_relaxed); }
     bool uiIsPlaying() const { return uiPlaying_.load(std::memory_order_relaxed); }
+    double uiBpm() const { return uiBpm_.load(std::memory_order_relaxed); }
 
     // Publish once per completed block; readers may skip a frame, never delay audio.
     void publishPresentation(double startSamples, int32_t playingFrames, int32_t leadingFrames, int32_t windowFrames);
@@ -98,6 +126,7 @@ class Transport {
 
     double sampleRate_ = 44100.0;
     double bpm_ = 120.0;
+    const TempoMap* tempoMap_ = nullptr;
     int tsNum_ = 4, tsDenom_ = 4;
     bool playing_ = false;
     double playheadSamples_ = 0.0;
@@ -107,6 +136,7 @@ class Transport {
     bool metronome_ = false;
 
     std::atomic<double> uiBeats_{0.0};
+    std::atomic<double> uiBpm_{120.0};
     std::atomic<bool> uiPlaying_{false};
 
     // Atomic payloads avoid data races even when a reader overlaps the writer.
