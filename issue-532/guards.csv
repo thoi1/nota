@@ -1,0 +1,4 @@
+scenario,serial_median_ms,pool_median_ms,serial_p95_ms,pool_p95_ms,serial_late,pool_late,pool_worker_cpu_ms
+four-tracks-device-callback,5.834,1.662,5.907,1.857,100,0,484.4
+four-tracks-offline-bounce,2.928,0.768,2.959,0.923,100,0,187.5
+one-track-512-frame-headroom-check,3.006,3.196,3.612,3.571,0,0,921.9
