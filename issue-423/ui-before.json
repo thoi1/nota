@@ -1,0 +1,15 @@
+{
+  "label": "before",
+  "backend": "Wasapi",
+  "rate": 48000,
+  "buffer": 480,
+  "frames": 415,
+  "cursorUpdates": 111,
+  "arrangementUpdates": 111,
+  "cursorUpdatesPerSecond": 22.20628618375544,
+  "medianGapMs": 46.59940000000006,
+  "p95GapMs": 49.59009999999989,
+  "gridDraws": 110,
+  "rulerDraws": 110,
+  "dropouts": 0
+}

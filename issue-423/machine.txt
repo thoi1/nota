@@ -1,0 +1,8 @@
+date: 2026-11-02T07:53:30Z
+os: Microsoft Windows NT 10.0.26300.0
+cpu: AMD Ryzen 9 7900X 12-Core Processor, 24 logical processors
+runs: 3, interleaved before/after per scenario
+before: 4da86c88f6f792a603d5199f6c63fa85deead08c
+after: 6ba07c46da54beedcdbdce5d7e0b3316eefc4c3d
+Windows adaptation of scripts/bench/engine-bench.cpp: GetProcessTimes and GetProcAddress; scenario definitions/audio duration unchanged.
+Representative scenarios: idle; 1/8 audio and 8 synth offline; 8 audio/synth realtime; 32 audio realtime at 64 frames; 16 audio export.

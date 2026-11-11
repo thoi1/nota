@@ -1,0 +1,14 @@
+Issue #422: multiple MIDI controller lanes and independent saved lane heights.
+Before: official develop 535da00f62daaadd4eaa68aa7bd425567a05a0a5.
+After: feat/multiple-midi-cc-lanes; submitted commit is linked by the pull request.
+Both: real Windows Avalonia rendering, 1100x850, 100% UI scale, Studio Dark,
+identical MIDI notes and CC1/CC11/CC64 point data. The after image adds three lanes
+and increases Velocity from 72 to 122 logical pixels.
+Reproduce using specs/071-multiple-cc-lanes/validation/Capture/LaneCapture.csproj
+against the base and branch Nota.App binaries respectively.
+
+Folded CC gutter review correction: before 836f736c; after initializes AddControllerLane from _rowsArePads. CCProbe.CheckFoldedLanes, Studio Light, 1000x720, same two drum notes and CC1 curve, captured before pointer edit. Before test fails the beat-2 pointer assertion; after passes.
+
+Primary lane tab correction: before 20cbc8f3; after FitControllerLanes applies VelH minimum after available-space fitting. CCProbe.CheckPrimaryLaneTabs, Studio Light, 1000x720, same MIDI note and divider shrink. Old code hits toolbar ContentPresenter at controller-tab position; fixed code hits LaneTabs.
+
+Docked note-area correction: before a80d1654; after MIDI host minimum 300 plus combined visible-panel window minimum. CCProbe.CheckDockedNotes uses actual MainWindow and ClipEditorView with both headers, Studio Light, 1200x711 render bounds. Same clip and restored 190-pixel height: old note viewport 0; fixed 104. Extended minimum-layout checks cover clip strip, scrollbar, extra lanes, note and tab pointer selection, edge dragging, Mixer and hide/show.

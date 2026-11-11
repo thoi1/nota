@@ -1,0 +1,71 @@
+
+> nota-docs@0.0.0 check
+> node scripts/check.mjs
+
+warn   basics/undo: source not found in app repo: src/native/nota.engine/src/Engine_Automation.cpp
+warn   control/gamepads: source not found in app repo: src/native/nota.engine/src/GamepadInput.h
+warn   control/midi: source not found in app repo: src/native/nota.engine/src/MidiClip.h
+warn   control/midi: source not found in app repo: src/native/nota.engine/src/MidiInput.h
+warn   control/midi: source not found in app repo: src/native/nota.engine/src/MpeInput.h
+warn   control/midi: source not found in app repo: src/native/nota.engine/src/NoteExpression.h
+warn   devices/audio-effects/auto-filter: source not found in app repo: src/native/nota.engine/src/AutoFilter.h
+warn   devices/audio-effects/auto-shift: source not found in app repo: src/native/nota.engine/src/AutoShift.h
+warn   devices/audio-effects/beat-repeat: source not found in app repo: src/native/nota.engine/src/BeatRepeat.h
+warn   devices/audio-effects/ceiling: source not found in app repo: src/native/nota.engine/src/Ceiling.h
+warn   devices/audio-effects/chamber: source not found in app repo: src/native/nota.engine/src/Chamber.h
+warn   devices/audio-effects/chorus: source not found in app repo: src/native/nota.engine/src/Chorus.h
+warn   devices/audio-effects/compressor: source not found in app repo: src/native/nota.engine/src/Compressor.h
+warn   devices/audio-effects/crush: source not found in app repo: src/native/nota.engine/src/Crush.h
+warn   devices/audio-effects/delay: source not found in app repo: src/native/nota.engine/src/Delay.h
+warn   devices/audio-effects/dynamic-eq: source not found in app repo: src/native/nota.engine/src/DynamicEq.h
+warn   devices/audio-effects/eq-3: source not found in app repo: src/native/nota.engine/src/Eq3.h
+warn   devices/audio-effects/flanger: source not found in app repo: src/native/nota.engine/src/Flanger.h
+warn   devices/audio-effects/forge: source not found in app repo: src/native/nota.engine/src/Forge.h
+warn   devices/audio-effects/lens: source not found in app repo: src/native/nota.engine/src/Lens.h
+warn   devices/audio-effects/level: source not found in app repo: src/native/nota.engine/src/AutoGain.h
+warn   devices/audio-effects/orbit: source not found in app repo: src/native/nota.engine/src/AutoPan.h
+warn   devices/audio-effects/phaser: source not found in app repo: src/native/nota.engine/src/Phaser.h
+warn   devices/audio-effects/prism: source not found in app repo: src/native/nota.engine/src/Prism.h
+warn   devices/audio-effects/reverb: source not found in app repo: src/native/nota.engine/src/Reverb.h
+warn   devices/audio-effects/shutter: source not found in app repo: src/native/nota.engine/src/Shutter.h
+warn   devices/audio-effects/strata: source not found in app repo: src/native/nota.engine/src/Strata.h
+warn   devices/audio-effects/utility: source not found in app repo: src/native/nota.engine/src/Utility.h
+warn   devices/audio-effects/valve: source not found in app repo: src/native/nota.engine/src/Amp.h
+warn   devices/audio-effects/vintage: source not found in app repo: src/native/nota.engine/src/Vintage.h
+warn   devices/audio-effects/vocoder: source not found in app repo: src/native/nota.engine/src/Vocoder.h
+warn   devices/instruments/aurora: source not found in app repo: src/native/nota.engine/src/WavetableSynth.h
+warn   devices/instruments/bass: source not found in app repo: src/native/nota.engine/src/BassSynth.h
+warn   devices/instruments/consort: source not found in app repo: src/native/nota.engine/src/Consort.h
+warn   devices/instruments/flux: source not found in app repo: src/native/nota.engine/src/FluxSynth.h
+warn   devices/instruments/grain: source not found in app repo: src/native/nota.engine/src/GrainSynth.h
+warn   devices/instruments/keys: source not found in app repo: src/native/nota.engine/src/Keys.h
+warn   devices/instruments/monolith: source not found in app repo: src/native/nota.engine/src/Monolith.h
+warn   devices/instruments/mosaic: source not found in app repo: src/native/nota.engine/src/Mosaic.h
+warn   devices/instruments/operator: source not found in app repo: src/native/nota.engine/src/OperatorSynth.h
+warn   devices/instruments/pendulum: source not found in app repo: src/native/nota.engine/src/PendulumSynth.h
+warn   devices/instruments/pentad: source not found in app repo: src/native/nota.engine/src/Pentad.h
+warn   devices/instruments/physical: source not found in app repo: src/native/nota.engine/src/PhysicalSynth.h
+warn   devices/instruments/rhythm: source not found in app repo: src/native/nota.engine/src/RhythmMachine.h
+warn   devices/instruments/sampler: source not found in app repo: src/native/nota.engine/src/Sampler.h
+warn   devices/instruments/synth: source not found in app repo: src/native/nota.engine/src/Synth.h
+warn   devices/instruments/volt: source not found in app repo: src/native/nota.engine/src/VoltSynth.h
+warn   devices/midi-effects/arp: source not found in app repo: src/native/nota.engine/src/Arpeggiator.h
+warn   devices/midi-effects/chord: source not found in app repo: src/native/nota.engine/src/MidiChord.h
+warn   devices/midi-effects/length: source not found in app repo: src/native/nota.engine/src/MidiNoteLength.h
+warn   devices/midi-effects/random: source not found in app repo: src/native/nota.engine/src/MidiRandom.h
+warn   devices/midi-effects/scale: source not found in app repo: src/native/nota.engine/src/MidiScale.h
+warn   devices/midi-effects/velocity: source not found in app repo: src/native/nota.engine/src/MidiVelocity.h
+warn   devices/racks/drum-rack: source not found in app repo: src/native/nota.engine/src/DrumRack.h
+warn   editing/audio-clips: source not found in app repo: src/native/nota.engine/src/Warp.h
+warn   editing/audio-clips: source not found in app repo: src/native/nota.engine/src/TempoDetect.h
+warn   editing/piano-roll: source not found in app repo: src/native/nota.engine/src/MidiClip.h
+warn   export/export-audio: source not found in app repo: src/native/nota.engine/src/nota_encoder.cpp
+warn   export/export-audio: source not found in app repo: src/native/nota.engine/src/Engine_Render.cpp
+warn   library/preview-player: source not found in app repo: src/native/nota.engine/src/Audition.h
+warn   library/smart-samples: source not found in app repo: src/native/nota.engine/src/SampleAnalysis.h
+warn   views/session: source not found in app repo: src/native/nota.engine/src/SessionPlayer.h
+warn   FR page behind the English: fr/basics/tracks updated=0.58.1 but basics/tracks updated=0.59.2
+warn   FR page behind the English: fr/editing/piano-roll updated=0.59.1 but editing/piano-roll updated=0.59.2
+warn   French: 106 of 107 pages translated
+warn   coverage.yml has 1 pending change(s) waiting for their pages
+107 pages · 0 error(s) · 66 warning(s)

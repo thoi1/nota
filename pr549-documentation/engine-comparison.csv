@@ -1,0 +1,64 @@
+scenario,label,base_work,pr_work,work_change_pct,base_wall_ms,pr_wall_ms,verdict
+mix-8,"8 tracks, all playing","878.32 M","879.56 M",0.14,25.38,25.4,ok
+aurora-supersaw-2x,"Aurora Super Saw x2","696.62 M","697.10 M",0.07,24.75,26.09,ok
+silent-32,"32 tracks, no clips","621.93 M","622.14 M",0.03,21.15,21.29,ok
+audio-warp-split,"Warped audio clip split in 8, playing","5.20 M","5.20 M",0.02,0.34,0.34,ok
+audio-tails-8,"8 audio tracks with Reverb + Delay, stopped, tails over","3.20 M","3.20 M",0.01,0.23,0.23,ok
+mix-32,"32 tracks, all playing","3,500.25 M","3,500.43 M",0.01,99.42,99.3,ok
+instrument-14,"Pentad, one track","256.75 M","256.76 M",0,22.75,22.82,ok
+pentad-full-16,"Pentad, 16-voice chord","856.27 M","856.27 M",0,76,76.22,ok
+effect-05,"Nota Audio Effect Rack x8 on Synth","1.25 M","1.25 M",0,2.52,2.55,ok
+effect-15,"Nota Strata x8 on Synth","1.65 M","1.65 M",0,2.43,2.41,ok
+effect-22,"Nota Lens x8 on Synth","3.48 M","3.48 M",0,5.06,5.08,ok
+effect-09,"Nota Orbit x8 on Synth","5.40 M","5.40 M",0,5.26,5.27,ok
+effect-00,"Nota EQ-8 x8 on Synth","7.59 M","7.59 M",0,6.37,6.36,ok
+effect-07,"Nota Auto Filter x8 on Synth","7.92 M","7.92 M",0,7.2,7.2,ok
+effect-19,"Nota Shutter x8 on Synth","8.66 M","8.66 M",0,6.25,6.23,ok
+effect-12,"Nota Crush x8 on Synth","9.32 M","9.32 M",0,6.32,6.32,ok
+effect-23,"Nota Flanger x8 on Synth","11.57 M","11.57 M",0,11.53,11.53,ok
+effect-03,"Nota Delay x8 on Synth","11.64 M","11.64 M",0,10.33,10.32,ok
+effect-01,"Nota Compressor x8 on Synth","12.97 M","12.97 M",0,10.62,10.61,ok
+effect-11,"Nota Beat Repeat x8 on Synth","13.31 M","13.31 M",0,15.37,15.46,ok
+effect-04,"Nota Utility x8 on Synth","14.62 M","14.62 M",0,11.23,11.24,ok
+effect-24,"Nota Phaser x8 on Synth","20.42 M","20.42 M",0,15.01,14.99,ok
+effect-17,"Nota Forge x8 on Synth","21.41 M","21.41 M",0,14.06,14.08,ok
+effect-06,"Nota Valve x8 on Synth","22.13 M","22.13 M",0,16.86,16.85,ok
+effect-25,"Nota Chorus x8 on Synth","22.21 M","22.21 M",0,17.88,17.91,ok
+effect-16,"Nota EQ-3 x8 on Synth","22.87 M","22.87 M",0,14.54,14.47,ok
+effect-18,"Nota Level x8 on Synth","31.24 M","31.24 M",0,30.52,30.5,ok
+effect-13,"Nota Dynamic EQ-8 x8 on Synth","37.43 M","37.43 M",0,18.22,18.1,ok
+effect-08,"Nota Vintage x8 on Synth","37.65 M","37.65 M",0,77.05,77.27,ok
+effect-21,"Nota Prism x8 on Synth","42.38 M","42.38 M",0,29.79,29.55,ok
+effect-14,"Nota Ceiling x8 on Synth","20.34 M","20.34 M",0,16.84,16.84,ok
+effect-02,"Nota Reverb x8 on Synth","98.63 M","98.63 M",0,70.28,70.21,ok
+effect-26,"Nota Vocoder x8 on Synth","135.56 M","135.56 M",0,80.06,80.98,ok
+effect-10,"Nota Auto Shift x8 on Synth","310.17 M","310.17 M",0,135.22,135.25,ok
+twin-layer-6x6,"Twin Layer, 6 + 6 voices, both parts' FX","1,220.96 M","1,220.96 M",0,135.74,135.75,ok
+twin-full-12,"Twin, 12-voice chord, both filters, 16 routes, FX","1,278.98 M","1,278.97 M",0,147.5,147.25,ok
+instrument-18,"Twin, one track","288.47 M","288.46 M",0,34.09,33.74,ok
+instrument-10,"Grain, one track","183.16 M","183.15 M",0,12.4,12.41,ok
+instrument-09,"Operator, one track","157.71 M","157.70 M",-0.01,14.21,14.24,ok
+mix-1,"1 tracks, all playing","112.14 M","112.13 M",-0.01,7.21,7.21,ok
+instrument-15,"Consort, one track","135.62 M","135.61 M",-0.01,12.91,13,ok
+instrument-13,"Monolith, one track","80.33 M","80.32 M",-0.01,13.49,13.5,ok
+instrument-11,"Flux, one track","118.39 M","118.38 M",-0.01,10.15,10.17,ok
+instrument-06,"Volt, one track","83.82 M","83.81 M",-0.01,4.89,4.91,ok
+instrument-05,"Aurora, one track","126.85 M","126.84 M",-0.01,6.9,6.9,ok
+instrument-08,"Pendulum, one track","72.27 M","72.27 M",-0.01,5.89,5.89,ok
+instrument-rack,"Instrument Rack, 2 Synth chains","67.11 M","67.11 M",-0.01,3.64,3.65,ok
+instrument-12,"Rhythm Machine, one track","58.03 M","58.03 M",-0.01,10.34,10.33,ok
+instrument-16,"Keys, one track","55.75 M","55.74 M",-0.02,3.84,3.83,ok
+instrument-02,"Physical, one track","50.61 M","50.60 M",-0.02,3.63,3.62,ok
+effect-20,"Nota Chamber x8 on Synth","237.41 M","237.36 M",-0.02,178.56,178.95,ok
+instrument-07,"Bass, one track","28.13 M","28.12 M",-0.02,2.21,2.23,ok
+instrument-00,"Synth, one track","34.95 M","34.94 M",-0.03,1.94,1.96,ok
+effect-base,"Synth alone (effect baseline)","34.95 M","34.94 M",-0.03,1.95,1.94,ok
+mix-16,"16 tracks, all playing","1,752.40 M","1,751.66 M",-0.04,50.03,50.2,ok
+drum-rack,"Drum Rack, 4 Synth pads with decay","16.88 M","16.87 M",-0.08,1.04,1.05,ok
+edit-warp-split,"Split a warped 8 s clip 8x + undo (ms per edit)","0.13 M","0.13 M",-0.1,0,0,ok
+instrument-17,"Mosaic (no program), one track","5.78 M","5.77 M",-0.16,0.47,0.48,ok
+instrument-03,"Instrument kind 3, one track","4.91 M","4.91 M",-0.16,0.34,0.35,ok
+instrument-01,"Sampler (no sample), one track","4.87 M","4.86 M",-0.19,0.34,0.34,ok
+instrument-04,"Instrument kind 4, one track","4.87 M","4.86 M",-0.19,0.34,0.34,ok
+sparse-32,"32 tracks, 1 in 4 playing","1,374.56 M","1,369.46 M",-0.37,44.72,44.68,ok
+mix-4,"4 tracks, all playing","444.76 M","441.92 M",-0.64,12.9,12.97,ok
