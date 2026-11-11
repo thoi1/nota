@@ -5,7 +5,7 @@
 <rect x="64" y="70" width="12" height="12" rx="3" fill="#2a78d6"/>
 <text x="82" y="80" font-size="13" fill="#52514e">Develop f239a748</text>
 <rect x="214.0" y="70" width="12" height="12" rx="3" fill="#eb6834"/>
-<text x="232.0" y="80" font-size="13" fill="#52514e">Tempo track f76d4480</text>
+<text x="232.0" y="80" font-size="13" fill="#52514e">Tempo track fe07fa4a</text>
 <line x1="64" x2="936" y1="384.0" y2="384.0" stroke="#c3c2b7" stroke-width="1"/>
 <text x="56" y="388.0" font-size="12" fill="#898781" text-anchor="end">0</text>
 <line x1="64" x2="936" y1="288.0" y2="288.0" stroke="#e1e0d9" stroke-width="1"/>
@@ -15,14 +15,14 @@
 <line x1="64" x2="936" y1="96.0" y2="96.0" stroke="#e1e0d9" stroke-width="1"/>
 <text x="56" y="100.0" font-size="12" fill="#898781" text-anchor="end">60</text>
 <text x="14" y="240" font-size="12" fill="#898781" transform="rotate(-90 14 240)" text-anchor="middle">ms per second of audio</text>
-<path d="M241.0,384.0 V200.3 Q241.0,196.3 245.0,196.3 H277.0 Q281.0,196.3 281.0,200.3 V384.0 Z" fill="#2a78d6"/>
-<text x="261.0" y="191.3" font-size="11" fill="#52514e" text-anchor="middle">39.1</text>
-<path d="M283.0,384.0 V203.7 Q283.0,199.7 287.0,199.7 H319.0 Q323.0,199.7 323.0,203.7 V384.0 Z" fill="#eb6834"/>
-<text x="303.0" y="194.7" font-size="11" fill="#52514e" text-anchor="middle">38.4</text>
+<path d="M241.0,384.0 V181.1 Q241.0,177.1 245.0,177.1 H277.0 Q281.0,177.1 281.0,181.1 V384.0 Z" fill="#2a78d6"/>
+<text x="261.0" y="172.1" font-size="11" fill="#52514e" text-anchor="middle">43.1</text>
+<path d="M283.0,384.0 V181.6 Q283.0,177.6 287.0,177.6 H319.0 Q323.0,177.6 323.0,181.6 V384.0 Z" fill="#eb6834"/>
+<text x="303.0" y="172.6" font-size="11" fill="#52514e" text-anchor="middle">43.0</text>
 <text x="282.0" y="406" font-size="13" fill="#52514e" text-anchor="middle">32 audio tracks</text>
-<path d="M677.0,384.0 V326.6 Q677.0,322.6 681.0,322.6 H713.0 Q717.0,322.6 717.0,326.6 V384.0 Z" fill="#2a78d6"/>
-<text x="697.0" y="317.6" font-size="11" fill="#52514e" text-anchor="middle">12.8</text>
-<path d="M719.0,384.0 V326.1 Q719.0,322.1 723.0,322.1 H755.0 Q759.0,322.1 759.0,326.1 V384.0 Z" fill="#eb6834"/>
-<text x="739.0" y="317.1" font-size="11" fill="#52514e" text-anchor="middle">12.9</text>
+<path d="M677.0,384.0 V324.2 Q677.0,320.2 681.0,320.2 H713.0 Q717.0,320.2 717.0,324.2 V384.0 Z" fill="#2a78d6"/>
+<text x="697.0" y="315.2" font-size="11" fill="#52514e" text-anchor="middle">13.3</text>
+<path d="M719.0,384.0 V324.2 Q719.0,320.2 723.0,320.2 H755.0 Q759.0,320.2 759.0,324.2 V384.0 Z" fill="#eb6834"/>
+<text x="739.0" y="315.2" font-size="11" fill="#52514e" text-anchor="middle">13.3</text>
 <text x="718.0" y="406" font-size="13" fill="#52514e" text-anchor="middle">32 synth tracks</text>
 </svg>
