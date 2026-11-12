@@ -1,0 +1,6 @@
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="26.04"
+c++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+valgrind-3.26.0
+24

@@ -1,0 +1,8 @@
+scenario,base_instructions,fixed_instructions,work_change_pct,base_wall,fixed_wall,wall_unit
+edit-warp-split,142686,141335,-0.946834,0.001,0.001,ms/edit
+audio-tails-8,4135535,4141115,0.134928,0.142,0.142,ms/audio-s
+instrument-04,6365571,6375969,0.163347,0.223,0.226,ms/audio-s
+instrument-01,6369180,6379542,0.162690,0.221,0.224,ms/audio-s
+audio-warp-split,6718517,6729083,0.157267,0.233,0.227,ms/audio-s
+instrument-03,6410057,6422324,0.191371,0.227,0.228,ms/audio-s
+instrument-17,7387219,7397625,0.140865,0.279,0.281,ms/audio-s

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600">
+<rect width="1040" height="600" fill="#fcfcfb"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#202020">
+<text x="35" y="42" font-size="23" font-weight="600">CPU instruction changes after the fix</text>
+<text x="35" y="72" font-size="14" fill="#52514e">Lower is better. Same harness and machine for both builds; unchanged instruction gate.</text>
+<line x1="317.5" x2="317.5" y1="112" y2="480" stroke="#deded8"/>
+<text x="317.5" y="505" text-anchor="middle" font-size="13">-1%</text>
+<line x1="461.25" x2="461.25" y1="112" y2="480" stroke="#deded8"/>
+<text x="461.25" y="505" text-anchor="middle" font-size="13">-0.5%</text>
+<line x1="605.0" x2="605.0" y1="112" y2="480" stroke="#deded8"/>
+<text x="605.0" y="505" text-anchor="middle" font-size="13">+0%</text>
+<line x1="748.75" x2="748.75" y1="112" y2="480" stroke="#deded8"/>
+<text x="748.75" y="505" text-anchor="middle" font-size="13">+0.5%</text>
+<line x1="892.5" x2="892.5" y1="112" y2="480" stroke="#bb3939"/>
+<text x="892.5" y="505" text-anchor="middle" font-size="13">+1%</text>
+<text x="892.5" y="102" text-anchor="middle" fill="#bb3939" font-size="13">Gate +1%</text>
+<text x="240" y="151" text-anchor="end" font-size="15">edit-warp-split</text>
+<rect x="332.7851365936384" y="130" width="272.2148634063616" height="29" rx="2" fill="#2a78d6"/>
+<text x="323.7851365936384" y="151" text-anchor="end" font-size="14">-0.95%</text>
+<text x="240" y="201" text-anchor="end" font-size="15">audio-tails-8</text>
+<rect x="605.0" y="180" width="38.79183709000256" height="29" rx="2" fill="#2a78d6"/>
+<text x="652.7918370900026" y="201" text-anchor="start" font-size="14">+0.13%</text>
+<text x="240" y="251" text-anchor="end" font-size="15">instrument-04</text>
+<rect x="605.0" y="230" width="46.962401330529474" height="29" rx="2" fill="#2a78d6"/>
+<text x="660.9624013305295" y="251" text-anchor="start" font-size="14">+0.16%</text>
+<text x="240" y="301" text-anchor="end" font-size="15">instrument-01</text>
+<rect x="605.0" y="280" width="46.77328949723346" height="29" rx="2" fill="#2a78d6"/>
+<text x="660.7732894972335" y="301" text-anchor="start" font-size="14">+0.16%</text>
+<text x="240" y="351" text-anchor="end" font-size="15">audio-warp-split</text>
+<rect x="605.0" y="330" width="45.214219149848304" height="29" rx="2" fill="#2a78d6"/>
+<text x="659.2142191498483" y="351" text-anchor="start" font-size="14">+0.16%</text>
+<text x="240" y="401" text-anchor="end" font-size="15">instrument-03</text>
+<rect x="605.0" y="380" width="55.0192065374747" height="29" rx="2" fill="#2a78d6"/>
+<text x="669.0192065374747" y="401" text-anchor="start" font-size="14">+0.19%</text>
+<text x="240" y="451" text-anchor="end" font-size="15">instrument-17</text>
+<rect x="605.0" y="430" width="40.49866397625692" height="29" rx="2" fill="#2a78d6"/>
+<text x="654.4986639762569" y="451" text-anchor="start" font-size="14">+0.14%</text>
+<text x="35" y="550" font-size="14">Ubuntu 26.04.1 / GCC 15.2 / Valgrind 3.26 / WSL2 / 24 logical CPUs</text>
+<text x="35" y="577" font-size="13" fill="#52514e">Base c613167d vs PR 29749ced + fix 44bd1eb8. All 64 scenarios pass; original seven shown.</text>
+</g></svg>
