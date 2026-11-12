@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600">
+<rect width="1040" height="600" fill="#fcfcfb"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#202020">
+<text x="35" y="42" font-size="23" font-weight="600">Render time with tempo correctness fixes</text>
+<text x="35" y="72" font-size="14" fill="#52514e">Lower is better. Fastest of five interleaved rounds; unchanged wall-time gate.</text>
+<line x1="317.5" x2="317.5" y1="112" y2="480" stroke="#deded8"/>
+<text x="317.5" y="505" text-anchor="middle" font-size="13">-15%</text>
+<line x1="461.25" x2="461.25" y1="112" y2="480" stroke="#deded8"/>
+<text x="461.25" y="505" text-anchor="middle" font-size="13">-7.5%</text>
+<line x1="605.0" x2="605.0" y1="112" y2="480" stroke="#deded8"/>
+<text x="605.0" y="505" text-anchor="middle" font-size="13">+0%</text>
+<line x1="748.75" x2="748.75" y1="112" y2="480" stroke="#deded8"/>
+<text x="748.75" y="505" text-anchor="middle" font-size="13">+7.5%</text>
+<line x1="892.5" x2="892.5" y1="112" y2="480" stroke="#bb3939"/>
+<text x="892.5" y="505" text-anchor="middle" font-size="13">+15%</text>
+<text x="892.5" y="102" text-anchor="middle" fill="#bb3939" font-size="13">Gate +15%</text>
+<text x="240" y="151" text-anchor="end" font-size="15">edit-warp-split</text>
+<rect x="605.0" y="130" width="2" height="29" rx="2" fill="#2a78d6"/>
+<text x="614.0" y="151" text-anchor="start" font-size="14">+0.00%</text>
+<text x="240" y="201" text-anchor="end" font-size="15">audio-tails-8</text>
+<rect x="605.0" y="180" width="2" height="29" rx="2" fill="#2a78d6"/>
+<text x="614.0" y="201" text-anchor="start" font-size="14">+0.00%</text>
+<text x="240" y="251" text-anchor="end" font-size="15">instrument-04</text>
+<rect x="605.0" y="230" width="2" height="29" rx="2" fill="#2a78d6"/>
+<text x="614.0" y="251" text-anchor="start" font-size="14">+0.00%</text>
+<text x="240" y="301" text-anchor="end" font-size="15">instrument-01</text>
+<rect x="605.0" y="280" width="17.26726726726713" height="29" rx="2" fill="#2a78d6"/>
+<text x="631.2672672672671" y="301" text-anchor="start" font-size="14">+0.90%</text>
+<text x="240" y="351" text-anchor="end" font-size="15">audio-warp-split</text>
+<rect x="596.6302765647744" y="330" width="8.369723435225637" height="29" rx="2" fill="#2a78d6"/>
+<text x="587.6302765647744" y="351" text-anchor="end" font-size="14">-0.44%</text>
+<text x="240" y="401" text-anchor="end" font-size="15">instrument-03</text>
+<rect x="596.5565345080763" y="380" width="8.44346549192369" height="29" rx="2" fill="#2a78d6"/>
+<text x="587.5565345080763" y="401" text-anchor="end" font-size="14">-0.44%</text>
+<text x="240" y="451" text-anchor="end" font-size="15">instrument-17</text>
+<rect x="605.0" y="430" width="20.609318996415368" height="29" rx="2" fill="#2a78d6"/>
+<text x="634.6093189964154" y="451" text-anchor="start" font-size="14">+1.08%</text>
+<text x="35" y="550" font-size="14">Ubuntu 26.04.1 / GCC 15.2 / Valgrind 3.26 / WSL2 / 24 logical CPUs</text>
+<text x="35" y="577" font-size="13" fill="#52514e">Base e191a57b vs native tree c6e0bedc. Original seven regression scenarios shown.</text>
+</g></svg>

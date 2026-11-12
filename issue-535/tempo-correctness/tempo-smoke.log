@@ -1,0 +1,74 @@
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\HistoryTests.cs(319,39): warning CS8602: Dereference of a possibly null reference. [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(10067,11): warning CS8602: Dereference of a possibly null reference. [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(4484,15): warning CS0219: The variable 'spb' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(6106,31): warning CS0219: The variable 'SReturn' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(6815,15): warning CS0219: The variable 'AverageP' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(6815,53): warning CS0219: The variable 'PeakHoldP' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(6815,69): warning CS0219: The variable 'TimeDivP' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(11452,109): warning CS0219: The variable 'VOutput' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\RenderPoolTests.cs(30,36): warning CS0414: The field 'RenderPoolTests.BlockSeconds' is assigned but its value is never used [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Program.cs(14829,59): warning CA2022: Avoid inexact read with 'System.IO.FileStream.Read(byte[], int, int)' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022) [C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\tests\Nota.SmokeTest\Nota.SmokeTest.csproj]
+engine v0.37.2
+  [PASS] tempo: stepped beat/seconds conversion includes all earlier sections
+  [PASS] tempo: linear BPM integrates reciprocal tempo accurately
+  [PASS] tempo: Bezier and trailing conversions are monotonic and invertible
+  [PASS] tempo: UI preview and playback use identical compiled timing
+  [PASS] tempo: invalid map rejected without changing project
+  [PASS] tempo: invalid map rejected without changing project
+  [PASS] tempo: invalid map rejected without changing project
+  [PASS] tempo: invalid map rejected without changing project
+  [PASS] tempo: the persisted maximum matches the transport ABI maximum of 999 BPM
+  [PASS] tempo: 1000 BPM is rejected before it can create an unloadable project
+  [PASS] tempo: multi-delete preserves initial point and undoes in one step
+  [PASS] tempo: multi-delete redoes as one operation
+  [PASS] tempo: bar mapping preserves preceding curved phrase and reaches target seconds
+  [PASS] tempo: successive sections retain anchors without duplicate markers
+  [PASS] tempo: Ctrl+Alt mapping adjusts timing without inserting a point
+  [PASS] tempo: crossing an anchor is rejected
+  [PASS] tempo: playback advances through step changes using integrated time
+  [PASS] tempo: loop crossing a tempo change wraps at the correct physical sample
+  [PASS] tempo: starting between beats does not emit an extra metronome click
+  [PASS] tempo: seeking exactly onto a beat still emits its click
+  [PASS] tempo: a 6/8 count-in lasts six eighth notes before playback starts
+  [PASS] tempo: fixed clock follows BPM and sample-rate changes at 44100 Hz / 90 BPM
+  [PASS] tempo: fixed clock retains its stop anchor after conversion-factor changes
+  [PASS] tempo: fixed clock follows BPM and sample-rate changes at 96000 Hz / 137.5 BPM
+  [PASS] tempo: fixed clock retains its stop anchor after conversion-factor changes
+  [PASS] tempo: fixed clock follows BPM and sample-rate changes at 48000 Hz / 120 BPM
+  [PASS] tempo: fixed clock retains its stop anchor after conversion-factor changes
+  [PASS] tempo: fixed clock switches to mapped timing after sample-rate changes
+  [PASS] tempo: removing the map restores the updated fixed conversion factor and BPM
+  [PASS] tempo: fixed loop endpoints use the updated conversion factor
+  [PASS] tempo: MIDI note at beat 5 sounds at integrated time 3 seconds
+  [PASS] tempo: mapping leaves reference audio at its original physical time
+  [PASS] tempo: reference audio plays at natural rate without moving or stretching
+  [PASS] tempo: save/reload preserves shapes, handles and compiled timing
+  [PASS] tempo correctness: mapped loop capture preserves full and partial passes
+  [PASS] tempo correctness: forward split at beat 5 cuts the 3-second source boundary
+  [PASS] tempo correctness: mapped split undoes in one step
+  [PASS] tempo correctness: forward trim uses both mapped endpoints
+  [PASS] tempo correctness: reversed split at beat 5 cuts the 3-second source boundary
+  [PASS] tempo correctness: mapped split undoes in one step
+  [PASS] tempo correctness: reversed trim uses both mapped endpoints
+  [PASS] tempo correctness: range splits preserve the mapped source slice
+  [PASS] tempo correctness: paste tests overlap using its mapped destination duration
+  [PASS] tempo correctness: duplicate preserves a neighbor after its mapped destination end
+  [PASS] tempo correctness: freeze covers 14 mapped seconds plus its 2-second tail
+  [PASS] tempo correctness: frozen notes retain their mapped onsets and the ending
+  [PASS] tempo correctness: freeze save/reload preserves the capture map
+  [PASS] tempo correctness: malformed frozen timing leaves the track unchanged
+  [PASS] tempo correctness: malformed frozen timing leaves the track unchanged
+  [PASS] tempo correctness: frozen notes follow musical beats after the tempo map changes
+  [PASS] tempo correctness: a nonzero range bounce uses mapped start and end times
+  [PASS] tempo correctness: a late nonzero-range note survives the bounce
+  [PASS] tempo correctness: legacy constant-tempo frozen PCM remains readable
+  [PASS] an outside tempo change reaches the BPM field
+  [PASS] …rounded to the field's hundredths
+  [PASS] …without echoing the rounded value back to the engine
+  [PASS] consecutive outside changes are each followed
+  [PASS] a tick before the engine applies the field's tempo keeps it
+  [PASS] …and once applied, field and engine agree
+  [PASS] a drag ahead of the engine keeps the latest value
+  [PASS] …and lands on it
+  [PASS] outside changes are followed again after the field's own lands
+  [PASS] restoring the project BPM readout does not edit the loaded tempo map

@@ -1,0 +1,72 @@
+## Engine performance: e191a57b → 420649a6
+
+PASS: no scenario does more than 1% more work or takes more than 15% longer than the base.
+
+Work = CPU instructions per render, all engine threads (Valgrind, deterministic; effects: the effect's own share). Wall = fastest of the interleaved rounds, ms to render 1 s of audio on this machine; a scenario over the time limit is re-timed with more rounds before it fails.
+
+| Scenario | | Work base | Work PR | Change | Wall base | Wall PR | Verdict |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `sparse-32` | 32 tracks, 1 in 4 playing | 1,754.16 M | 1,758.60 M | +0.25% | 22.63 ms | 22.55 ms | ok |
+| `instrument-17` | Mosaic (no program), one track | 7.39 M | 7.40 M | +0.17% | 0.28 ms | 0.28 ms | ok |
+| `instrument-03` | Instrument kind 3, one track | 6.41 M | 6.42 M | +0.16% | 0.23 ms | 0.23 ms | ok |
+| `instrument-04` | Instrument kind 4, one track | 6.37 M | 6.38 M | +0.16% | 0.22 ms | 0.22 ms | ok |
+| `instrument-01` | Sampler (no sample), one track | 6.37 M | 6.38 M | +0.16% | 0.22 ms | 0.22 ms | ok |
+| `audio-warp-split` | Warped audio clip split in 8, playing | 6.72 M | 6.73 M | +0.16% | 0.23 ms | 0.23 ms | ok |
+| `audio-tails-8` | 8 audio tracks with Reverb + Delay, stopped, tails over | 4.14 M | 4.14 M | +0.13% | 0.14 ms | 0.14 ms | ok |
+| `drum-rack` | Drum Rack, 4 Synth pads with decay | 21.65 M | 21.66 M | +0.05% | 0.78 ms | 0.78 ms | ok |
+| `instrument-07` | Bass, one track | 34.69 M | 34.70 M | +0.03% | 2.47 ms | 2.48 ms | ok |
+| `effect-base` | Synth alone (effect baseline) | 45.60 M | 45.61 M | +0.02% | 1.77 ms | 1.78 ms | ok |
+| `instrument-00` | Synth, one track | 45.60 M | 45.61 M | +0.02% | 1.82 ms | 1.79 ms | ok |
+| `instrument-12` | Rhythm Machine, one track | 64.01 M | 64.02 M | +0.02% | 5.24 ms | 5.16 ms | ok |
+| `instrument-16` | Keys, one track | 73.23 M | 73.24 M | +0.01% | 3.67 ms | 3.62 ms | ok |
+| `instrument-02` | Physical, one track | 80.33 M | 80.34 M | +0.01% | 4.03 ms | 4.05 ms | ok |
+| `instrument-rack` | Instrument Rack, 2 Synth chains | 87.39 M | 87.40 M | +0.01% | 3.47 ms | 3.48 ms | ok |
+| `instrument-13` | Monolith, one track | 88.28 M | 88.29 M | +0.01% | 9.76 ms | 9.71 ms | ok |
+| `instrument-06` | Volt, one track | 100.53 M | 100.54 M | +0.01% | 4.32 ms | 4.39 ms | ok |
+| `instrument-08` | Pendulum, one track | 128.54 M | 128.55 M | +0.01% | 8.07 ms | 8.11 ms | ok |
+| `instrument-05` | Aurora, one track | 156.23 M | 156.24 M | +0.01% | 6.72 ms | 6.74 ms | ok |
+| `aurora-imported-2x` | Aurora Super Saw x2, imported 256-frame tables | 1,019.50 M | 1,019.58 M | +0.01% | 27.22 ms | 26.99 ms | ok |
+| `mix-1` | 1 tracks, all playing | 137.75 M | 137.76 M | +0.01% | 6.54 ms | 6.56 ms | ok |
+| `mix-8` | 8 tracks, all playing | 1,075.11 M | 1,075.18 M | +0.01% | 17.14 ms | 17.18 ms | ok |
+| `instrument-15` | Consort, one track | 189.03 M | 189.05 M | +0.01% | 14.40 ms | 14.33 ms | ok |
+| `instrument-09` | Operator, one track | 179.54 M | 179.55 M | +0.00% | 13.09 ms | 12.98 ms | ok |
+| `instrument-10` | Grain, one track | 231.08 M | 231.09 M | +0.00% | 13.04 ms | 13.02 ms | ok |
+| `instrument-11` | Flux, one track | 133.65 M | 133.66 M | +0.00% | 9.18 ms | 9.17 ms | ok |
+| `instrument-18` | Twin, one track | 377.21 M | 377.23 M | +0.00% | 31.41 ms | 31.30 ms | ok |
+| `instrument-14` | Pentad, one track | 358.57 M | 358.58 M | +0.00% | 24.33 ms | 24.34 ms | ok |
+| `mix-16` | 16 tracks, all playing | 2,146.77 M | 2,146.82 M | +0.00% | 23.98 ms | 22.62 ms | ok |
+| `mix-32` | 32 tracks, all playing | 4,290.38 M | 4,290.47 M | +0.00% | 30.31 ms | 30.70 ms | ok |
+| `pentad-full-16` | Pentad, 16-voice chord | 1,198.56 M | 1,198.57 M | +0.00% | 82.71 ms | 82.60 ms | ok |
+| `twin-layer-6x6` | Twin Layer, 6 + 6 voices, both parts' FX | 1,602.80 M | 1,602.81 M | +0.00% | 127.19 ms | 126.87 ms | ok |
+| `twin-full-12` | Twin, 12-voice chord, both filters, 16 routes, FX | 1,664.69 M | 1,664.70 M | +0.00% | 140.34 ms | 140.08 ms | ok |
+| `effect-03` | Nota Delay x8 on Synth | 17.10 M | 17.10 M | +0.00% | 11.18 ms | 10.80 ms | ok |
+| `effect-20` | Nota Chamber x8 on Synth | 310.30 M | 310.30 M | +0.00% | 155.56 ms | 157.15 ms | ok |
+| `effect-06` | Nota Valve x8 on Synth | 32.93 M | 32.93 M | +0.00% | 18.08 ms | 18.15 ms | ok |
+| `effect-10` | Nota Auto Shift x8 on Synth | 361.82 M | 361.82 M | +0.00% | 109.65 ms | 110.72 ms | ok |
+| `effect-16` | Nota EQ-3 x8 on Synth | 34.42 M | 34.42 M | +0.00% | 14.43 ms | 14.43 ms | ok |
+| `effect-18` | Nota Level x8 on Synth | 42.09 M | 42.09 M | +0.00% | 28.41 ms | 28.45 ms | ok |
+| `effect-08` | Nota Vintage x8 on Synth | 44.78 M | 44.78 M | -0.00% | 29.62 ms | 29.65 ms | ok |
+| `effect-13` | Nota Dynamic EQ-8 x8 on Synth | 43.98 M | 43.98 M | -0.00% | 17.71 ms | 17.67 ms | ok |
+| `effect-17` | Nota Forge x8 on Synth | 26.01 M | 26.01 M | -0.00% | 14.01 ms | 14.02 ms | ok |
+| `effect-24` | Nota Phaser x8 on Synth | 24.53 M | 24.53 M | -0.00% | 13.62 ms | 13.63 ms | ok |
+| `effect-26` | Nota Vocoder x8 on Synth | 181.69 M | 181.69 M | -0.00% | 79.09 ms | 78.97 ms | ok |
+| `effect-04` | Nota Utility x8 on Synth | 20.35 M | 20.35 M | -0.00% | 9.78 ms | 9.81 ms | ok |
+| `effect-11` | Nota Beat Repeat x8 on Synth | 15.90 M | 15.90 M | -0.00% | 10.23 ms | 10.24 ms | ok |
+| `effect-25` | Nota Chorus x8 on Synth | 27.27 M | 27.27 M | -0.00% | 16.70 ms | 16.13 ms | ok |
+| `effect-12` | Nota Crush x8 on Synth | 11.06 M | 11.06 M | -0.00% | 6.26 ms | 6.21 ms | ok |
+| `effect-00` | Nota EQ-8 x8 on Synth | 10.49 M | 10.49 M | -0.00% | 5.41 ms | 5.42 ms | ok |
+| `effect-19` | Nota Shutter x8 on Synth | 10.37 M | 10.37 M | -0.00% | 5.48 ms | 5.52 ms | ok |
+| `effect-01` | Nota Compressor x8 on Synth | 16.24 M | 16.24 M | -0.00% | 10.93 ms | 11.03 ms | ok |
+| `effect-21` | Nota Prism x8 on Synth | 60.44 M | 60.44 M | -0.00% | 32.89 ms | 32.75 ms | ok |
+| `effect-07` | Nota Auto Filter x8 on Synth | 10.76 M | 10.76 M | -0.00% | 6.57 ms | 6.57 ms | ok |
+| `effect-09` | Nota Orbit x8 on Synth | 8.45 M | 8.45 M | -0.00% | 5.93 ms | 5.91 ms | ok |
+| `effect-14` | Nota Ceiling x8 on Synth | 26.13 M | 26.13 M | -0.00% | 13.32 ms | 12.93 ms | ok |
+| `effect-05` | Nota Audio Effect Rack x8 on Synth | 1.64 M | 1.64 M | -0.00% | 2.13 ms | 2.12 ms | ok |
+| `effect-23` | Nota Flanger x8 on Synth | 18.61 M | 18.61 M | -0.00% | 12.28 ms | 12.27 ms | ok |
+| `effect-22` | Nota Lens x8 on Synth | 4.81 M | 4.81 M | -0.00% | 3.44 ms | 3.46 ms | ok |
+| `effect-02` | Nota Reverb x8 on Synth | 121.12 M | 121.12 M | -0.00% | 59.47 ms | 59.37 ms | ok |
+| `effect-15` | Nota Strata x8 on Synth | 1.22 M | 1.22 M | -0.00% | 2.05 ms | 2.06 ms | ok |
+| `silent-32` | 32 tracks, no clips | 827.73 M | 827.66 M | -0.01% | 10.85 ms | 9.40 ms | ok |
+| `mix-4` | 4 tracks, all playing | 539.61 M | 539.51 M | -0.02% | 16.22 ms | 16.28 ms | ok |
+| `aurora-supersaw-2x` | Aurora Super Saw x2 | 939.91 M | 939.38 M | -0.06% | 24.86 ms | 25.47 ms | ok |
+| `edit-warp-split` | Split a warped 8 s clip 8x + undo (ms per edit) | 0.14 M | 0.14 M | -0.41% | 0.00 ms | 0.00 ms | ok |

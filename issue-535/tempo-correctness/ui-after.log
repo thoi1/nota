@@ -1,0 +1,41 @@
+[PASS] BPM-only refresh reloads tempo-lane points
+[PASS] a subsequent lane gesture preserves a transport BPM edit
+[PASS] 6/8 one-bar snapping matches the mapped ruler
+[PASS] 3/8 one-bar snapping matches the mapped ruler
+[PASS] tempo lane lays out at a usable height
+[PASS] stepped transition uses the exact event X for both endpoints
+[PASS] stepped transition holds the old BPM then jumps to the new BPM
+[PASS] Ctrl hover shows time-scale cursor
+[PASS] Ctrl release clears indicator without moving pointer
+[PASS] first time-scale drag uses the legacy 60 BPM seconds axis
+[PASS] right drag selects every enclosed point
+[PASS] marquee drag leaves no context menu
+[PASS] Delete removes selected tempo points, retaining initial point
+[PASS] multi-point deletion is one undo step
+[PASS] multi-point deletion redoes
+[PASS] point drag edits BPM and commits once
+[PASS] Escape cancels point drag without history
+[PASS] bar drag previews grid without committing project data
+[PASS] Ctrl drag inserts ending tempo marker
+[PASS] mapping drag undoes in one step
+[PASS] Ctrl+Alt drag omits marker insertion
+[PASS] Escape cancels time-scale mapping
+[PASS] Bezier handle drag changes the audible ramp
+[PASS] curve-handle gesture is one undo step
+[PASS] bar mapping snaps to an existing marker
+[PASS] forward/inverse coordinates agree after zoom and scroll
+[PASS] stepped transition remains vertical after zoom and scroll
+[PASS] marquee stays accurate after zoom and scroll
+[PASS] Escape clears tempo selection
+[PASS] tempo track resizes vertically
+[PASS] tempo track collapses
+[PASS] tempo track restores expanded height
+[PASS] mapped Smooth waveform overview forward peak follows its audible beat (115/0)
+[PASS] mapped Solid waveform overview forward peak follows its audible beat (161/0)
+[PASS] mapped Smooth waveform detail forward peak follows its audible beat (187/0)
+[PASS] mapped Solid waveform detail forward peak follows its audible beat (253/0)
+[PASS] mapped Smooth waveform overview reversed peak follows its audible beat (187/0)
+[PASS] mapped Solid waveform overview reversed peak follows its audible beat (253/0)
+[PASS] mapped Smooth waveform detail reversed peak follows its audible beat (183/0)
+[PASS] mapped Solid waveform detail reversed peak follows its audible beat (253/0)
+Screenshot: C:\Users\Dexter\Desktop\NOTA DD\nota-tempo-track\out\tempo-correctness-ui.png
