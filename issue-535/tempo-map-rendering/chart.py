@@ -21,14 +21,16 @@ def timing(side):
     return out
 
 def chart(filename, title, subtitle, base, head, limit):
-    lo, hi = -limit * 1.2, limit * 1.2
+    values = [100 * (head[sid] / base[sid] - 1) for sid in ids]
+    lo, hi = min(-limit * 1.2, min(values) * 1.2), max(limit * 1.2, max(values) * 1.2)
     x = lambda v: 260 + (v - lo) / (hi - lo) * 690
     parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600">',
              '<rect width="1040" height="600" fill="#fcfcfb"/>',
              '<g font-family="Segoe UI,Arial,sans-serif" fill="#202020">',
              f'<text x="35" y="42" font-size="23" font-weight="600">{html.escape(title)}</text>',
              f'<text x="35" y="72" font-size="14" fill="#52514e">{html.escape(subtitle)}</text>']
-    for tick in [-limit, -limit/2, 0, limit/2, limit]:
+    ticks = list(range(int(lo), int(hi) + 1)) if limit == 1 and lo < -1.21 else [-limit, -limit/2, 0, limit/2, limit]
+    for tick in ticks:
         color = '#bb3939' if tick == limit else '#deded8'
         parts.append(f'<line x1="{x(tick)}" x2="{x(tick)}" y1="112" y2="480" stroke="{color}"/>')
         parts.append(f'<text x="{x(tick)}" y="505" text-anchor="middle" font-size="13">{tick:+g}%</text>')

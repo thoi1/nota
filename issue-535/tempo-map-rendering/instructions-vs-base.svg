@@ -3,38 +3,40 @@
 <g font-family="Segoe UI,Arial,sans-serif" fill="#202020">
 <text x="35" y="42" font-size="23" font-weight="600">CPU work with tempo rendering fixes</text>
 <text x="35" y="72" font-size="14" fill="#52514e">Lower is better. Same harness and machine for both builds; unchanged instruction gate.</text>
-<line x1="317.5" x2="317.5" y1="112" y2="480" stroke="#deded8"/>
-<text x="317.5" y="505" text-anchor="middle" font-size="13">-1%</text>
-<line x1="461.25" x2="461.25" y1="112" y2="480" stroke="#deded8"/>
-<text x="461.25" y="505" text-anchor="middle" font-size="13">-0.5%</text>
-<line x1="605.0" x2="605.0" y1="112" y2="480" stroke="#deded8"/>
-<text x="605.0" y="505" text-anchor="middle" font-size="13">+0%</text>
-<line x1="748.75" x2="748.75" y1="112" y2="480" stroke="#deded8"/>
-<text x="748.75" y="505" text-anchor="middle" font-size="13">+0.5%</text>
-<line x1="892.5" x2="892.5" y1="112" y2="480" stroke="#bb3939"/>
-<text x="892.5" y="505" text-anchor="middle" font-size="13">+1%</text>
-<text x="892.5" y="102" text-anchor="middle" fill="#bb3939" font-size="13">Gate +1%</text>
+<line x1="363.833507250158" x2="363.833507250158" y1="112" y2="480" stroke="#deded8"/>
+<text x="363.833507250158" y="505" text-anchor="middle" font-size="13">-4%</text>
+<line x1="476.55783277897376" x2="476.55783277897376" y1="112" y2="480" stroke="#deded8"/>
+<text x="476.55783277897376" y="505" text-anchor="middle" font-size="13">-3%</text>
+<line x1="589.2821583077896" x2="589.2821583077896" y1="112" y2="480" stroke="#deded8"/>
+<text x="589.2821583077896" y="505" text-anchor="middle" font-size="13">-2%</text>
+<line x1="702.0064838366054" x2="702.0064838366054" y1="112" y2="480" stroke="#deded8"/>
+<text x="702.0064838366054" y="505" text-anchor="middle" font-size="13">-1%</text>
+<line x1="814.7308093654211" x2="814.7308093654211" y1="112" y2="480" stroke="#deded8"/>
+<text x="814.7308093654211" y="505" text-anchor="middle" font-size="13">+0%</text>
+<line x1="927.4551348942368" x2="927.4551348942368" y1="112" y2="480" stroke="#bb3939"/>
+<text x="927.4551348942368" y="505" text-anchor="middle" font-size="13">+1%</text>
+<text x="927.4551348942368" y="102" text-anchor="middle" fill="#bb3939" font-size="13">Gate +1%</text>
 <text x="240" y="151" text-anchor="end" font-size="15">edit-warp-split</text>
-<rect x="-574.0201962795607" y="130" width="1179.0201962795607" height="29" rx="2" fill="#2a78d6"/>
-<text x="-583.0201962795607" y="151" text-anchor="end" font-size="14">-4.10%</text>
+<rect x="352.45513489423683" y="130" width="462.2756744711843" height="29" rx="2" fill="#2a78d6"/>
+<text x="343.45513489423683" y="151" text-anchor="end" font-size="14">-4.10%</text>
 <text x="240" y="201" text-anchor="end" font-size="15">audio-tails-8</text>
-<rect x="605.0" y="180" width="36.852245235500504" height="29" rx="2" fill="#2a78d6"/>
-<text x="650.8522452355005" y="201" text-anchor="start" font-size="14">+0.13%</text>
+<rect x="814.7308093654211" y="180" width="14.449198220501899" height="29" rx="2" fill="#2a78d6"/>
+<text x="838.180007585923" y="201" text-anchor="start" font-size="14">+0.13%</text>
 <text x="240" y="251" text-anchor="end" font-size="15">instrument-04</text>
-<rect x="605.0" y="230" width="45.3360611081921" height="29" rx="2" fill="#2a78d6"/>
-<text x="659.3360611081921" y="251" text-anchor="start" font-size="14">+0.16%</text>
+<rect x="814.7308093654211" y="230" width="17.775571862796937" height="29" rx="2" fill="#2a78d6"/>
+<text x="841.5063812282181" y="251" text-anchor="start" font-size="14">+0.16%</text>
 <text x="240" y="301" text-anchor="end" font-size="15">instrument-01</text>
-<rect x="605.0" y="280" width="45.459537512355155" height="29" rx="2" fill="#2a78d6"/>
-<text x="659.4595375123552" y="301" text-anchor="start" font-size="14">+0.16%</text>
+<rect x="814.7308093654211" y="280" width="17.823985060633504" height="29" rx="2" fill="#2a78d6"/>
+<text x="841.5547944260546" y="301" text-anchor="start" font-size="14">+0.16%</text>
 <text x="240" y="351" text-anchor="end" font-size="15">audio-warp-split</text>
-<rect x="605.0" y="330" width="45.16733598879159" height="29" rx="2" fill="#2a78d6"/>
-<text x="659.1673359887916" y="351" text-anchor="start" font-size="14">+0.16%</text>
+<rect x="814.7308093654211" y="330" width="17.709417340069308" height="29" rx="2" fill="#2a78d6"/>
+<text x="841.4402267054904" y="351" text-anchor="start" font-size="14">+0.16%</text>
 <text x="240" y="401" text-anchor="end" font-size="15">instrument-03</text>
-<rect x="605.0" y="380" width="46.05781154617739" height="29" rx="2" fill="#2a78d6"/>
-<text x="660.0578115461774" y="401" text-anchor="start" font-size="14">+0.16%</text>
+<rect x="814.7308093654211" y="380" width="18.058559102177924" height="29" rx="2" fill="#2a78d6"/>
+<text x="841.789368467599" y="401" text-anchor="start" font-size="14">+0.16%</text>
 <text x="240" y="451" text-anchor="end" font-size="15">instrument-17</text>
-<rect x="605.0" y="430" width="47.095004585587276" height="29" rx="2" fill="#2a78d6"/>
-<text x="661.0950045855873" y="451" text-anchor="start" font-size="14">+0.16%</text>
+<rect x="814.7308093654211" y="430" width="18.465226531084454" height="29" rx="2" fill="#2a78d6"/>
+<text x="842.1960358965056" y="451" text-anchor="start" font-size="14">+0.16%</text>
 <text x="35" y="550" font-size="14">Ubuntu 26.04.1 / GCC 15.2 / Valgrind 3.26 / WSL2 / 24 logical CPUs</text>
 <text x="35" y="577" font-size="13" fill="#52514e">Base 39c7857c vs native tree 17a8133c. Original seven regression scenarios shown.</text>
 </g></svg>
