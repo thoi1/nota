@@ -1,0 +1,241 @@
+Preparing worktree (detached HEAD 39c7857c)
+Updating files:  77% (1859/2407)Updating files:  78% (1878/2407)Updating files:  79% (1902/2407)Updating files:  80% (1926/2407)Updating files:  81% (1950/2407)Updating files:  82% (1974/2407)Updating files:  83% (1998/2407)Updating files:  84% (2022/2407)Updating files:  85% (2046/2407)Updating files:  86% (2071/2407)Updating files:  87% (2095/2407)Updating files:  88% (2119/2407)Updating files:  89% (2143/2407)Updating files:  90% (2167/2407)Updating files:  91% (2191/2407)Updating files:  92% (2215/2407)Updating files:  93% (2239/2407)Updating files:  94% (2263/2407)Updating files:  95% (2287/2407)Updating files:  96% (2311/2407)Updating files:  97% (2335/2407)Updating files:  98% (2359/2407)Updating files:  99% (2383/2407)Updating files: 100% (2407/2407)Updating files: 100% (2407/2407), done.
+HEAD is now at 39c7857c (feat) Arrangement groups as trays, the 0.59 staircase in the classic look, header meters that fit (#584) (#587)
+==> [base] engine at 39c7857c
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'nlohmann_json' version overridden by environment variable
+  CPM_nlohmann_json_SOURCE='/root/nota-perf-deps/nlohmann_json-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:11 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'dr_libs' version overridden by environment variable
+  CPM_dr_libs_SOURCE='/root/nota-perf-deps/dr_libs-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:20 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'miniaudio' version overridden by environment variable
+  CPM_miniaudio_SOURCE='/root/nota-perf-deps/miniaudio-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:26 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'signalsmith_linear' version overridden by environment variable
+  CPM_signalsmith_linear_SOURCE='/root/nota-perf-deps/signalsmith_linear-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:32 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'signalsmith_stretch' version overridden by environment variable
+  CPM_signalsmith_stretch_SOURCE='/root/nota-perf-deps/signalsmith_stretch-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:38 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'hiir' version overridden by environment variable
+  CPM_hiir_SOURCE='/root/nota-perf-deps/hiir-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:44 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'flac' version overridden by environment variable
+  CPM_flac_SOURCE='/root/nota-perf-deps/flac-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:50 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'rtmidi' version overridden by environment variable
+  CPM_rtmidi_SOURCE='/root/nota-perf-deps/rtmidi-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:63 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'lame' version overridden by environment variable
+  CPM_lame_SOURCE='/root/nota-perf-deps/lame-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:69 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-base/_cpm/CPM.cmake:774 (message):
+  CPM: 'JUCE' version overridden by environment variable
+  CPM_JUCE_SOURCE='/root/nota-perf-deps/juce-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:75 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+==> [head] engine at 7b65ef7e
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'nlohmann_json' version overridden by environment variable
+  CPM_nlohmann_json_SOURCE='/root/nota-perf-deps/nlohmann_json-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:11 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'dr_libs' version overridden by environment variable
+  CPM_dr_libs_SOURCE='/root/nota-perf-deps/dr_libs-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:20 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'miniaudio' version overridden by environment variable
+  CPM_miniaudio_SOURCE='/root/nota-perf-deps/miniaudio-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:26 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'signalsmith_linear' version overridden by environment variable
+  CPM_signalsmith_linear_SOURCE='/root/nota-perf-deps/signalsmith_linear-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:32 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'signalsmith_stretch' version overridden by environment variable
+  CPM_signalsmith_stretch_SOURCE='/root/nota-perf-deps/signalsmith_stretch-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:38 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'hiir' version overridden by environment variable
+  CPM_hiir_SOURCE='/root/nota-perf-deps/hiir-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:44 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'flac' version overridden by environment variable
+  CPM_flac_SOURCE='/root/nota-perf-deps/flac-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:50 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'rtmidi' version overridden by environment variable
+  CPM_rtmidi_SOURCE='/root/nota-perf-deps/rtmidi-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:63 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'lame' version overridden by environment variable
+  CPM_lame_SOURCE='/root/nota-perf-deps/lame-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:69 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+CMake Warning at /root/nota/build/perf/engine-head/_cpm/CPM.cmake:774 (message):
+  CPM: 'JUCE' version overridden by environment variable
+  CPM_JUCE_SOURCE='/root/nota-perf-deps/juce-src'
+Call Stack (most recent call first):
+  cmake/dependencies.cmake:75 (CPMAddPackage)
+  CMakeLists.txt:57 (include)
+
+
+==> [base] running 64 scenarios on 24 cores
+==> [head] running 64 scenarios on 24 cores
+==> timing 5 interleaved rounds
+## Engine performance: 39c7857c → 7b65ef7e
+
+PASS: no scenario does more than 1% more work or takes more than 15% longer than the base.
+
+Work = CPU instructions per render, all engine threads (Valgrind, deterministic; effects: the effect's own share). Wall = fastest of the interleaved rounds, ms to render 1 s of audio on this machine; a scenario over the time limit is re-timed with more rounds before it fails.
+
+| Scenario | | Work base | Work PR | Change | Wall base | Wall PR | Verdict |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `instrument-17` | Mosaic (no program), one track | 7.39 M | 7.40 M | +0.16% | 0.28 ms | 0.28 ms | ok |
+| `instrument-03` | Instrument kind 3, one track | 6.41 M | 6.42 M | +0.16% | 0.23 ms | 0.22 ms | ok |
+| `instrument-01` | Sampler (no sample), one track | 6.37 M | 6.38 M | +0.16% | 0.22 ms | 0.22 ms | ok |
+| `instrument-04` | Instrument kind 4, one track | 6.37 M | 6.38 M | +0.16% | 0.22 ms | 0.22 ms | ok |
+| `audio-warp-split` | Warped audio clip split in 8, playing | 6.72 M | 6.73 M | +0.16% | 0.23 ms | 0.23 ms | ok |
+| `audio-tails-8` | 8 audio tracks with Reverb + Delay, stopped, tails over | 4.14 M | 4.14 M | +0.13% | 0.14 ms | 0.14 ms | ok |
+| `drum-rack` | Drum Rack, 4 Synth pads with decay | 21.65 M | 21.66 M | +0.04% | 0.78 ms | 0.78 ms | ok |
+| `instrument-07` | Bass, one track | 34.69 M | 34.70 M | +0.03% | 2.45 ms | 2.44 ms | ok |
+| `mix-4` | 4 tracks, all playing | 539.50 M | 539.63 M | +0.02% | 16.16 ms | 16.16 ms | ok |
+| `effect-base` | Synth alone (effect baseline) | 45.60 M | 45.61 M | +0.02% | 1.78 ms | 1.78 ms | ok |
+| `instrument-00` | Synth, one track | 45.60 M | 45.61 M | +0.02% | 1.77 ms | 1.77 ms | ok |
+| `mix-8` | 8 tracks, all playing | 1,075.10 M | 1,075.34 M | +0.02% | 16.92 ms | 16.56 ms | ok |
+| `sparse-32` | 32 tracks, 1 in 4 playing | 1,752.67 M | 1,753.05 M | +0.02% | 22.92 ms | 22.51 ms | ok |
+| `instrument-12` | Rhythm Machine, one track | 64.01 M | 64.02 M | +0.02% | 5.21 ms | 5.20 ms | ok |
+| `instrument-16` | Keys, one track | 73.23 M | 73.24 M | +0.01% | 3.69 ms | 3.63 ms | ok |
+| `instrument-02` | Physical, one track | 80.33 M | 80.34 M | +0.01% | 4.06 ms | 4.04 ms | ok |
+| `instrument-rack` | Instrument Rack, 2 Synth chains | 87.39 M | 87.40 M | +0.01% | 3.44 ms | 3.39 ms | ok |
+| `instrument-13` | Monolith, one track | 88.28 M | 88.29 M | +0.01% | 9.68 ms | 9.71 ms | ok |
+| `instrument-06` | Volt, one track | 100.53 M | 100.54 M | +0.01% | 4.37 ms | 4.33 ms | ok |
+| `instrument-05` | Aurora, one track | 156.23 M | 156.24 M | +0.01% | 6.77 ms | 6.80 ms | ok |
+| `instrument-08` | Pendulum, one track | 128.54 M | 128.55 M | +0.01% | 8.12 ms | 8.08 ms | ok |
+| `mix-1` | 1 tracks, all playing | 137.75 M | 137.76 M | +0.01% | 6.48 ms | 6.52 ms | ok |
+| `instrument-15` | Consort, one track | 189.03 M | 189.04 M | +0.01% | 14.31 ms | 14.23 ms | ok |
+| `instrument-09` | Operator, one track | 179.54 M | 179.55 M | +0.00% | 12.92 ms | 13.00 ms | ok |
+| `instrument-10` | Grain, one track | 231.08 M | 231.09 M | +0.00% | 13.01 ms | 13.02 ms | ok |
+| `instrument-11` | Flux, one track | 133.65 M | 133.66 M | +0.00% | 9.17 ms | 9.18 ms | ok |
+| `instrument-18` | Twin, one track | 377.21 M | 377.22 M | +0.00% | 31.47 ms | 31.39 ms | ok |
+| `instrument-14` | Pentad, one track | 358.57 M | 358.58 M | +0.00% | 24.24 ms | 24.41 ms | ok |
+| `mix-16` | 16 tracks, all playing | 2,146.80 M | 2,146.85 M | +0.00% | 22.47 ms | 23.10 ms | ok |
+| `effect-20` | Nota Chamber x8 on Synth | 310.30 M | 310.31 M | +0.00% | 158.76 ms | 157.27 ms | ok |
+| `pentad-full-16` | Pentad, 16-voice chord | 1,198.56 M | 1,198.57 M | +0.00% | 82.83 ms | 83.22 ms | ok |
+| `twin-full-12` | Twin, 12-voice chord, both filters, 16 routes, FX | 1,664.69 M | 1,664.70 M | +0.00% | 140.21 ms | 140.39 ms | ok |
+| `twin-layer-6x6` | Twin Layer, 6 + 6 voices, both parts' FX | 1,602.80 M | 1,602.81 M | +0.00% | 126.75 ms | 126.80 ms | ok |
+| `mix-32` | 32 tracks, all playing | 4,290.47 M | 4,290.48 M | +0.00% | 30.67 ms | 31.21 ms | ok |
+| `effect-02` | Nota Reverb x8 on Synth | 121.12 M | 121.12 M | +0.00% | 59.62 ms | 59.57 ms | ok |
+| `effect-05` | Nota Audio Effect Rack x8 on Synth | 1.64 M | 1.64 M | +0.00% | 2.12 ms | 2.13 ms | ok |
+| `effect-22` | Nota Lens x8 on Synth | 4.81 M | 4.81 M | +0.00% | 3.39 ms | 3.42 ms | ok |
+| `effect-03` | Nota Delay x8 on Synth | 17.10 M | 17.10 M | +0.00% | 10.84 ms | 10.75 ms | ok |
+| `effect-19` | Nota Shutter x8 on Synth | 10.37 M | 10.37 M | +0.00% | 5.51 ms | 5.42 ms | ok |
+| `effect-09` | Nota Orbit x8 on Synth | 8.45 M | 8.45 M | +0.00% | 5.96 ms | 5.95 ms | ok |
+| `effect-07` | Nota Auto Filter x8 on Synth | 10.76 M | 10.76 M | +0.00% | 6.59 ms | 6.62 ms | ok |
+| `effect-23` | Nota Flanger x8 on Synth | 18.61 M | 18.61 M | +0.00% | 12.26 ms | 12.28 ms | ok |
+| `effect-01` | Nota Compressor x8 on Synth | 16.24 M | 16.24 M | +0.00% | 11.03 ms | 10.96 ms | ok |
+| `effect-00` | Nota EQ-8 x8 on Synth | 10.49 M | 10.49 M | +0.00% | 5.38 ms | 5.56 ms | ok |
+| `effect-11` | Nota Beat Repeat x8 on Synth | 15.90 M | 15.90 M | +0.00% | 10.18 ms | 10.29 ms | ok |
+| `effect-12` | Nota Crush x8 on Synth | 11.06 M | 11.06 M | +0.00% | 6.21 ms | 6.27 ms | ok |
+| `effect-24` | Nota Phaser x8 on Synth | 24.53 M | 24.53 M | +0.00% | 13.65 ms | 13.68 ms | ok |
+| `effect-04` | Nota Utility x8 on Synth | 20.35 M | 20.35 M | +0.00% | 9.78 ms | 9.79 ms | ok |
+| `effect-18` | Nota Level x8 on Synth | 42.09 M | 42.09 M | +0.00% | 28.43 ms | 28.44 ms | ok |
+| `effect-17` | Nota Forge x8 on Synth | 26.01 M | 26.01 M | +0.00% | 14.01 ms | 14.09 ms | ok |
+| `effect-06` | Nota Valve x8 on Synth | 32.93 M | 32.93 M | +0.00% | 18.21 ms | 18.09 ms | ok |
+| `effect-16` | Nota EQ-3 x8 on Synth | 34.42 M | 34.42 M | +0.00% | 14.49 ms | 14.46 ms | ok |
+| `effect-13` | Nota Dynamic EQ-8 x8 on Synth | 43.98 M | 43.98 M | +0.00% | 17.65 ms | 17.73 ms | ok |
+| `effect-08` | Nota Vintage x8 on Synth | 44.78 M | 44.78 M | +0.00% | 29.62 ms | 29.59 ms | ok |
+| `effect-26` | Nota Vocoder x8 on Synth | 181.69 M | 181.69 M | +0.00% | 79.09 ms | 78.91 ms | ok |
+| `effect-10` | Nota Auto Shift x8 on Synth | 361.82 M | 361.82 M | +0.00% | 109.62 ms | 109.53 ms | ok |
+| `effect-25` | Nota Chorus x8 on Synth | 27.27 M | 27.27 M | -0.00% | 16.70 ms | 16.16 ms | ok |
+| `effect-21` | Nota Prism x8 on Synth | 60.44 M | 60.44 M | -0.00% | 32.93 ms | 32.84 ms | ok |
+| `effect-14` | Nota Ceiling x8 on Synth | 26.13 M | 26.13 M | -0.00% | 13.01 ms | 13.32 ms | ok |
+| `effect-15` | Nota Strata x8 on Synth | 1.22 M | 1.22 M | -0.00% | 2.05 ms | 2.06 ms | ok |
+| `silent-32` | 32 tracks, no clips | 827.72 M | 827.61 M | -0.01% | 13.58 ms | 12.94 ms | ok |
+| `aurora-imported-2x` | Aurora Super Saw x2, imported 256-frame tables | 1,020.70 M | 1,020.54 M | -0.01% | 26.19 ms | 26.44 ms | ok |
+| `aurora-supersaw-2x` | Aurora Super Saw x2 | 939.66 M | 939.48 M | -0.02% | 25.31 ms | 25.39 ms | ok |
+| `edit-warp-split` | Split a warped 8 s clip 8x + undo (ms per edit) | 0.14 M | 0.14 M | -4.10% | 0.00 ms | 0.00 ms | ok |
+

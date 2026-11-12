@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600">
+<rect width="1040" height="600" fill="#fcfcfb"/><g font-family="Segoe UI,Arial,sans-serif" fill="#202020">
+<text x="35" y="45" font-size="25" font-weight="600">Warped split and undo: CPU work</text>
+<text x="35" y="78" font-size="15">Same Linux machine, compiler and harness. Lower is better; develop = 0%.</text>
+<line x1="310.0" x2="310.0" y1="120" y2="400" stroke="#deded8"/>
+<text x="310.0" y="425" text-anchor="middle" font-size="14">-5%</text>
+<line x1="405.38461538461536" x2="405.38461538461536" y1="120" y2="400" stroke="#deded8"/>
+<text x="405.38461538461536" y="425" text-anchor="middle" font-size="14">-4%</text>
+<line x1="500.7692307692308" x2="500.7692307692308" y1="120" y2="400" stroke="#deded8"/>
+<text x="500.7692307692308" y="425" text-anchor="middle" font-size="14">-3%</text>
+<line x1="596.1538461538462" x2="596.1538461538462" y1="120" y2="400" stroke="#deded8"/>
+<text x="596.1538461538462" y="425" text-anchor="middle" font-size="14">-2%</text>
+<line x1="691.5384615384615" x2="691.5384615384615" y1="120" y2="400" stroke="#deded8"/>
+<text x="691.5384615384615" y="425" text-anchor="middle" font-size="14">-1%</text>
+<line x1="786.9230769230769" x2="786.9230769230769" y1="120" y2="400" stroke="#deded8"/>
+<text x="786.9230769230769" y="425" text-anchor="middle" font-size="14">+0%</text>
+<line x1="882.3076923076924" x2="882.3076923076924" y1="120" y2="400" stroke="#bf3030"/>
+<text x="882.3076923076924" y="425" text-anchor="middle" font-size="14">+1%</text>
+<text x="882.3076923076924" y="108" text-anchor="middle" fill="#bf3030" font-size="14">Gate +1%</text>
+<text x="290" y="172" text-anchor="end" font-size="16">Develop 39c7857c</text>
+<rect x="786.9230769230769" y="150" width="2" height="33" fill="#2a78d6"/>
+<text x="776.9230769230769" y="172" text-anchor="end" font-size="15">+0.00%</text>
+<text x="35" y="172" font-size="15">144,284</text>
+<text x="290" y="252" text-anchor="end" font-size="16">Previous PR 7b65ef7e</text>
+<rect x="569.2924637946955" y="230" width="217.63061312838136" height="33" fill="#2a78d6"/>
+<text x="559.2924637946955" y="252" text-anchor="end" font-size="15">-2.28%</text>
+<text x="35" y="252" font-size="15">140,992</text>
+<text x="290" y="332" text-anchor="end" font-size="16">Fixed source 17a8133c</text>
+<rect x="395.7565101306608" y="310" width="391.1665667924161" height="33" fill="#2a78d6"/>
+<text x="385.7565101306608" y="332" text-anchor="end" font-size="15">-4.10%</text>
+<text x="35" y="332" font-size="15">138,367</text>
+<text x="35" y="480" font-size="14">Previous PR passes locally; its hosted run failed at +2.15%. Hosted confirmation is separate.</text>
+<text x="35" y="515" font-size="14">Ubuntu 26.04.1 / WSL2 / GCC 15.2 / Valgrind 3.26 / Ryzen 9 7900X</text>
+<text x="35" y="550" font-size="14">All 64 fixed-source work and timing scenarios pass locally with unchanged limits.</text>
+</g></svg>

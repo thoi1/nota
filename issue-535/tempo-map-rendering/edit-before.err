@@ -1,0 +1,14 @@
+==2489== Callgrind, a call-graph generating cache profiler
+==2489== Copyright (C) 2002-2017, and GNU GPL'd, by Josef Weidendorfer et al.
+==2489== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+==2489== Command: build/perf/tools-before/nota_perf run edit-warp-split 1
+==2489== 
+==2489== For interactive control, run 'callgrind_control -h'.
+==2489== brk segment overflow in thread #1: can't grow to 0x4c06000
+==2489== (see section Limitations in user manual)
+==2489== NOTE: further instances of this message will not be shown
+==2489== 
+==2489== Events    : Ir
+==2489== Collected : 140992
+==2489== 
+==2489== I   refs:      140,992
