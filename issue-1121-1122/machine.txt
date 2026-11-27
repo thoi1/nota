@@ -1,0 +1,6 @@
+Windows x64 Release, 3 interleaved runs per build and scenario
+CPU: AMD Ryzen 9 7900X, 24 logical processors
+Before: clean develop 43df994
+After: draft PR #1125 42207ae
+CPU time: Windows GetProcessTimes. Engine harness: scripts/bench/engine-bench.cpp, adapted locally for Windows.
+The screenshot build ran during part of the benchmark. Treat these measurements as indicative.
