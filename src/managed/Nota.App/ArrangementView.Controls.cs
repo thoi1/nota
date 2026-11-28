@@ -202,7 +202,8 @@ public sealed partial class ArrangementView
         // Ticks at whole time steps wide enough for their label, read m:ss[.f] like the transport.
         private void RenderTime(DrawingContext ctx, double w, double h, double bpm)
         {
-            double pxPerSec = _o._pixelsPerBeat * (_o.TempoAxis ? 2 : bpm / 60.0);
+            double pxPerSec = _o._mappingHandle != 0 ? _o._mappingScale
+                : _o._pixelsPerBeat * (_o.TempoAxis ? 2 : bpm / 60.0);
             if (_charW <= 0 || _charWKey != (NotaTextSize.Step, NotaFonts.FaceStamp))   // re-measure when Text size or the face changes
             {
                 _charWKey = (NotaTextSize.Step, NotaFonts.FaceStamp);
@@ -425,10 +426,16 @@ public sealed partial class ArrangementView
 
         protected override void OnPointerExited(PointerEventArgs e) { _auto.ClearHover(); SetSeamHover(false); base.OnPointerExited(e); }
 
-        // Like the track lanes, a lost capture never cancels an edit: on macOS it fires before
-        // the button-up that commits it. Esc and a lost window focus cancel through CancelGesture.
+        // Ordinary automation keeps its existing capture behavior. On macOS capture
+        // loss can precede button-up, so let release finish this mapping first.
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
+            ulong handle = _o._mappingHandle;
+            if (handle != 0)
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (_o._mappingHandle == handle) _auto.CancelTimeMapping();
+                });
             _o.EndFooterResize();
             base.OnPointerCaptureLost(e);
         }
@@ -469,6 +476,7 @@ public sealed partial class ArrangementView
             {
                 _auto.DrawAutomation(ctx, w);
                 if (MasterShowsTempo) DrawTempoScale(ctx, w);
+                _o.DrawTimeMappingGuide(ctx, w, h, label: true);
             }
             else
             {

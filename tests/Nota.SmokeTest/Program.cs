@@ -47,6 +47,7 @@ if (args.Contains("--tempo"))
     foreach (var (ok, label) in TempoMapCopyTakeTests.Run()) Check(ok, label);
     foreach (var (ok, label) in TempoBlockAutomationTests.Run()) Check(ok, label);
     foreach (var (ok, label) in TempoFollowTests.Run()) Check(ok, label);
+    foreach (var (ok, label) in TempoMappingTests.Run()) Check(ok, label);
     return failures == 0 ? 0 : 1;
 }
 
@@ -16378,6 +16379,7 @@ Console.WriteLine("-- group membership --");
 foreach (var (ok, label) in GroupMembershipTests.Run()) Check(ok, label);
 Console.WriteLine("-- tempo follow --");
 foreach (var (ok, label) in TempoFollowTests.Run()) Check(ok, label);
+foreach (var (ok, label) in TempoMappingTests.Run()) Check(ok, label);
 Console.WriteLine("-- play past the loop (#981) --");
 foreach (var (ok, label) in PlayPastLoopTests.Run()) Check(ok, label);
 Console.WriteLine("-- non-ASCII sample paths (#974) --");

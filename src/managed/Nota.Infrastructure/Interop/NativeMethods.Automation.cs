@@ -80,6 +80,20 @@ internal static partial class NativeMethods
     internal static partial NotaResult AutomationSetPointsLive(IntPtr engine, int trackId, int laneIndex,
         [In] AutomationPoint[] points, int count);
 
+    [LibraryImport(Lib, EntryPoint = "nota_tempo_mapping_begin")]
+    internal static partial ulong TempoMappingBegin(IntPtr engine, double beat);
+
+    [LibraryImport(Lib, EntryPoint = "nota_tempo_mapping_preview")]
+    internal static partial NotaResult TempoMappingPreviewAt(IntPtr engine, ulong handle,
+        double destinationSeconds, out TempoMappingPreview preview);
+
+    [LibraryImport(Lib, EntryPoint = "nota_tempo_mapping_finish")]
+    internal static partial NotaResult TempoMappingFinish(IntPtr engine, ulong handle, int commit);
+    [LibraryImport(Lib, EntryPoint = "nota_tempo_mapping_convert")]
+    internal static partial double TempoMappingConvert(IntPtr engine, ulong handle, double value, int toBeat);
+    [LibraryImport(Lib, EntryPoint = "nota_tempo_mapping_points")]
+    internal static partial int TempoMappingPoints(IntPtr engine, ulong handle, [Out] AutomationPoint[]? points, int cap);
+
     [LibraryImport(Lib, EntryPoint = "nota_track_remove_automation_lane")]
     internal static partial NotaResult RemoveAutomationLane(IntPtr engine, int trackId, int laneIndex);
 

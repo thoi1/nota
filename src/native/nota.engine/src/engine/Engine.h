@@ -308,6 +308,11 @@ class Engine {
     int32_t getAutomationPoints(int32_t trackId, int32_t laneIndex, NotaAutomationPoint* out, int32_t cap) const;
     bool setAutomationPoints(int32_t trackId, int32_t laneIndex, const NotaAutomationPoint* pts, int32_t count);
     bool setAutomationPointsLive(int32_t trackId, int32_t laneIndex, const NotaAutomationPoint* pts, int32_t count);
+    uint64_t beginTempoMapping(double beat);
+    bool previewTempoMapping(uint64_t handle, double seconds, NotaTempoMappingPreview& out);
+    bool finishTempoMapping(uint64_t handle, bool commit);
+    double convertTempoMapping(uint64_t handle, double value, bool toBeat) const;
+    int32_t tempoMappingPoints(uint64_t handle, NotaAutomationPoint* points, int32_t cap) const;
     bool setAutomationPointsImpl(
         int32_t trackId, int32_t laneIndex, const NotaAutomationPoint* pts, int32_t count, bool undoCheckpoint);
     bool removeAutomationLane(int32_t trackId, int32_t laneIndex);
@@ -827,6 +832,12 @@ class Engine {
     // --- audio persistence (M7-6b) ---
     // Full geometry of an audio clip (false if the clip isn't audio).
     bool audioClipInfo(int32_t trackId, int32_t clipIndex, NotaAudioClipInfo* out) const;
+    int32_t getRetainedWarpPeaks(int32_t trackId, int32_t clipIndex, double from, double to,
+        float* peaks, int32_t count, float* rms) const;
+    int32_t getRetainedAudioTiming(int32_t trackId, int32_t clipIndex, NotaRetainedAudioTiming& out,
+        NotaAutomationPoint* points, int32_t cap) const;
+    bool restoreRetainedAudioTiming(int32_t trackId, int32_t clipIndex, const NotaRetainedAudioTiming& timing,
+        const NotaAutomationPoint* points, int32_t count);
     bool setClipGain(int32_t trackId, int32_t clipIndex, float gain);           // audio clip runtime gain
     bool clipAdsr(int32_t trackId, int32_t clipIndex, NotaClipAdsr* out) const; // audio clip ADSR
     bool setClipAdsr(int32_t trackId, int32_t clipIndex, const NotaClipAdsr& adsr);
@@ -1622,6 +1633,7 @@ class Engine {
     // `g.tempoMap` when the lane differs from what the map was compiled from, and keeps the
     // unwarped clips and takes of tracks this edit did not touch at their physical time.
     void deriveTempoMap(Graph& g) const;
+    void retainAudioTimingForMapping(Graph& g, const TempoMap& destination) const;
     // The master Tempo lane, or nullptr.
     static const TrackLane* masterTempoLane(const Graph& g);
     bool tempoAutomated() const;
@@ -1922,6 +1934,18 @@ class Engine {
     Transport transport_;
 
     std::shared_ptr<Graph> authoring_;
+    struct TempoMappingEdit {
+        std::shared_ptr<Graph> baseline;
+        std::shared_ptr<const TempoMap> original;
+        std::shared_ptr<const TempoMap> candidate;
+        double beat = 0;
+        double bpm = 0;
+        double beatsPerBar = 0;
+    };
+    TempoMappingEdit tempoMappingEdit_;
+    uint64_t tempoMappingHandle_ = 0;
+    bool tempoMappingFinished_ = false;
+    bool tempoMappingCurrent() const;
     // The graph the audio thread renders. A replaced one is freed once two renders have
     // finished after it, on the message thread (deleted tracks' plug-ins with it).
     SnapshotHistory<Graph> graphHist_;

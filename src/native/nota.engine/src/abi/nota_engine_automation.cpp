@@ -8,6 +8,7 @@
 #include "nota_engine_internal.h"
 
 #include <string>
+#include <limits>
 
 extern "C" {
 
@@ -63,6 +64,24 @@ NotaResult nota_track_automation_set_points_live(
     NotaEngine* e, int32_t track_id, int32_t lane_index, const NotaAutomationPoint* pts, int32_t count) {
     if (!e) return NOTA_ERR_INVALID_ARG;
     return ENG(e)->setAutomationPointsLive(track_id, lane_index, pts, count) ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+}
+uint64_t nota_tempo_mapping_begin(NotaEngine* e, double beat) {
+    return e ? ENG(e)->beginTempoMapping(beat) : 0;
+}
+NotaResult nota_tempo_mapping_preview(
+    NotaEngine* e, uint64_t handle, double destination_seconds, NotaTempoMappingPreview* out) {
+    return e && out && ENG(e)->previewTempoMapping(handle, destination_seconds, *out)
+        ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+}
+NotaResult nota_tempo_mapping_finish(NotaEngine* e, uint64_t handle, int32_t commit) {
+    return e && ENG(e)->finishTempoMapping(handle, commit != 0) ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+}
+double nota_tempo_mapping_convert(const NotaEngine* e, uint64_t handle, double value, int32_t to_beat) {
+    return e ? CENG(e)->convertTempoMapping(handle, value, to_beat != 0)
+        : std::numeric_limits<double>::quiet_NaN();
+}
+int32_t nota_tempo_mapping_points(const NotaEngine* e, uint64_t handle, NotaAutomationPoint* points, int32_t cap) {
+    return e ? CENG(e)->tempoMappingPoints(handle, points, cap) : 0;
 }
 NotaResult nota_track_remove_automation_lane(NotaEngine* e, int32_t track_id, int32_t lane_index) {
     if (!e) return NOTA_ERR_INVALID_ARG;

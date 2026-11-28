@@ -9,6 +9,17 @@ namespace Nota.Infrastructure;
 /// <remarks>Part of <see cref="NotaEngine"/>'s P/Invoke surface; see nota_engine.h.</remarks>
 internal static partial class NativeMethods
 {
+    [LibraryImport(Lib, EntryPoint = "nota_clip_get_retained_audio_timing")]
+    internal static partial int GetRetainedAudioTiming(IntPtr engine, int trackId, int clipIndex,
+        out RetainedAudioTiming timing, [Out] AutomationPoint[]? points, int cap);
+
+    [LibraryImport(Lib, EntryPoint = "nota_clip_restore_retained_audio_timing")]
+    internal static partial NotaResult RestoreRetainedAudioTiming(IntPtr engine, int trackId, int clipIndex,
+        in RetainedAudioTiming timing, [In] AutomationPoint[] points, int count);
+
+    [LibraryImport(Lib, EntryPoint = "nota_clip_retained_warp_peaks")]
+    internal static partial int RetainedWarpPeaks(IntPtr engine, int trackId, int clipIndex,
+        double from, double to, [Out] float[] peaks, int count, [Out] float[] rms);
     [LibraryImport(Lib, EntryPoint = "nota_engine_add_audio_track")]
     internal static partial int AddAudioTrack(IntPtr engine);
 

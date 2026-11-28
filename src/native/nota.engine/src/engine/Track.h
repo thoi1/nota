@@ -102,6 +102,46 @@ struct AudioClip {
     };
     std::shared_ptr<const TempoWarp> tempoWarp;
     const WarpCache* tempoWarpCache() const { return tempoWarp ? tempoWarp->cache.get() : nullptr; }
+    // Time mapping keeps the clip's prior playback timebase while changing its
+    // position on the musical ruler. A null map represents the original flat tempo.
+    struct RetainedTiming {
+        std::shared_ptr<const class TempoMap> map;
+        double originalStartBeat;
+        double flatBpm;
+        double startSeconds;
+        double endSeconds;
+        const SampleBuffer* sample;
+        double sourceOffsetFrames;
+        int64_t lengthFrames;
+        float pitchSemitones;
+        bool warpEnabled;
+        double warpPlayStart, warpPlayEnd, warpBeats;
+        std::vector<WarpMarker> markers;
+    };
+    std::shared_ptr<const RetainedTiming> retainedTiming;
+    double retainedStartBeat = 0.0;
+    std::shared_ptr<const RetainedTiming> captureTiming(std::shared_ptr<const class TempoMap> map,
+        double originalStartBeat, double flatBpm, double startSeconds, double endSeconds) const {
+        return std::make_shared<const RetainedTiming>(RetainedTiming{std::move(map), originalStartBeat,
+            flatBpm, startSeconds, endSeconds, sample.get(), sourceOffsetFrames, lengthFrames, pitchSemitones,
+            warpEnabled, warpPlayStart, warpPlayEnd, warpBeats, warpMarkers});
+    }
+    bool retainedGeometryChanged() const {
+        const auto* t = retainedTiming.get();
+        return t && (retainedStartBeat != startBeat || t->sample != sample.get() ||
+            t->sourceOffsetFrames != sourceOffsetFrames || t->lengthFrames != lengthFrames ||
+            t->pitchSemitones != pitchSemitones || t->warpEnabled != warpEnabled ||
+            t->warpPlayStart != warpPlayStart || t->warpPlayEnd != warpPlayEnd ||
+            t->warpBeats != warpBeats || t->markers != warpMarkers);
+    }
+    const std::shared_ptr<const class TempoMap>& warpTimingMap(
+        const std::shared_ptr<const class TempoMap>& projectMap) const {
+        return retainedTiming ? retainedTiming->map : projectMap;
+    }
+    double warpTimingStart() const { return retainedTiming ? retainedTiming->originalStartBeat : startBeat; }
+    double warpTimingSamplesPerBeat(double projectSpb, double sampleRate) const {
+        return retainedTiming ? sampleRate * 60.0 / retainedTiming->flatBpm : projectSpb;
+    }
     // Clip volume envelope (M9 follow-up): breakpoints in clip-local beats, value
     // 0..1, multiplying the per-sample output. Empty = no envelope (fast path).
     AutomationLane volumeEnvelope;

@@ -89,6 +89,63 @@ bool Engine::audioClipInfo(int32_t trackId, int32_t clipIndex, NotaAudioClipInfo
     return true;
 }
 
+int32_t Engine::getRetainedAudioTiming(int32_t trackId, int32_t clipIndex, NotaRetainedAudioTiming& out,
+    NotaAutomationPoint* points, int32_t cap) const {
+    const auto track = findTrackAuthoring(trackId);
+    const auto* clip = track && clipIndex >= 0 ? audioClipRef(*track, clipIndex) : nullptr;
+    if (!clip || !clip->retainedTiming || cap < 0) return -1;
+    const auto& timing = *clip->retainedTiming;
+    out = {timing.originalStartBeat, timing.flatBpm, timing.startSeconds, timing.endSeconds};
+    if (!timing.map) return 0;
+    int32_t count = 0;
+    auto append = [&](double beat, double bpm, float curve) {
+        if (points && count < cap) points[count] = {beat, static_cast<float>(bpm), curve};
+        ++count;
+    };
+    for (const auto& point : timing.map->points) {
+        if (point.incomingBpm != point.bpm) append(point.beat, point.incomingBpm, 0);
+        append(point.beat, point.bpm, point.curve);
+    }
+    return points ? std::min(count, cap) : count;
+}
+
+bool Engine::restoreRetainedAudioTiming(int32_t trackId, int32_t clipIndex, const NotaRetainedAudioTiming& timing,
+    const NotaAutomationPoint* points, int32_t count) {
+    const auto track = findTrackAuthoring(trackId);
+    const auto* clip = track && clipIndex >= 0 ? audioClipRef(*track, clipIndex) : nullptr;
+    if (!clip || !std::isfinite(timing.original_start_beat) || timing.original_start_beat < 0 ||
+        timing.original_start_beat > 1e8 || !(timing.flat_bpm >= 1 && timing.flat_bpm <= 999) ||
+        !std::isfinite(timing.start_seconds) || timing.start_seconds < 0 ||
+        !std::isfinite(timing.end_seconds) || timing.end_seconds <= timing.start_seconds ||
+        count < 0 || count > 2 * static_cast<int32_t>(TempoMap::kMaxPoints) || (count > 0 && !points))
+        return false;
+    std::shared_ptr<const TempoMap> map;
+    if (count > 0) {
+        std::vector<AutomationPoint> lane;
+        lane.reserve(static_cast<size_t>(count));
+        for (int32_t i = 0; i < count; ++i) {
+            const auto& p = points[i];
+            if (!std::isfinite(p.beat) || p.beat < 0 || (i > 0 && p.beat < points[i - 1].beat) ||
+                !(p.value >= TempoMap::kMinBpm && p.value <= TempoMap::kMaxBpm) ||
+                !(p.curve >= -1 && p.curve <= 1)) return false;
+            lane.push_back({p.beat, p.value, p.curve});
+        }
+        map = TempoMap::fromLane(lane);
+        if (!map) return false;
+    }
+    const double startBeat = secondsToBeat(timing.start_seconds);
+    const double endBeat = secondsToBeat(timing.end_seconds);
+    if (!std::isfinite(startBeat) || !std::isfinite(endBeat) || endBeat <= startBeat || endBeat > 1e8)
+        return false;
+    auto next = cloneTrack(*track);
+    auto& restored = *audioClipWrite(*next, clipIndex);
+    restored.retainedStartBeat = restored.startBeat = startBeat;
+    restored.retainedTiming = restored.captureTiming(std::move(map), timing.original_start_beat,
+        timing.flat_bpm, timing.start_seconds, timing.end_seconds);
+    republishWithTrackRaw(trackId, std::move(next));
+    return true;
+}
+
 bool Engine::setClipGain(int32_t trackId, int32_t clipIndex, float gain) {
     auto old = findTrackAuthoring(trackId);
     if (!old || old->type() != TrackType::Audio) return false;
@@ -179,13 +236,14 @@ bool tempoWarpPlan(const AudioClip& c, const std::shared_ptr<const TempoMap>& ma
     WarpInputs& renderInputs, int64_t& frames) {
     if (!map || !c.warpEnabled || !c.sample || c.warpMarkers.size() < 2 || devSR <= 0) return false;
     const double from = c.warpPlayStart, to = c.warpPlayEndEff();
-    const double origin = map->secondsAt(c.startBeat);
+    const double start = c.warpTimingStart();
+    const double origin = map->secondsAt(start);
     const double length = to - from;
     std::vector<double> beats{0, length};
     for (const auto& p : c.warpMarkers)
         if (p.beat > from && p.beat < to) beats.push_back(c.reversed ? to - p.beat : p.beat - from);
     for (const auto& n : map->nodes) {
-        const double b = n.beat - c.startBeat;
+        const double b = n.beat - start;
         if (b > 0 && b < length) beats.push_back(b);
     }
     std::sort(beats.begin(), beats.end());
@@ -203,7 +261,7 @@ bool tempoWarpPlan(const AudioClip& c, const std::shared_ptr<const TempoMap>& ma
         // The virtual source advances forwards while its reader walks PCM backwards.
         // Reverse musical positions before stretching, rather than mirroring elapsed time.
         renderInputs.markers.push_back({c.reversed ? c.sample->frames - src : src,
-            map->secondsAt(c.startBeat + local) - origin});
+            map->secondsAt(start + local) - origin});
     }
     renderInputs.warpBeats = renderInputs.markers.back().beat;
     renderInputs.playStart = 0;
@@ -374,7 +432,7 @@ void Engine::configureClipWarp(AudioClip& c, double spb, double devSR) {
 void Engine::configureTempoWarp(AudioClip& c, const std::shared_ptr<const TempoMap>& map, double devSR, bool force) {
     if (!map || !c.warpEnabled || !c.sample || c.warpMarkers.size() < 2 || devSR <= 0) return;
     const auto inputs = warpInputsOf(c, devSR, devSR);
-    if (c.tempoWarpCache() && c.tempoWarp->map == map && c.tempoWarp->startBeat == c.startBeat && c.tempoWarp->reversed == c.reversed &&
+    if (c.tempoWarpCache() && c.tempoWarp->map == map && c.tempoWarp->startBeat == c.warpTimingStart() && c.tempoWarp->reversed == c.reversed &&
         c.tempoWarpCache()->inputs == inputs) return;
     if (deferWarpBuild_ && !force) return;
     WarpInputs renderInputs;
@@ -386,16 +444,18 @@ void Engine::configureTempoWarp(AudioClip& c, const std::shared_ptr<const TempoM
     cache->inputs = inputs;
     cache->samples.assign(static_cast<size_t>(frames) * 2, 0.0f);
     renderWarpWindow(renderInputs, *c.sample, cache->samples.data(), frames, nullptr, nullptr, c.reversed);
-    c.tempoWarp = std::make_shared<const AudioClip::TempoWarp>(AudioClip::TempoWarp{std::move(cache), map, c.startBeat, c.reversed});
+    c.tempoWarp = std::make_shared<const AudioClip::TempoWarp>(AudioClip::TempoWarp{std::move(cache), map, c.warpTimingStart(), c.reversed});
 }
 
 bool Engine::warpNeedsBuild(const AudioClip& c, bool arrangement) const {
-    const double spb = transport_.samplesPerBeat(), devSR = transport_.sampleRate();
-    if (arrangement && authoring_ && authoring_->tempoMap) {
+    const double devSR = transport_.sampleRate();
+    const double spb = c.warpTimingSamplesPerBeat(transport_.samplesPerBeat(), devSR);
+    if (arrangement && authoring_ && c.warpTimingMap(authoring_->tempoMap)) {
+        const auto& map = c.warpTimingMap(authoring_->tempoMap);
         WarpInputs renderInputs;
         int64_t frames = 0;
-        if (!tempoWarpPlan(c, authoring_->tempoMap, devSR, renderInputs, frames)) return false;
-        return !c.tempoWarpCache() || c.tempoWarp->map != authoring_->tempoMap || c.tempoWarp->startBeat != c.startBeat || c.tempoWarp->reversed != c.reversed ||
+        if (!tempoWarpPlan(c, map, devSR, renderInputs, frames)) return false;
+        return !c.tempoWarpCache() || c.tempoWarp->map != map || c.tempoWarp->startBeat != c.warpTimingStart() || c.tempoWarp->reversed != c.reversed ||
             !(c.tempoWarpCache()->inputs == warpInputsOf(c, devSR, devSR));
     }
     if (warpCacheFrames(c, spb, devSR) <= 0) return false;
@@ -441,10 +501,12 @@ const AudioClip* Engine::warpBuildTargetClip() const {
     if (!cp) return nullptr;
     const AudioClip& c = *cp;
     if (!wb_.cache || !warpNeedsBuild(c, wb_.clipIndex >= 0)) return nullptr;
+    const double sr = transport_.sampleRate();
+    if (wb_.clipIndex >= 0 && c.warpTimingMap(authoring_->tempoMap) != wb_.tempoMap) return nullptr;
     if (wb_.tempoMap) {
-        if (!authoring_ || authoring_->tempoMap != wb_.tempoMap || c.startBeat != wb_.tempoStartBeat || c.reversed != wb_.reverseSource ||
-            !(warpInputsOf(c, transport_.sampleRate(), transport_.sampleRate()) == wb_.cache->inputs)) return nullptr;
-    } else if (!(warpInputsOf(c, transport_.samplesPerBeat(), transport_.sampleRate()) == wb_.cache->inputs)) return nullptr;
+        if (c.warpTimingStart() != wb_.tempoStartBeat || c.reversed != wb_.reverseSource ||
+            !(warpInputsOf(c, sr, sr) == wb_.cache->inputs)) return nullptr;
+    } else if (!(warpInputsOf(c, c.warpTimingSamplesPerBeat(transport_.samplesPerBeat(), sr), sr) == wb_.cache->inputs)) return nullptr;
     return &c;
 }
 
@@ -459,8 +521,9 @@ int64_t Engine::warpBuildRemainingFrames() const {
         for (auto& c : t->clips)
             if (warpNeedsBuild(c)) {
                 WarpInputs renderInputs; int64_t frames = 0;
-                sum += authoring_->tempoMap && tempoWarpPlan(c, authoring_->tempoMap, devSR, renderInputs, frames)
-                    ? frames : warpCacheFrames(c, spb, devSR);
+                const auto& map = c.warpTimingMap(authoring_->tempoMap);
+                sum += map && tempoWarpPlan(c, map, devSR, renderInputs, frames)
+                    ? frames : warpCacheFrames(c, c.warpTimingSamplesPerBeat(spb, devSR), devSR);
             }
         for (auto& sl : t->sessionSlots)
             if (sl.hasClip && warpNeedsBuild(sl.audio, false)) sum += warpCacheFrames(sl.audio, spb, devSR);
@@ -490,16 +553,17 @@ int64_t Engine::warpBuildStep(int32_t maxFrames) {
             const AudioClip* target = nextWarpBuildTarget(tid, ci);
             if (!target) break; // nothing left to build
             int64_t frames = 0;
-            wb_.tempoMap = ci >= 0 ? authoring_->tempoMap : nullptr; // Session slots: ordinary cache
-            wb_.tempoStartBeat = wb_.tempoMap ? target->startBeat : -1.0;
+            wb_.tempoMap = ci >= 0 ? target->warpTimingMap(authoring_->tempoMap) : nullptr;
+            wb_.tempoStartBeat = wb_.tempoMap ? target->warpTimingStart() : -1.0;
             wb_.reverseSource = wb_.tempoMap && target->reversed;
+            const double cacheSpb = wb_.tempoMap ? devSR : target->warpTimingSamplesPerBeat(spb, devSR);
             if (wb_.tempoMap) tempoWarpPlan(*target, wb_.tempoMap, devSR, wb_.renderInputs, frames);
-            else { frames = warpCacheFrames(*target, spb, devSR); wb_.renderInputs = warpInputsOf(*target, spb, devSR); }
+            else { frames = warpCacheFrames(*target, cacheSpb, devSR); wb_.renderInputs = warpInputsOf(*target, cacheSpb, devSR); }
             wb_.cache = std::make_shared<WarpCache>();
             wb_.cache->frames = frames;
-            wb_.cache->spb = wb_.tempoMap ? devSR : spb;
+            wb_.cache->spb = cacheSpb;
             wb_.cache->devSR = devSR;
-            wb_.cache->inputs = warpInputsOf(*target, wb_.tempoMap ? devSR : spb, devSR);
+            wb_.cache->inputs = warpInputsOf(*target, cacheSpb, devSR);
             wb_.cache->samples.assign(static_cast<size_t>(frames) * 2, 0.0f);
             wb_.stream = std::make_unique<ClipWarpStream>();
             wb_.stream->configure(target->sample->channels, target->warpMode, target->pitchSemitones,
@@ -573,9 +637,10 @@ int64_t Engine::warpBuildPoll() {
         if (auto t = findTrackAuthoring(wj_->trackId); t && t->type() == TrackType::Audio)
             c = audioClipRef(*t, wj_->clipIndex);
         const bool valid = c && warpNeedsBuild(*c, wj_->clipIndex >= 0) &&
-            (wj_->tempoMap ? authoring_->tempoMap == wj_->tempoMap && c->startBeat == wj_->tempoStartBeat && c->reversed == wj_->reverseSource &&
+            (wj_->clipIndex < 0 || c->warpTimingMap(authoring_->tempoMap) == wj_->tempoMap) &&
+            (wj_->tempoMap ? c->warpTimingStart() == wj_->tempoStartBeat && c->reversed == wj_->reverseSource &&
                     warpInputsOf(*c, devSR, devSR) == wj_->cache->inputs
-                : warpInputsOf(*c, spb, devSR) == wj_->cache->inputs);
+                : warpInputsOf(*c, c->warpTimingSamplesPerBeat(spb, devSR), devSR) == wj_->cache->inputs);
         if (!valid) wj_->cancel.store(true, std::memory_order_relaxed);
         if (valid && !wj_->finished.load(std::memory_order_acquire)) return warpBuildRemainingFrames();
         if (wj_->thread.joinable()) wj_->thread.join();
@@ -598,15 +663,16 @@ int64_t Engine::warpBuildPoll() {
     job->trackId = tid;
     job->clipIndex = ci;
     job->sample = target->sample; // keeps the buffer alive for the worker
-    job->tempoMap = ci >= 0 ? authoring_->tempoMap : nullptr; // Session slots: ordinary cache
-    job->tempoStartBeat = job->tempoMap ? target->startBeat : -1.0;
+    job->tempoMap = ci >= 0 ? target->warpTimingMap(authoring_->tempoMap) : nullptr;
+    job->tempoStartBeat = job->tempoMap ? target->warpTimingStart() : -1.0;
     job->reverseSource = job->tempoMap && target->reversed;
+    const double cacheSpb = job->tempoMap ? devSR : target->warpTimingSamplesPerBeat(spb, devSR);
     job->cache = std::make_shared<WarpCache>();
     if (job->tempoMap) tempoWarpPlan(*target, job->tempoMap, devSR, job->renderInputs, job->cache->frames);
-    else { job->cache->frames = warpCacheFrames(*target, spb, devSR); job->renderInputs = warpInputsOf(*target, spb, devSR); }
-    job->cache->spb = job->tempoMap ? devSR : spb;
+    else { job->cache->frames = warpCacheFrames(*target, cacheSpb, devSR); job->renderInputs = warpInputsOf(*target, cacheSpb, devSR); }
+    job->cache->spb = cacheSpb;
     job->cache->devSR = devSR;
-    job->cache->inputs = warpInputsOf(*target, job->tempoMap ? devSR : spb, devSR);
+    job->cache->inputs = warpInputsOf(*target, cacheSpb, devSR);
     WarpJob* j = job.get();
     job->thread = std::thread([j] {
         WarpCache& wc = *j->cache;
@@ -657,8 +723,12 @@ void Engine::reconfigureAllWarpStreams(double spb, double devSR) {
         for (const auto& c : nt->clips)
             if (c.warpEnabled && c.sample) { hasWarpedClip = true; break; }
         if (hasWarpedClip) {
-            for (auto& c : nt->clips.write())
-                if (c.warpEnabled && c.sample) configureClipWarp(c, spb, devSR);
+            for (auto& c : nt->clips.write()) {
+                if (!c.warpEnabled || !c.sample) continue;
+                if (c.retainedTiming && c.retainedTiming->map)
+                    configureTempoWarp(c, c.retainedTiming->map, devSR);
+                else configureClipWarp(c, c.warpTimingSamplesPerBeat(spb, devSR), devSR);
+            }
         }
         bool hasWarpedSlot = false;
         for (const auto& sl : nt->sessionSlots)
@@ -1167,7 +1237,7 @@ int32_t Engine::trackReturnIndex(int32_t id) const {
 // marker map (time-stretch preserves the amplitude envelope). Shared by the played
 // window (getClipPeaks) and the full-material view (getClipWarpFullPeaks).
 static int32_t warpPeaksRange(const AudioClip& clip, float* out, float* outRms, int32_t maxPoints, double beat0,
-    double beat1, int32_t cap = 2048) {
+    double beat1, int32_t cap = 2048, const AudioClip::RetainedTiming* timing = nullptr) {
     if (!out || maxPoints <= 0 || !clip.sample) return 0;
     const auto& m = clip.warpMarkers;
     if (m.size() < 2) return 0;
@@ -1186,9 +1256,16 @@ static int32_t warpPeaksRange(const AudioClip& clip, float* out, float* outRms, 
             }
         return m.back().srcFrame;
     };
+    auto beatAt = [&](double value) {
+        if (!timing) return value;
+        const double seconds = timing->startSeconds + value * (timing->endSeconds - timing->startSeconds);
+        const double local = timing->map ? timing->map->beatAt(seconds) - timing->originalStartBeat
+            : (seconds - timing->startSeconds) * timing->flatBpm / 60.0;
+        return clip.reversed ? clip.warpPlayEndEff() - local : clip.warpPlayStart + local;
+    };
     for (int32_t b = 0; b < buckets; ++b) {
-        int64_t s0 = static_cast<int64_t>(srcAtBeat(beat0 + span * b / buckets));
-        int64_t s1 = static_cast<int64_t>(srcAtBeat(beat0 + span * (b + 1) / buckets));
+        int64_t s0 = static_cast<int64_t>(srcAtBeat(beatAt(beat0 + span * b / buckets)));
+        int64_t s1 = static_cast<int64_t>(srcAtBeat(beatAt(beat0 + span * (b + 1) / buckets)));
         if (s1 < s0) std::swap(s0, s1);
         float mn, mx;
         sb.peakRange(s0, s1 + 1, mn, mx);
@@ -1227,6 +1304,8 @@ int32_t Engine::getClipPeaks(
     const bool warped = clip.warpEnabled && m.size() >= 2 && clip.warpBeats > 0.0;
 
     if (warped) { // peaks over the PLAYED window (what the arrangement shows/plays)
+        if (clip.retainedTiming)
+            return warpPeaksRange(clip, outMinMax, outRms, maxPoints, 0, 1, 2048, clip.retainedTiming.get());
         const int32_t n = warpPeaksRange(clip, outMinMax, outRms, maxPoints, clip.warpPlayStart, clip.warpPlayEndEff());
         if (clip.reversed) reversePeaks(outMinMax, outRms, n);
         return n;
@@ -1247,6 +1326,16 @@ int32_t Engine::getClipPeaks(
     }
     if (clip.reversed) reversePeaks(outMinMax, outRms, buckets);
     return buckets;
+}
+
+int32_t Engine::getRetainedWarpPeaks(int32_t trackId, int32_t clipIndex, double from, double to,
+    float* peaks, int32_t count, float* rms) const {
+    const auto track = findTrackAuthoring(trackId);
+    const auto* clip = track && clipIndex >= 0 ? audioClipRef(*track, clipIndex) : nullptr;
+    if (!clip || !clip->warpEnabled || !clip->retainedTiming || !std::isfinite(from) || !std::isfinite(to))
+        return 0;
+    return warpPeaksRange(*clip, peaks, rms, count, std::clamp(from, 0.0, 1.0),
+        std::clamp(to, 0.0, 1.0), 8192, clip->retainedTiming.get());
 }
 
 // Peaks over the WHOLE sample (frames 0..sample->frames), regardless of the clip's
@@ -1369,6 +1458,10 @@ bool Engine::clipInfo(int32_t trackId, int32_t clipIndex, NotaClipInfo* out) con
     out->start_beat = c.startBeat;
     out->kind = 0;
     out->active = c.active ? 1 : 0;
+    if (c.retainedTiming) {
+        out->length_beats = std::max(0.0, secondsToBeat(c.retainedTiming->endSeconds) - c.startBeat);
+        return true;
+    }
     // Warped clips hold a fixed musical length = the trimmed play window; unwarped
     // length depends on tempo.
     if (c.warpEnabled && c.warpBeats > 0.0) {
@@ -1412,6 +1505,12 @@ double audioLenBeats(const AudioClip& c, double spb, double devSR, const TempoMa
 // unwarped uses the source region.
 double audioDisplayLenBeats(const AudioClip& c, double spb, double devSR, const TempoMap* map = nullptr,
     double fromBeat = std::numeric_limits<double>::quiet_NaN()) {
+    if (c.retainedTiming) {
+        const double start = std::isnan(fromBeat) ? c.startBeat : fromBeat;
+        const double duration = c.retainedTiming->endSeconds - c.retainedTiming->startSeconds;
+        return map ? map->beatAt(map->secondsAt(start) + duration) - start
+            : (devSR > 0 && spb > 0 ? duration * devSR / spb : 0.0);
+    }
     if (c.warpEnabled && c.warpMarkers.size() >= 2 && c.warpBeats > 0.0) return c.warpPlayLen();
     return audioLenBeats(c, spb, devSR, map, fromBeat);
 }

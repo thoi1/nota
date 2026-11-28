@@ -773,6 +773,22 @@ bool Engine::setBpm(double bpm) {
     if (bpm > 0.0 && devSR > 0.0) reconfigureAllWarpStreams(devSR * 60.0 / bpm, devSR);
     if (bpm > 0.0) {
         authoringBpm_ = bpm;
+        std::shared_ptr<Graph> adjusted;
+        for (size_t i = 0; i < authoring_->tracks.size(); ++i) {
+            const auto& track = authoring_->tracks[i];
+            if (std::none_of(track->clips.begin(), track->clips.end(),
+                    [](const AudioClip& clip) { return static_cast<bool>(clip.retainedTiming); })) continue;
+            if (!adjusted) adjusted = std::make_shared<Graph>(*authoring_);
+            auto updated = cloneTrack(*track);
+            for (auto& clip : updated->clips.write())
+                if (clip.retainedTiming)
+                    clip.retainedStartBeat = clip.startBeat = clip.retainedTiming->startSeconds * bpm / 60.0;
+            adjusted->tracks[i] = std::move(updated);
+        }
+        if (adjusted) {
+            adjusted->routingPlan.reset();
+            publishRaw(std::move(adjusted));
+        }
         placeTakesForTempo(); // take lanes + their comp keep one mapping (specs/067)
     }
     if (hybrid_) hybrid_->invalidate(true);
@@ -1064,6 +1080,18 @@ bool graphNeedsRoutingPlan(const Graph& g) noexcept {
 } // namespace
 
 void Engine::publishRaw(std::shared_ptr<Graph> g, bool restored) {
+    // A different edit supersedes a detached tempo preview, including undo/redo.
+    if (tempoMappingEdit_.baseline) tempoMappingEdit_ = {};
+    if (g && !restored) for (size_t i = 0; i < g->tracks.size(); ++i) {
+        auto& track = g->tracks[i];
+        if (authoring_ && i < authoring_->tracks.size() && authoring_->tracks[i] == track) continue;
+        if (std::none_of(track->clips.begin(), track->clips.end(),
+                [](const AudioClip& clip) { return clip.retainedGeometryChanged(); })) continue;
+        track = cloneTrack(*track);
+        for (auto& clip : track->clips.write())
+            if (clip.retainedGeometryChanged()) clip.retainedTiming.reset();
+        g->routingPlan.reset();
+    }
     if (g && !restored && (!authoring_ || g->masterTrack != authoring_->masterTrack || g->tempoMap != authoring_->tempoMap))
         deriveTempoMap(*g); // specs/099: the master Tempo lane is the tempo
     // Fade flags are derived, not stored. A track this graph shares with the one still
@@ -1126,9 +1154,11 @@ void Engine::publishRaw(std::shared_ptr<Graph> g, bool restored) {
         for (size_t i = 0; i < t->clips.size(); ++i) {
             const auto& c = t->clips[i];
             if (!c.warpEnabled || !c.sample) continue;
+            const auto map = c.warpTimingMap(g->tempoMap);
+            if (!map) continue; // retained flat timing uses its ordinary warp cache
             const auto* cache = c.tempoWarpCache();
-            if (cache && c.tempoWarp->map == g->tempoMap && cache->devSR == transport_.sampleRate() &&
-                c.tempoWarp->startBeat == c.startBeat && c.tempoWarp->reversed == c.reversed &&
+            if (cache && c.tempoWarp->map == map && cache->devSR == transport_.sampleRate() &&
+                c.tempoWarp->startBeat == c.warpTimingStart() && c.tempoWarp->reversed == c.reversed &&
                 cache->inputs.sample == c.sample.get() && cache->inputs.markers == c.warpMarkers &&
                 cache->inputs.playStart == c.warpPlayStart && cache->inputs.playEnd == c.warpPlayEndEff() &&
                 cache->inputs.pitch == c.pitchSemitones && cache->inputs.mode == c.warpMode) continue;
@@ -1137,7 +1167,7 @@ void Engine::publishRaw(std::shared_ptr<Graph> g, bool restored) {
                 g->routingPlan.reset();
                 copied = true;
             }
-            configureTempoWarp(t->clips.write()[i], g->tempoMap, transport_.sampleRate());
+            configureTempoWarp(t->clips.write()[i], map, transport_.sampleRate());
         }
     }
     if (g && authoring_ && transport_.uiIsPlaying()) releaseVanishedClipNotes(*authoring_, *g);
@@ -1672,12 +1702,50 @@ void Engine::deriveTempoMap(Graph& g) const {
             for (auto& take : t->takes.write()) take.tempoMap = g.tempoMap;
             continue;
         }
-        if (t->takes.empty() && std::none_of(t->clips.begin(), t->clips.end(), [](const auto& c) { return !c.warpEnabled; })) continue;
+        if (t->takes.empty() && std::none_of(t->clips.begin(), t->clips.end(),
+                [](const auto& c) { return !c.warpEnabled || c.retainedTiming; })) continue;
         t = cloneTrack(*t);
-        for (auto& c : t->clips.write()) if (!c.warpEnabled) c.startBeat = toBeat(beatToSeconds(c.startBeat));
+        for (auto& c : t->clips.write()) {
+            if (c.retainedTiming) c.retainedStartBeat = c.startBeat = toBeat(c.retainedTiming->startSeconds);
+            else if (!c.warpEnabled) c.startBeat = toBeat(beatToSeconds(c.startBeat));
+        }
         for (auto& take : t->takes.write()) {
             take.originBeat = toBeat(beatToSeconds(take.originBeat));
             take.tempoMap = g.tempoMap;
+        }
+    }
+}
+
+void Engine::retainAudioTimingForMapping(Graph& g, const TempoMap& destination) const {
+    const auto& original = authoring_->tempoMap;
+    const auto originalSeconds = [&](double beat) {
+        return original ? original->secondsAt(beat) : beat * 60.0 / authoringBpm_;
+    };
+    for (auto& track : g.tracks) {
+        std::shared_ptr<Track> updated;
+        for (size_t i = 0; i < track->clips.size(); ++i) {
+            const auto& clip = track->clips[i];
+            auto timing = clip.retainedTiming;
+            if (!timing) {
+                if (!clip.sample || clip.sample->sourceSampleRate <= 0) continue;
+                const double start = originalSeconds(clip.startBeat);
+                const double end = clip.warpEnabled
+                    ? originalSeconds(clip.startBeat + clip.warpPlayLen())
+                    : start + static_cast<double>(clip.effectiveLength()) /
+                        (clip.sample->sourceSampleRate * clip.pitchRatio());
+                if (!std::isfinite(start) || !std::isfinite(end) || end <= start) continue;
+                timing = clip.captureTiming(original, clip.startBeat, authoringBpm_, start, end);
+            }
+            if (!updated) updated = cloneTrack(*track);
+            auto& mapped = updated->clips.write()[i];
+            mapped.retainedStartBeat = mapped.startBeat = destination.beatAt(timing->startSeconds);
+            mapped.retainedTiming = std::move(timing);
+        }
+        if (updated) {
+            for (auto& take : updated->takes.write())
+                take.originBeat = destination.beatAt(originalSeconds(take.originBeat));
+            track = std::move(updated);
+            g.routingPlan.reset();
         }
     }
 }

@@ -1327,6 +1327,7 @@ public sealed partial class ArrangementView
 
             // Automation overlay (M9-A3): scrim + envelope + target pill per row.
             if (_o._automationMode) _auto.DrawAutomation(ctx, w);
+            _o.DrawTimeMappingGuide(ctx, w, h);
 
             // Cross-track drag: the dragged clips are hidden on their source lanes
             // (above) and previewed translucently on the destination lane here.
@@ -2081,14 +2082,14 @@ public sealed partial class ArrangementView
             // falls in the span it stands for, so nothing between strokes is skipped.
             double vx0 = Math.Max(r.X, 0), vx1 = Math.Min(r.Right, Bounds.Width);
             if (vx1 <= vx0) return;
-            bool mapped = c.Warped && _o.TempoAxis && c.LengthBeats > 0;
-            double startSeconds = mapped ? _o.TempoSeconds(c.StartBeat) : 0;
-            double secondsSpan = mapped ? _o.TempoSeconds(c.StartBeat + c.LengthBeats) - startSeconds : 1;
+            bool mapped = c.Warped && !c.RetainedWarpTiming && _o.TempoAxis && c.LengthBeats > 0;
+            double startSeconds = mapped ? _o.AudioPeakSeconds(c.StartBeat) : 0;
+            double secondsSpan = mapped ? _o.AudioPeakSeconds(c.StartBeat + c.LengthBeats) - startSeconds : 1;
             double FractionAt(double x) => mapped
-                ? (_o.TempoBeat(startSeconds + (x - r.X) / r.Width * secondsSpan) - c.StartBeat) / c.LengthBeats
+                ? (_o.AudioPeakBeat(startSeconds + (x - r.X) / r.Width * secondsSpan) - c.StartBeat) / c.LengthBeats
                 : (x - r.X) / r.Width;
             double XAt(double f) => mapped
-                ? r.X + (_o.TempoSeconds(c.StartBeat + f * c.LengthBeats) - startSeconds) / secondsSpan * r.Width
+                ? r.X + (_o.AudioPeakSeconds(c.StartBeat + f * c.LengthBeats) - startSeconds) / secondsSpan * r.Width
                 : r.X + f * r.Width;
             // The whole-clip overview, or — when the clip is drawn wider than it has buckets —
             // peaks for just the visible slice at one bucket per pixel (#299).
@@ -2152,10 +2153,10 @@ public sealed partial class ArrangementView
             n = Math.Clamp(n, 1, 8192);
             double PixelDistance(double a, double b)
             {
-                if (!c.Warped || !_o.TempoAxis) return Math.Abs(a - b) * widthPx;
-                double start = _o.TempoSeconds(c.StartBeat), end = _o.TempoSeconds(c.StartBeat + c.LengthBeats);
-                return Math.Abs(_o.TempoSeconds(c.StartBeat + a * c.LengthBeats)
-                    - _o.TempoSeconds(c.StartBeat + b * c.LengthBeats)) / (end - start) * widthPx;
+                if (!c.Warped || c.RetainedWarpTiming || !_o.TempoAxis) return Math.Abs(a - b) * widthPx;
+                double start = _o.AudioPeakSeconds(c.StartBeat), end = _o.AudioPeakSeconds(c.StartBeat + c.LengthBeats);
+                return Math.Abs(_o.AudioPeakSeconds(c.StartBeat + a * c.LengthBeats)
+                    - _o.AudioPeakSeconds(c.StartBeat + b * c.LengthBeats)) / (end - start) * widthPx;
             }
             if (c.DetailPeaks is not null && c.DetailCount == n
                 && PixelDistance(c.DetailF0, f0) < 0.5 && PixelDistance(c.DetailF1, f1) < 0.5)
@@ -2167,7 +2168,12 @@ public sealed partial class ArrangementView
             var buf = c.DetailPeaks is { } old && old.Length >= n * 2 ? old : new float[n * 2];
             var rms = c.DetailRms is { } oldRms && oldRms.Length >= n ? oldRms : new float[n];
             int got;
-            if (ai.WarpEnabled != 0 && ai.WarpBeats > 0)
+            if (c.RetainedWarpTiming)
+            {
+                got = eng.GetRetainedWarpPeaks(trackId, c.ClipIndex, f0, f1, buf, n, rms);
+                rev = false; // retained peaks are already in playback order
+            }
+            else if (ai.WarpEnabled != 0 && ai.WarpBeats > 0)
             {
                 double ps = ai.WarpPlayStart, pe = ai.WarpPlayEnd > 0 ? ai.WarpPlayEnd : ai.WarpBeats;
                 got = eng.GetClipWarpPeaksRange(trackId, c.ClipIndex, ps + a * (pe - ps), ps + b * (pe - ps), buf, n, rms);

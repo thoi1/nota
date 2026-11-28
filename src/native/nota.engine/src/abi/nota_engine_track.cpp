@@ -535,6 +535,19 @@ int32_t nota_clip_get_warp_markers(
     const NotaEngine* e, int32_t track_id, int32_t clip_index, double* out_src, double* out_beat, int32_t max_count) {
     return e ? CENG(e)->clipWarpMarkers(track_id, clip_index, out_src, out_beat, max_count) : 0;
 }
+int32_t nota_clip_get_retained_audio_timing(const NotaEngine* e, int32_t track_id, int32_t clip_index,
+    NotaRetainedAudioTiming* out, NotaAutomationPoint* points, int32_t cap) {
+    return e && out ? CENG(e)->getRetainedAudioTiming(track_id, clip_index, *out, points, cap) : -1;
+}
+int32_t nota_clip_retained_warp_peaks(const NotaEngine* e, int32_t track_id, int32_t clip_index,
+    double from, double to, float* peaks, int32_t count, float* rms) {
+    return e ? CENG(e)->getRetainedWarpPeaks(track_id, clip_index, from, to, peaks, count, rms) : 0;
+}
+NotaResult nota_clip_restore_retained_audio_timing(NotaEngine* e, int32_t track_id, int32_t clip_index,
+    const NotaRetainedAudioTiming* timing, const NotaAutomationPoint* points, int32_t count) {
+    return e && timing && ENG(e)->restoreRetainedAudioTiming(track_id, clip_index, *timing, points, count)
+        ? NOTA_OK : NOTA_ERR_INVALID_ARG;
+}
 int32_t nota_clip_split(NotaEngine* e, int32_t track_id, int32_t clip_index, double at_beat) {
     return e ? ENG(e)->splitClip(track_id, clip_index, at_beat) : -1;
 }

@@ -2455,8 +2455,10 @@ void Engine::mixAudioClip(
     const Transport& clock, bool forceSyncFill) {
     if (!clip.active) return; // deactivated clip (key 0): stays on the timeline but silent
     const double sr = clock.sampleRate();
+    const auto* timing = clip.retainedTiming.get();
     double startSamples;
-    if constexpr (mapped) startSamples = clock.samplesAtBeat(clip.startBeat);
+    if (timing) startSamples = timing->startSeconds * sr;
+    else if constexpr (mapped) startSamples = clock.samplesAtBeat(clip.startBeat);
     else startSamples = clip.startBeat * spb;
     // Clip envelopes (M9 follow-up): 0..1 volume + -1..1 pan curves in clip-local
     // beats, applied per sample. Empty = fast path (no cost). Pan uses a balance
@@ -2466,9 +2468,14 @@ void Engine::mixAudioClip(
     const bool hasAdsr = !clip.adsr.isIdentity();
     const bool hasEnv = hasVol || hasPan || hasAdsr;
     double lenBeats = 0.0; // played length (beats) for the ADSR release — set per path below
+    auto retainedLocalBeat = [&](double seconds) {
+        return timing->map ? timing->map->beatAt(seconds) - timing->originalStartBeat
+            : (seconds - timing->startSeconds) * timing->flatBpm / 60.0;
+    };
     auto applyEnv = [&](double p, float& l, float& r) {
         double b;
-        if constexpr (mapped) b = clock.beatAtSamples(p) - clip.startBeat;
+        if (timing) b = retainedLocalBeat(p / sr);
+        else if constexpr (mapped) b = clock.beatAtSamples(p) - clip.startBeat;
         else b = (p - startSamples) / spb;
         if (hasAdsr) {
             const float g = clip.adsr.gainAt(b, lenBeats);
@@ -2493,24 +2500,26 @@ void Engine::mixAudioClip(
     // at the device rate, so there is no realtime stretch here — just a memcpy-cheap
     // read (no per-clip-start priming spike). The clip's on-timeline length is the
     // cache's frame count (both are warpPlayLen×spb once rebuilt for the tempo).
-    const WarpCache* readyCache;
-    if constexpr (mapped) readyCache = clip.tempoWarpCache();
-    else readyCache = clip.warpCache.get();
+    const bool mappedCache = timing ? static_cast<bool>(timing->map) : mapped;
+    const WarpCache* readyCache = mappedCache ? clip.tempoWarpCache() : clip.warpCache.get();
     if (clip.warpEnabled && readyCache && readyCache->frames > 0) {
         const WarpCache& wc = *readyCache;
         bool reverseRead = clip.reversed;
-        if constexpr (mapped) reverseRead = clip.reversed != clip.tempoWarp->reversed;
+        if (mappedCache) reverseRead = clip.reversed != clip.tempoWarp->reversed;
         // A stale cache (an edit's rebuild still running in the background) keeps playing,
         // clipped to the clip's new played length so it never spills past the clip's end.
         // Both edges sit on whole frames rounded from the timeline (not start + a rounded
         // length), so clips that meet — the halves of a split — leave no frame between them.
         const int64_t startF = std::llround(startSamples);
         double endAt;
-        if constexpr (mapped) endAt = clock.samplesAtBeat(clip.startBeat + clip.warpPlayLen());
+        if (timing) endAt = timing->endSeconds * sr;
+        else if constexpr (mapped) endAt = clock.samplesAtBeat(clip.startBeat + clip.warpPlayLen());
         else endAt = startSamples + clip.warpPlayLen() * spb;
         const int64_t endF = std::min<int64_t>(startF + wc.frames, std::llround(endAt));
         const double clipDeviceLen = static_cast<double>(endF - startF);
-        if constexpr (mapped) lenBeats = clip.warpPlayLen();
+        if (timing) lenBeats = timing->map ? clip.warpPlayLen()
+            : clipDeviceLen * timing->flatBpm / (60.0 * sr);
+        else if constexpr (mapped) lenBeats = clip.warpPlayLen();
         else lenBeats = clipDeviceLen / spb;
         const double ovStart = std::max(blockStart, static_cast<double>(startF));
         const double ovEnd = std::min(blockStart + frames, static_cast<double>(endF));
@@ -2527,7 +2536,7 @@ void Engine::mixAudioClip(
         // a body loop that reloaded its pointers cost another +3.6%. The extra sample on
         // each edge covers a rounding step; a body sample it pulls in has sustain gain 1.
         // Every other clip takes the original loop below, unchanged.
-        if (!mapped && hasAdsr && clip.adsr.sustain >= 1.0f && !hasVol && !hasPan) {
+        if (!mapped && !timing && hasAdsr && clip.adsr.sustain >= 1.0f && !hasVol && !hasPan) {
             int32_t head = 0, tail = segLen;
             if (clip.adsr.attack > 0.0) {
                 const double n = startSamples + clip.adsr.attack * spb + 1.0 - ovStart; // j < n
@@ -2591,7 +2600,8 @@ void Engine::mixAudioClip(
     const double ratio = sb.sourceSampleRate / sr * clip.pitchRatio();
     const int64_t len = clip.effectiveLength();
     const double clipDeviceLen = len / ratio;
-    if constexpr (mapped) lenBeats = clock.beatAtSamples(startSamples + clipDeviceLen) - clip.startBeat;
+    if (timing) lenBeats = retainedLocalBeat((startSamples + clipDeviceLen) / sr);
+    else if constexpr (mapped) lenBeats = clock.beatAtSamples(startSamples + clipDeviceLen) - clip.startBeat;
     else lenBeats = clipDeviceLen / spb;
 
     const double blkLo = std::max(blockStart, startSamples);

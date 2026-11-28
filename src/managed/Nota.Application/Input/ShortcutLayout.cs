@@ -48,6 +48,7 @@ public static class ShortcutLayout
             ],
             [arrangement] =
             [
+                F(Loc.T("tempo.time_mapping_gesture"), Loc.T("tempo.time_mapping_help")),
                 F(Loc.T("preferences.drag_below_the_last_track"), Loc.T("preferences.move_the_clips_to_a")),
                 F("⇧-click   ⌘-click", Loc.T("preferences.select_a_range_of_tracks")),
             ],

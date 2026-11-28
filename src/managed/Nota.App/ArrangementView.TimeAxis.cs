@@ -12,11 +12,22 @@ namespace Nota.App;
 public sealed partial class ArrangementView
 {
     private bool _hasTempoMap;
-    private bool TempoAxis => _hasTempoMap || _frozenAxisSeconds is not null;
+    private bool TempoAxis => _hasTempoMap || _frozenAxisSeconds is not null || _mappingHandle != 0;
     private double TempoSeconds(double beat)
-        => _frozenAxisSeconds is { } f ? FrozenSeconds(f, beat) : _engine?.BeatToSeconds(beat) ?? beat * .5;
+    {
+        double preview = MappingConvert(beat, false);
+        return double.IsFinite(preview) ? preview
+            : _frozenAxisSeconds is { } f ? FrozenSeconds(f, beat) : _engine?.BeatToSeconds(beat) ?? beat * .5;
+    }
     private double TempoBeat(double seconds)
-        => _frozenAxisSeconds is { } f ? FrozenBeat(f, seconds) : _engine?.SecondsToBeat(seconds) ?? seconds * 2;
+    {
+        double preview = MappingConvert(seconds, true);
+        return double.IsFinite(preview) ? preview
+            : _frozenAxisSeconds is { } f ? FrozenBeat(f, seconds) : _engine?.SecondsToBeat(seconds) ?? seconds * 2;
+    }
+
+    private double AudioPeakSeconds(double beat) => _mappingEngine?.BeatToSeconds(beat) ?? TempoSeconds(beat);
+    private double AudioPeakBeat(double seconds) => _mappingEngine?.SecondsToBeat(seconds) ?? TempoBeat(seconds);
 
     // The drag-start axis (see FreezeTempoAxis): linear between samples, extended past the ends.
     private static double FrozenSeconds(double[] f, double beat)
@@ -35,9 +46,9 @@ public sealed partial class ArrangementView
         double span = f[hi] - f[lo];
         return (lo + (span > 0 ? (seconds - f[lo]) / span : 0)) * FrozenAxisStep;
     }
-    private double AxisOriginSeconds => TempoSeconds(_scrollBeats);
-    private double SecondsToX(double seconds) => (seconds - AxisOriginSeconds) * _pixelsPerBeat * 2;
-    private double XToSeconds(double x) => AxisOriginSeconds + x / (_pixelsPerBeat * 2);
+    private double AxisOriginSeconds => _mappingHandle != 0 ? _mappingOrigin : TempoSeconds(_scrollBeats);
+    private double SecondsToX(double seconds) => (seconds - AxisOriginSeconds) * (_mappingHandle != 0 ? _mappingScale : _pixelsPerBeat * 2);
+    private double XToSeconds(double x) => AxisOriginSeconds + x / (_mappingHandle != 0 ? _mappingScale : _pixelsPerBeat * 2);
     private double XToBeat(double x) => TempoAxis ? TempoBeat(XToSeconds(x)) : _scrollBeats + x / _pixelsPerBeat;
     private double ScrollBeatForX(double beat, double x, double? pixelsPerBeat = null)
     {
@@ -52,7 +63,9 @@ public sealed partial class ArrangementView
     private void ReloadTempo() => _hasTempoMap = _engine?.IsTempoAutomated ?? false;
 
     private (double start, double end) ClipScreenEdges(ClipVM clip)
-        => (BeatToX(clip.StartBeat), BeatToX(clip.StartBeat + clip.LengthBeats));
+        => !clip.IsMidi && _mappingEngine is { } engine
+            ? (SecondsToX(engine.BeatToSeconds(clip.StartBeat)), SecondsToX(engine.BeatToSeconds(clip.StartBeat + clip.LengthBeats)))
+            : (BeatToX(clip.StartBeat), BeatToX(clip.StartBeat + clip.LengthBeats));
 
     // Warped clips re-stretch to a new tempo map off the UI thread (deferred build): poll it
     // through so they play the new timing as soon as they are ready.

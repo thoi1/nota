@@ -29,6 +29,15 @@ internal static class AudioClipState
             WarpPlayEnd = ac.WarpPlayEnd,
             Reversed = ac.Reversed != 0,
         };
+        if (clipIndex >= 0 && engine.TryGetRetainedAudioTiming(trackId, clipIndex, out var timing, out var tempo))
+            dto.RetainedTiming = new RetainedAudioTimingDto
+            {
+                OriginalStartBeat = timing.OriginalStartBeat,
+                FlatBpm = timing.FlatBpm,
+                StartSeconds = timing.StartSeconds,
+                EndSeconds = timing.EndSeconds,
+                TempoPoints = tempo.Length == 0 ? null : Array.ConvertAll(tempo, p => new AutomationPointDto(p)),
+            };
         // Warp off keeps its markers for a later re-enable (#310), so they're saved either way.
         if (ac.WarpEnabled != 0 || ac.WarpBeats > 0)
         {
@@ -60,6 +69,11 @@ internal static class AudioClipState
         ApplyShape(engine, trackId, ci, ac);
         return ci;
     }
+
+    public static bool RestoreTiming(IAudioEngine engine, int trackId, int clipIndex, RetainedAudioTimingDto timing)
+        => engine.RestoreRetainedAudioTiming(trackId, clipIndex,
+            new RetainedAudioTiming(timing.OriginalStartBeat, timing.FlatBpm, timing.StartSeconds, timing.EndSeconds),
+            timing.TempoPoints is { } points ? Array.ConvertAll(points, p => p.ToPoint()) : Array.Empty<AutomationPoint>());
 
     /// <summary>Pitch, reverse, warp, envelopes and ADSR onto an existing clip — an
     /// arrangement clip, or a Session slot's take addressed by <see cref="SessionClip.Index"/>.</summary>

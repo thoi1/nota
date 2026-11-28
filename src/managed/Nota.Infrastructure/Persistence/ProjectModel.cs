@@ -455,6 +455,7 @@ public sealed class AudioClipDto
     public double WarpPlayStart { get; set; }  // warped clip trim window start (beats, v11)
     public double WarpPlayEnd { get; set; }    // warped clip trim window end (0 = full, v11)
     public bool Reversed { get; set; }         // plays back-to-front (v19); default false
+    public RetainedAudioTimingDto? RetainedTiming { get; set; } // optional absolute playback timing after tempo mapping
     public ClipAdsrDto? Adsr { get; set; }     // ADSR amplitude shape (v20); null = identity
     public int? TakeId { get; set; }           // the AudioTakeDto.Id this comp section came from (v29)
     // Ends that play at full level where take sections meet: 1 head, 2 tail (v29, optional;
@@ -465,6 +466,15 @@ public sealed class AudioClipDto
     public string? Source { get; set; }
 
     [JsonExtensionData] public Dictionary<string, JsonElement>? Extra { get; set; }
+}
+
+public sealed class RetainedAudioTimingDto
+{
+    public double OriginalStartBeat { get; set; }
+    public double FlatBpm { get; set; }
+    public double StartSeconds { get; set; }
+    public double EndSeconds { get; set; }
+    public AutomationPointDto[]? TempoPoints { get; set; }
 }
 
 /// <summary>One pass of an Arrangement loop recording (v29, specs/067). `Id` is file-local:

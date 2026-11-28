@@ -581,6 +581,7 @@ public sealed partial class ArrangementView : UserControl
         get => _engine;
         set
         {
+            if (!ReferenceEquals(_engine, value) && _mappingHandle != 0) _footerLanes.CancelGesture();
             if (_engine is not null) _engine.AutomationTouched -= OnAutomationTouched;
             _engine = value;
             if (_engine is not null) _engine.AutomationTouched += OnAutomationTouched;
@@ -661,7 +662,13 @@ public sealed partial class ArrangementView : UserControl
     public bool AutomationMode
     {
         get => _automationMode;
-        set { if (_automationMode == value) return; _automationMode = value; Refresh(); }
+        set
+        {
+            if (_automationMode == value) return;
+            if (_mappingHandle != 0) _footerLanes.CancelGesture();
+            _automationMode = value;
+            Refresh();
+        }
     }
     /// <summary>While recording, reload the visible envelopes so writes appear live (M9-C).</summary>
     public void RefreshAutomationLive()
@@ -1250,6 +1257,7 @@ public sealed partial class ArrangementView : UserControl
                     if (audioInfo)
                     {
                         cvm.Warped = ai.WarpEnabled != 0 && ai.WarpBeats > 0;
+                        cvm.RetainedWarpTiming = cvm.Warped && eng.HasRetainedAudioTiming(ti.Id, c);
                         cvm.Gain = ai.Gain;
                         cvm.Adsr = eng.GetClipAdsr(ti.Id, c);
                         cvm.TakeId = eng.ClipTakeId(ti.Id, c);

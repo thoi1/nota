@@ -43,12 +43,17 @@ public sealed partial class ArrangementView
         public AutoEditor(ArrangementView o, IAutoRows rows) { _o = o; _rows = rows; _owner = rows.Owner; }
 
         /// <summary>A point drag, curve bend or range selection is live.</summary>
-        internal bool IsActive => _autoDrag is not null || _bendLeft is not null || _rangeTrack is not null;
+        private bool _timeMapping;
+        private TrackVM? _mappingTrack;
+        private IPointer? _mappingPointer;
+        private static readonly Cursor MappingCursor = new(StandardCursorType.SizeWestEast);
+        internal bool IsActive => _timeMapping || _autoDrag is not null || _bendLeft is not null || _rangeTrack is not null;
 
         /// <summary>Drop a live gesture (capture lost / cancel). False when nothing was live.</summary>
         internal bool Cancel()
         {
             if (!IsActive) return false;
+            if (_timeMapping) EndTimeMapping(false);
             _autoDrag = null; _autoDragTrack = null; _bendLeft = _bendRight = null; _bendTrack = null;
             _rangeTrack = null;
             _autoLiveStarted = false;   // the next drag checkpoints undo again
@@ -115,6 +120,17 @@ public sealed partial class ArrangementView
 
             double pillW = PillWidth(t.AutoLabel);
             if (PillRect(i, pillW).Contains(pos)) { _o.ShowAutoTargetMenu(_owner, t); return; }
+            if (pt.Properties.IsLeftButtonPressed && e.KeyModifiers.HasFlag(KeyModifiers.Control) &&
+                _o.IsTempoMappingTarget(t) && _o.BeginTimeMapping(_o.MappingBoundary(pos.X), pos.X))
+            {
+                _timeMapping = true;
+                _mappingTrack = t;
+                _mappingPointer = e.Pointer;
+                _owner.Cursor = MappingCursor;
+                e.Pointer.Capture(_owner);
+                e.Handled = true;
+                return;
+            }
 
             double curBeat = Math.Max(0, _o.SnapMaybe(_o.XToBeat(pos.X), e.KeyModifiers));
 
@@ -269,6 +285,7 @@ public sealed partial class ArrangementView
 
         internal void ClearHover()
         {
+            if (!_timeMapping && ReferenceEquals(_owner.Cursor, MappingCursor)) _owner.Cursor = null;
             if (_hoverPoint is null && _hoverSegLeft is null) return;
             _hoverPoint = null; _hoverSegLeft = null; _hoverTrack = null;
             _owner.InvalidateVisual();
@@ -276,6 +293,16 @@ public sealed partial class ArrangementView
 
         internal void AutoPointerMoved(PointerEventArgs e)
         {
+            if (_timeMapping)
+            {
+                if (_mappingTrack is not { } track || !_o.IsTempoMappingTarget(track) ||
+                    !_o.UpdateTimeMapping(e.GetPosition(_owner).X, e.KeyModifiers))
+                {
+                    EndTimeMapping(false);
+                }
+                e.Handled = true;
+                return;
+            }
             if (_rangeTrack is not null)
             {
                 double beat = Math.Max(0, _o.Snap(_o.XToBeat(e.GetPosition(_owner).X)));
@@ -283,7 +310,18 @@ public sealed partial class ArrangementView
                 return;
             }
             if (_bendLeft is not null) { AutoBendMoved(e.GetPosition(_owner)); return; }
-            if (_autoDrag is null || _autoDragTrack is null) { UpdateHover(e.GetPosition(_owner)); return; }
+            if (_autoDrag is null || _autoDragTrack is null)
+            {
+                var p = e.GetPosition(_owner);
+                int row = _rows.RowAtY(p.Y);
+                bool mapping = row >= 0 && e.KeyModifiers.HasFlag(KeyModifiers.Control) &&
+                    _o.IsTempoMappingTarget(_rows.TrackAt(row)) && _o.MappingBoundary(p.X) > 0 &&
+                    !PillRect(row, PillWidth(_rows.TrackAt(row).AutoLabel)).Contains(p);
+                if (mapping) _owner.Cursor = MappingCursor;
+                else if (ReferenceEquals(_owner.Cursor, MappingCursor)) _owner.Cursor = null;
+                UpdateHover(p);
+                return;
+            }
             int i = _rows.IndexOf(_autoDragTrack);
             if (i < 0) return;
             var pos = e.GetPosition(_owner);
@@ -314,6 +352,13 @@ public sealed partial class ArrangementView
 
         internal void AutoPointerReleased(PointerReleasedEventArgs e)
         {
+            if (_timeMapping)
+            {
+                if (e.InitialPressMouseButton != MouseButton.Left) return;
+                EndTimeMapping(_mappingTrack is { } track && _o.IsTempoMappingTarget(track));
+                e.Handled = true;
+                return;
+            }
             if (_rangeTrack is not null)
             {
                 // A zero-width drag (Shift-click, no move) is a deselect, not a selection.
@@ -340,6 +385,19 @@ public sealed partial class ArrangementView
             _autoDragTrack = null;
             e.Pointer.Capture(null);
             _owner.InvalidateVisual();
+        }
+
+        internal void CancelTimeMapping() { if (_timeMapping) EndTimeMapping(false); }
+
+        private void EndTimeMapping(bool commit)
+        {
+            _timeMapping = false;
+            _mappingTrack = null;
+            var pointer = _mappingPointer;
+            _mappingPointer = null;
+            if (ReferenceEquals(_owner.Cursor, MappingCursor)) _owner.Cursor = null;
+            _o.FinishTimeMapping(commit);
+            if (ReferenceEquals(pointer?.Captured, _owner)) pointer?.Capture(null);
         }
 
         // Automation-mode right-click: copy/cut/delete the selected time range and paste the
@@ -425,7 +483,8 @@ public sealed partial class ArrangementView
                 var content = NotaPalette.VizInk;
                 var pen = AutoCurvePen;
 
-                var ordered = t.AutoPoints.OrderBy(p => p.Beat).ToList();
+                var ordered = _o.IsTempoMappingTarget(t) && _o._mappingPoints is { } points
+                    ? points.ToList() : t.AutoPoints.OrderBy(p => p.Beat).ToList();
                 int levels = _o.AutoSteps(t);
                 if (levels >= 2) DrawLevels(ctx, t, i, w, levels);
                 if (ordered.Count == 0)

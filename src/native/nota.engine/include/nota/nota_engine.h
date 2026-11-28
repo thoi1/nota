@@ -69,6 +69,14 @@ typedef struct NotaAutomationPoint {
     float  curve;
 } NotaAutomationPoint;
 
+typedef struct NotaTempoMappingPreview {
+    double seconds;
+    double minimum_seconds;
+    double maximum_seconds;
+    double bpm_before;
+    double bpm_after;
+} NotaTempoMappingPreview;
+
 /* Track summary for the Arrangement View (M4). */
 typedef struct NotaTrackInfo {
     int32_t id;
@@ -107,6 +115,22 @@ typedef struct NotaAudioClipInfo {
     double  warp_play_end;     /* trimmed play window end (0 = to warp_beats) */
     int32_t reversed;          /* 0/1: play the region back-to-front (non-destructive) */
 } NotaAudioClipInfo;
+
+typedef struct NotaRetainedAudioTiming {
+    double original_start_beat;
+    double flat_bpm;
+    double start_seconds;
+    double end_seconds;
+} NotaRetainedAudioTiming;
+
+/* -1 means absent. Pass null points to query the size of the original tempo lane. */
+NOTA_API int32_t nota_clip_get_retained_audio_timing(const NotaEngine* engine, int32_t track_id,
+                    int32_t clip_index, NotaRetainedAudioTiming* out, NotaAutomationPoint* points, int32_t cap);
+NOTA_API NotaResult nota_clip_restore_retained_audio_timing(NotaEngine* engine, int32_t track_id,
+                    int32_t clip_index, const NotaRetainedAudioTiming* timing,
+                    const NotaAutomationPoint* points, int32_t count);
+NOTA_API int32_t nota_clip_retained_warp_peaks(const NotaEngine* engine, int32_t track_id,
+                    int32_t clip_index, double from, double to, float* peaks, int32_t count, float* rms);
 
 /* One take of an audio loop recording (specs/067). Every take of a recording has a
  * loop-length buffer whose frame 0 sits at origin_beat; the pass recorded
@@ -418,6 +442,14 @@ NOTA_API NotaResult nota_track_automation_set_points(NotaEngine* engine, int32_t
 // Live variant (no undo checkpoint) — for real-time updates while dragging a point.
 NOTA_API NotaResult nota_track_automation_set_points_live(NotaEngine* engine, int32_t track_id,
                     int32_t lane_index, const NotaAutomationPoint* pts, int32_t count);
+/* A preview is private to its handle. Only a successful finish publishes it and
+ * adds an undo checkpoint. Zero is never a valid handle. */
+NOTA_API uint64_t nota_tempo_mapping_begin(NotaEngine* engine, double beat);
+NOTA_API NotaResult nota_tempo_mapping_preview(NotaEngine* engine, uint64_t handle,
+                    double destination_seconds, NotaTempoMappingPreview* out);
+NOTA_API NotaResult nota_tempo_mapping_finish(NotaEngine* engine, uint64_t handle, int32_t commit);
+NOTA_API double nota_tempo_mapping_convert(const NotaEngine* engine, uint64_t handle, double value, int32_t to_beat);
+NOTA_API int32_t nota_tempo_mapping_points(const NotaEngine* engine, uint64_t handle, NotaAutomationPoint* points, int32_t cap);
 NOTA_API NotaResult nota_track_remove_automation_lane(NotaEngine* engine, int32_t track_id, int32_t lane_index);
 /* A lane on a device grouped into a rack (specs/044): its device_index (lane_info) is the rack's
  * address on the track (>= 0 effect, -1 instrument, -1000 - i MIDI effect) and the path names

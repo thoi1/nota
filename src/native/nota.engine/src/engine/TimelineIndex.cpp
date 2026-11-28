@@ -158,8 +158,10 @@ std::shared_ptr<const TimelineIndex> TimelineIndex::buildForTrack(const Track& t
             AudioClipEntry entry;
             entry.originalIndex = static_cast<int32_t>(ci);
             entry.startBeat = clip.startBeat;
-            entry.warped = clip.warpEnabled;
-            if (clip.warpEnabled) {
+            entry.warped = clip.warpEnabled && !clip.retainedTiming;
+            if (clip.retainedTiming) {
+                entry.unwarpedSec = clip.retainedTiming->endSeconds - clip.retainedTiming->startSeconds;
+            } else if (entry.warped) {
                 entry.warpLenBeats = std::max(0.0, clip.warpPlayLen());
             } else if (clip.sample && clip.sample->sourceSampleRate > 0.0) {
                 const int64_t len = clip.effectiveLength();

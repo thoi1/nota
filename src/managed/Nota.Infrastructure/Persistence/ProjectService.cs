@@ -926,6 +926,8 @@ public sealed class ProjectService
             {
                 int ci = AudioClipState.Restore(engine, id, ac, ResolveInBundle(bundleDir, ac.Sample));
                 if (ci < 0) { warnings.Add($"Couldn't reload audio clip \"{ac.Sample}\"."); continue; }
+                if (ac.RetainedTiming is { } timing && !AudioClipState.RestoreTiming(engine, id, ci, timing))
+                    warnings.Add($"Couldn't restore the original timing of audio clip \"{ac.Sample}\".");
                 if (ac.TakeId is int oldTake && takeIds.TryGetValue(oldTake, out int newTake))
                     engine.SetClipTakeId(id, ci, newTake);
                 if (ac.JoinedEdges is int je && je != 0) joinedEdges.Add((ci, je));

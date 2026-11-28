@@ -85,6 +85,28 @@ public sealed partial class NotaEngine
     public void SetAutomationPointsLive(int trackId, int laneIndex, AutomationPoint[] points)
     { ThrowIfDisposed(); Check(NativeMethods.AutomationSetPointsLive(_handle, trackId, laneIndex, points, points.Length)); }
 
+    public ulong BeginTempoMapping(double beat)
+    { ThrowIfDisposed(); return NativeMethods.TempoMappingBegin(_handle, beat); }
+
+    public bool TryPreviewTempoMapping(ulong handle, double destinationSeconds, out TempoMappingPreview preview)
+    { ThrowIfDisposed(); return NativeMethods.TempoMappingPreviewAt(_handle, handle, destinationSeconds, out preview) == NativeMethods.NotaResult.Ok; }
+
+    public bool FinishTempoMapping(ulong handle, bool commit)
+    { ThrowIfDisposed(); return NativeMethods.TempoMappingFinish(_handle, handle, commit ? 1 : 0) == NativeMethods.NotaResult.Ok; }
+
+    public double ConvertTempoMapping(ulong handle, double value, bool toBeat)
+    { ThrowIfDisposed(); return NativeMethods.TempoMappingConvert(_handle, handle, value, toBeat ? 1 : 0); }
+
+    public AutomationPoint[] GetTempoMappingPoints(ulong handle)
+    {
+        ThrowIfDisposed();
+        int count = NativeMethods.TempoMappingPoints(_handle, handle, null, 0);
+        if (count <= 0) return Array.Empty<AutomationPoint>();
+        var points = new AutomationPoint[count];
+        int written = NativeMethods.TempoMappingPoints(_handle, handle, points, count);
+        return written == count ? points : points[..written];
+    }
+
     public void RemoveAutomationLane(int trackId, int laneIndex)
     { ThrowIfDisposed(); Check(NativeMethods.RemoveAutomationLane(_handle, trackId, laneIndex)); }
 

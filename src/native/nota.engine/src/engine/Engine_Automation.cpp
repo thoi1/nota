@@ -993,6 +993,94 @@ bool Engine::removeAutomationLane(int32_t trackId, int32_t laneIndex) {
 
 // --- master Tempo lane -> tempo map (specs/099) -----------------------------
 
+bool Engine::tempoMappingCurrent() const {
+    const auto& edit = tempoMappingEdit_;
+    return edit.baseline && edit.baseline == authoring_ &&
+        edit.bpm == authoringBpm_ &&
+        edit.beatsPerBar == transport_.beatsPerBar() * 4.0 / transport_.timeSigDenom();
+}
+
+uint64_t Engine::beginTempoMapping(double beat) {
+    if (!authoring_ || !authoring_->masterTrack || !std::isfinite(beat) || beat <= 0 ||
+        beat > 1e8 || tempoMappingCurrent()) return 0;
+    tempoMappingEdit_ = {};
+    auto original = authoring_->tempoMap;
+    if (!original) {
+        if (authoringBpm_ < TempoMap::kMinBpm || authoringBpm_ > TempoMap::kMaxBpm) return 0;
+        original = TempoMap::fromLane({{0, static_cast<float>(authoringBpm_), 0}});
+    }
+    const double beatsPerBar = transport_.beatsPerBar() * 4.0 / transport_.timeSigDenom();
+    if (!original || !original->mapBoundary(beat, original->secondsAt(beat), beatsPerBar)) return 0;
+    tempoMappingEdit_ = {authoring_, std::move(original), {}, beat, authoringBpm_, beatsPerBar};
+    tempoMappingFinished_ = false;
+    if (++tempoMappingHandle_ == 0) ++tempoMappingHandle_;
+    return tempoMappingHandle_;
+}
+
+bool Engine::previewTempoMapping(uint64_t handle, double seconds, NotaTempoMappingPreview& out) {
+    if (handle != tempoMappingHandle_ || !tempoMappingCurrent()) return false;
+    auto& edit = tempoMappingEdit_;
+    auto result = edit.original->mapBoundary(edit.beat, seconds, edit.beatsPerBar);
+    if (!result) return false;
+    std::shared_ptr<const TempoMap> candidate;
+    if (result->seconds != edit.original->secondsAt(edit.beat)) {
+        candidate = TempoMap::fromLane(result->lane);
+        if (!candidate || std::abs(candidate->secondsAt(result->rightAnchorBeat) - result->rightAnchorSeconds) >
+            1.0 / std::max(1.0, transport_.sampleRate())) return false;
+    }
+    edit.candidate = std::move(candidate);
+    out = {result->seconds, result->minimumSeconds, result->maximumSeconds,
+        result->bpmBefore, result->bpmAfter};
+    return true;
+}
+
+bool Engine::finishTempoMapping(uint64_t handle, bool commit) {
+    if (handle == 0 || handle != tempoMappingHandle_) return false;
+    if (!tempoMappingEdit_.baseline) return tempoMappingFinished_;
+    const bool current = tempoMappingCurrent();
+    auto candidate = std::move(tempoMappingEdit_.candidate);
+    tempoMappingEdit_ = {};
+    tempoMappingFinished_ = !commit || current;
+    if (!commit) return true;
+    if (!current) return false;
+    if (!candidate) return true;
+
+    auto master = cloneTrack(*authoring_->masterTrack);
+    auto& lanes = master->automation.write();
+    auto lane = std::find_if(lanes.begin(), lanes.end(),
+        [](const TrackLane& l) { return l.target == AutomationTarget::Tempo; });
+    if (lane == lanes.end()) {
+        lanes.emplace_back();
+        lane = std::prev(lanes.end());
+        lane->target = AutomationTarget::Tempo;
+    }
+    lane->points = candidate->source;
+    auto graph = std::make_shared<Graph>(*authoring_);
+    graph->masterTrack = std::move(master);
+    retainAudioTimingForMapping(*graph, *candidate);
+    publish(std::move(graph));
+    return true;
+}
+
+double Engine::convertTempoMapping(uint64_t handle, double value, bool toBeat) const {
+    if (handle != tempoMappingHandle_ || !tempoMappingCurrent() || !std::isfinite(value))
+        return std::numeric_limits<double>::quiet_NaN();
+    const auto& edit = tempoMappingEdit_;
+    const auto& map = edit.candidate ? edit.candidate : edit.original;
+    return toBeat ? map->beatAt(value) : map->secondsAt(value);
+}
+
+int32_t Engine::tempoMappingPoints(uint64_t handle, NotaAutomationPoint* points, int32_t cap) const {
+    if (handle != tempoMappingHandle_ || !tempoMappingCurrent() || cap < 0) return 0;
+    const auto& edit = tempoMappingEdit_;
+    const auto& source = (edit.candidate ? edit.candidate : edit.original)->source;
+    const auto count = static_cast<int32_t>(source.size());
+    if (!points) return count;
+    const auto copied = std::min(count, cap);
+    for (int32_t i = 0; i < copied; ++i) points[i] = {source[i].beat, source[i].value, source[i].curve};
+    return copied;
+}
+
 int32_t Engine::tempoLaneSelfTest() {
     auto storage = std::make_unique<Engine>();
     Engine& e = *storage;
@@ -1080,6 +1168,29 @@ int32_t Engine::tempoLaneSelfTest() {
     // 8: removing the lane (or clearing it) removes the map; the transport tempo leads again.
     if (!e.removeAutomationLane(master, lane) || e.tempoMap() || e.tempoAutomated()) return 20;
     if (!e.setBpm(100)) return 21;
+
+    // A remap changes the target time while retaining both anchor times and the
+    // curved segments outside the splice.
+    const auto original = TempoMap::fromLane({{0, 120, .3f}, {4, 100, -.4f}, {12, 90, .2f}, {16, 115, 0}});
+    if (!original) return 22;
+    const double destination = original->secondsAt(8) + .25;
+    const auto edit = original->mapBoundary(8, destination, 4);
+    if (!edit) return 23;
+    const auto mapped = TempoMap::fromLane(edit->lane);
+    constexpr double sample = 1.0 / 48000;
+    if (!mapped || std::abs(mapped->secondsAt(8) - destination) > sample ||
+        std::abs(mapped->secondsAt(4) - original->secondsAt(4)) > sample ||
+        std::abs(mapped->secondsAt(12) - original->secondsAt(12)) > sample ||
+        mapped->bpmAt(2) != original->bpmAt(2) || mapped->bpmAt(14) != original->bpmAt(14)) return 24;
+    const auto clampedEdit = original->mapBoundary(8, -1, 4);
+    if (!clampedEdit || std::abs(clampedEdit->seconds - clampedEdit->minimumSeconds) > sample ||
+        original->mapBoundary(0, destination, 4)) return 25;
+    const auto flat = TempoMap::fromLane({{0, 120, 0}});
+    const auto tail = flat->mapBoundary(5, 2.75, 4);
+    if (!tail) return 26;
+    const auto mappedTail = TempoMap::fromLane(tail->lane);
+    if (!mappedTail || std::abs(mappedTail->secondsAt(5) - 2.75) > sample ||
+        std::abs(mappedTail->secondsAt(8) - 4) > sample) return 27;
     return 0;
 }
 

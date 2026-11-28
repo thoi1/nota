@@ -1043,6 +1043,32 @@ public sealed partial class NotaEngine
     // --- Audio persistence (M7-6b) -----------------------------------------
 
     /// <summary>Full geometry of an audio clip. False if the clip at that index isn't audio.</summary>
+    public bool HasRetainedAudioTiming(int trackId, int clipIndex)
+    { ThrowIfDisposed(); return NativeMethods.GetRetainedAudioTiming(_handle, trackId, clipIndex, out _, null, 0) >= 0; }
+
+    public int GetRetainedWarpPeaks(int trackId, int clipIndex, double from, double to, float[] peaks, int count, float[] rms)
+    {
+        ThrowIfDisposed();
+        return NativeMethods.RetainedWarpPeaks(_handle, trackId, clipIndex, from, to, peaks,
+            Math.Min(count, Math.Min(peaks.Length / 2, rms.Length)), rms);
+    }
+
+    public bool TryGetRetainedAudioTiming(int trackId, int clipIndex, out RetainedAudioTiming timing, out AutomationPoint[] points)
+    {
+        ThrowIfDisposed();
+        int count = NativeMethods.GetRetainedAudioTiming(_handle, trackId, clipIndex, out timing, null, 0);
+        points = count > 0 ? new AutomationPoint[count] : Array.Empty<AutomationPoint>();
+        return count >= 0 && (count == 0 ||
+            NativeMethods.GetRetainedAudioTiming(_handle, trackId, clipIndex, out timing, points, count) == count);
+    }
+
+    public bool RestoreRetainedAudioTiming(int trackId, int clipIndex, RetainedAudioTiming timing, AutomationPoint[] points)
+    {
+        ThrowIfDisposed();
+        return NativeMethods.RestoreRetainedAudioTiming(_handle, trackId, clipIndex, in timing, points, points.Length)
+            == NativeMethods.NotaResult.Ok;
+    }
+
     public bool TryGetAudioClipInfo(int trackId, int clipIndex, out NotaAudioClipInfo info)
     { ThrowIfDisposed(); return NativeMethods.GetAudioClipInfo(_handle, trackId, clipIndex, out info) != 0; }
 

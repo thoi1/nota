@@ -7,7 +7,9 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <memory>
+#include <optional>
 #include <vector>
 #include "Automation.h"
 
@@ -20,6 +22,16 @@ class TempoMap {
     // differs from bpm); curve shapes the segment from this point to the next.
     struct Point { double beat, bpm, incomingBpm; float curve; };
     struct Node { double beat, seconds; };
+    struct TimeMapping {
+        std::vector<AutomationPoint> lane;
+        double seconds;
+        double minimumSeconds;
+        double maximumSeconds;
+        double bpmBefore;
+        double bpmAfter;
+        double rightAnchorBeat;
+        double rightAnchorSeconds;
+    };
     std::vector<AutomationPoint> source; // the lane points this map was compiled from
     std::vector<Point> points;
     std::vector<Node> nodes;
@@ -99,6 +111,72 @@ class TempoMap {
         const auto& a = *(hi - 1); const auto& b = *hi;
         return a.beat + (b.beat - a.beat) * ((seconds - a.seconds) / (b.seconds - a.seconds));
     }
+
+    // Build a local edit in the same point format used by the master Tempo lane.
+    // Call on the authoring thread with the original map for every preview.
+    std::optional<TimeMapping> mapBoundary(double beat, double destinationSeconds, double beatsPerBar) const {
+        constexpr double minBeatGap = 1e-6;
+        if (!std::isfinite(beat) || beat < minBeatGap || beat > 1e8 ||
+            !std::isfinite(destinationSeconds) || !std::isfinite(beatsPerBar) || beatsPerBar <= 0)
+            return std::nullopt;
+
+        const auto at = std::lower_bound(points.begin(), points.end(), beat,
+            [](const Point& p, double b) { return p.beat < b; });
+        if (at == points.begin()) return std::nullopt;
+        const auto& left = *std::prev(at);
+        const auto right = std::upper_bound(at, points.end(), beat,
+            [](double b, const Point& p) { return b < p.beat; });
+        const double rightBeat = right == points.end()
+            ? (std::floor(beat / beatsPerBar) + 1) * beatsPerBar : right->beat;
+        if (beat - left.beat < minBeatGap || rightBeat - beat < minBeatGap || rightBeat > 1e8)
+            return std::nullopt;
+
+        const double leftSeconds = secondsAt(left.beat);
+        const double rightSeconds = secondsAt(rightBeat);
+        const double before = 60.0 * (beat - left.beat);
+        const double after = 60.0 * (rightBeat - beat);
+        const double lo = std::max(leftSeconds + before / kMaxBpm, rightSeconds - after / kMinBpm);
+        const double hi = std::min(leftSeconds + before / kMinBpm, rightSeconds - after / kMaxBpm);
+        if (lo > hi) return std::nullopt;
+        const double target = std::clamp(destinationSeconds, lo, hi);
+        const double originalSeconds = secondsAt(beat);
+        if (std::abs(target - originalSeconds) <= 1e-12) {
+            const double incoming = at != points.end() && at->beat == beat ? at->incomingBpm : bpmAt(beat);
+            return TimeMapping{source, originalSeconds, lo, hi, incoming, bpmAt(beat), rightBeat, rightSeconds};
+        }
+
+        const auto bpmBefore = static_cast<float>(clampBpm(before / (target - leftSeconds)));
+        const auto bpmAfter = static_cast<float>(clampBpm(after / (rightSeconds - target)));
+        const auto rightBpm = right == points.end() ? points.back().bpm : right->bpm;
+        const float rightCurve = right == points.end() ? 0.0f : right->curve;
+        std::vector<Point> candidate(points.begin(), std::prev(at));
+        candidate.push_back({left.beat, bpmBefore, left.beat == 0 ? bpmBefore : left.incomingBpm, 0});
+        candidate.push_back({beat, bpmAfter, bpmBefore, 0});
+        candidate.push_back({rightBeat, rightBpm, bpmAfter, rightCurve});
+        if (right != points.end()) candidate.insert(candidate.end(), std::next(right), points.end());
+        if (!valid(candidate)) return std::nullopt;
+
+        std::vector<AutomationPoint> lane;
+        lane.reserve(2 * candidate.size());
+        for (const auto& point : candidate) {
+            if (!source.empty() && (point.beat < left.beat || point.beat > rightBeat)) continue;
+            if (point.incomingBpm != point.bpm)
+                lane.push_back({point.beat, static_cast<float>(point.incomingBpm), 0});
+            lane.push_back({point.beat, static_cast<float>(point.bpm), point.curve});
+        }
+        if (!source.empty()) {
+            auto first = std::lower_bound(source.begin(), source.end(), left.beat,
+                [](const AutomationPoint& p, double b) { return p.beat < b; });
+            auto last = std::partition_point(first, source.end(),
+                [&](const AutomationPoint& p) { return p.beat - rightBeat < minBeatGap; });
+            lane.insert(lane.begin(), source.begin(), first);
+            lane.insert(lane.end(), last, source.end());
+        }
+        if (lane.size() > 2 * kMaxPoints) return std::nullopt;
+        return TimeMapping{std::move(lane), leftSeconds + before / bpmBefore, lo, hi,
+            bpmBefore, bpmAfter, rightBeat, rightSeconds};
+    }
+
     double clockBpm(double beat) const {
         if (beat < 0 || nodes.size() < 2) return points.front().bpm;
         if (beat >= nodes.back().beat) return points.back().bpm;

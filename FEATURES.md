@@ -60,6 +60,8 @@ on a pool of render threads, export and freeze use every core, and an idle engin
   MIDI, warped audio, freeze, bounce and export follow it; unwarped audio keeps its time.
   While automated, the transport BPM field shows the tempo under the playhead (read-only).
   Projects from the earlier tempo track open with the same timing.
+  Ctrl-drag a beat or bar in the master Tempo lane to align the grid to audio without
+  moving or stretching it. MIDI follows the mapped grid, and the edit undoes in one step.
 
 - **Project**: create / open / save (`.nota`), autosaves, undo/redo for every editing
   operation — including volume, pan and master-volume moves and the parameters of effects,

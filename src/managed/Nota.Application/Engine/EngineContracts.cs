@@ -11,6 +11,14 @@ using System.Runtime.InteropServices;
 
 namespace Nota.Application;
 
+[StructLayout(LayoutKind.Sequential)]
+public readonly record struct TempoMappingPreview(double Seconds, double MinimumSeconds,
+    double MaximumSeconds, double BpmBefore, double BpmAfter);
+
+[StructLayout(LayoutKind.Sequential)]
+public readonly record struct RetainedAudioTiming(double OriginalStartBeat, double FlatBpm,
+    double StartSeconds, double EndSeconds);
+
 /// <summary>What <see cref="IAudioEngine.RetryTake"/> did (specs/078).</summary>
 public enum RetryTakeResult
 {

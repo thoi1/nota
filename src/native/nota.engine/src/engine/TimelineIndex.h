@@ -55,7 +55,7 @@ class TimelineIndex {
         double startBeat = 0.0;
         bool warped = false;
         double warpLenBeats = 0.0;
-        double unwarpedSec = 0.0;    // effectiveLength() / (sourceSampleRate * pitchRatio())
+        double unwarpedSec = 0.0;    // duration of a clip indexed in seconds, including retained timing
     };
 
     struct AudioTreeNode {

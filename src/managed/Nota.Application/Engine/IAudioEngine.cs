@@ -1373,6 +1373,10 @@ public interface IAudioEngine : IDisposable
 
     // --- Audio persistence (M7-6b) -----------------------------------------
     bool TryGetAudioClipInfo(int trackId, int clipIndex, out NotaAudioClipInfo info);
+    bool TryGetRetainedAudioTiming(int trackId, int clipIndex, out RetainedAudioTiming timing, out AutomationPoint[] points);
+    bool HasRetainedAudioTiming(int trackId, int clipIndex);
+    int GetRetainedWarpPeaks(int trackId, int clipIndex, double from, double to, float[] peaks, int count, float[] rms);
+    bool RestoreRetainedAudioTiming(int trackId, int clipIndex, RetainedAudioTiming timing, AutomationPoint[] points);
     int AddAudioClipEx(int trackId, string path, double startBeat, double sourceOffsetFrames, long lengthFrames, float gain);
 
     // --- Take lanes (specs/067) --------------------------------------------
@@ -1589,6 +1593,11 @@ public interface IAudioEngine : IDisposable
     /// <summary>Set a lane's points without an undo checkpoint — for real-time updates while
     /// dragging a point (the caller checkpoints once at drag start, commits via the undo path on release).</summary>
     void SetAutomationPointsLive(int trackId, int laneIndex, AutomationPoint[] points);
+    ulong BeginTempoMapping(double beat);
+    bool TryPreviewTempoMapping(ulong handle, double destinationSeconds, out TempoMappingPreview preview);
+    bool FinishTempoMapping(ulong handle, bool commit);
+    double ConvertTempoMapping(ulong handle, double value, bool toBeat);
+    AutomationPoint[] GetTempoMappingPoints(ulong handle);
     void RemoveAutomationLane(int trackId, int laneIndex);
     /// <summary>Master-volume automation (graph-level, not tied to a track).</summary>
     AutomationPoint[] GetMasterVolumeAutomation();
